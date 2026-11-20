@@ -1825,6 +1825,9 @@
 
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('서버 검색 API(/api/places/search)를 찾을 수 없습니다(404). 최신 서버 코드로 다시 배포(Publish/Share)해 주세요.');
+                }
                 throw new Error(data.error || `API 오류 (${response.status})`);
             }
             if (!data.placeInfo) {

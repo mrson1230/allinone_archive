@@ -35,18 +35,41 @@ function getGeminiClient(): GoogleGenAI {
 }
 
 const SEARCH_CACHE_TTL_MS = 10 * 60 * 1000;
+const GROUNDING_COOLDOWN_MS = 5 * 60 * 1000;
 const searchCache = new Map<string, { placeInfo: unknown; expiresAt: number }>();
+let groundingCooldownUntil = 0;
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      const err = new Error('요청 시간이 초과되었습니다.') as Error & { status?: number };
+      err.status = 504;
+      reject(err);
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 async function generatePlaceSearchResponse(ai: GoogleGenAI, prompt: string) {
-  const attempts: Array<{ model: string; useSearch: boolean }> = [
-    { model: 'gemini-4-hydrogen', useSearch: true },
-    { model: 'gemini-3.1-flash-lite', useSearch: true },
-    { model: 'gemini-4-hydrogen', useSearch: false },
-    { model: 'gemini-3.1-flash-lite', useSearch: false },
-  ];
+  const canUseGrounding = Date.now() >= groundingCooldownUntil;
+  const attempts: Array<{ model: string; useSearch: boolean; timeoutMs: number }> = canUseGrounding
+    ? [
+        { model: 'gemini-4-hydrogen', useSearch: true, timeoutMs: 6000 },
+        { model: 'gemini-3.1-flash-lite', useSearch: false, timeoutMs: 8000 },
+        { model: 'gemini-4-hydrogen', useSearch: false, timeoutMs: 10000 },
+      ]
+    : [
+        { model: 'gemini-3.1-flash-lite', useSearch: false, timeoutMs: 8000 },
+        { model: 'gemini-4-hydrogen', useSearch: false, timeoutMs: 10000 },
+      ];
   let lastError: unknown;
 
-  for (const { model, useSearch } of attempts) {
+  for (const { model, useSearch, timeoutMs } of attempts) {
     try {
       const config: Record<string, unknown> = {};
       if (useSearch) {
@@ -55,17 +78,24 @@ async function generatePlaceSearchResponse(ai: GoogleGenAI, prompt: string) {
       if (model === 'gemini-4-hydrogen') {
         config.thinkingConfig = { thinkingLevel: ThinkingLevel.LOW };
       }
-      return await ai.models.generateContent({
-        model,
-        contents: prompt,
-        ...(Object.keys(config).length > 0 ? { config } : {}),
-      });
+      return await withTimeout(
+        ai.models.generateContent({
+          model,
+          contents: prompt,
+          ...(Object.keys(config).length > 0 ? { config } : {}),
+        }),
+        timeoutMs
+      );
     } catch (error: unknown) {
       lastError = error;
       const status = (error as { status?: number })?.status;
+      if (useSearch && (status === 429 || status === 403 || status === 400 || status === 503 || status === 504)) {
+        groundingCooldownUntil = Date.now() + GROUNDING_COOLDOWN_MS;
+      }
       const shouldFallback =
         status === 429 ||
         status === 503 ||
+        status === 504 ||
         status === 500 ||
         status === 404 ||
         status === 403 ||
