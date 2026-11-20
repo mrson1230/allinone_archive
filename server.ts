@@ -55,25 +55,35 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
   }
 }
 
+const TOTAL_SEARCH_DEADLINE_MS = 9000;
+
 async function generatePlaceSearchResponse(ai: GoogleGenAI, prompt: string) {
-  const canUseGrounding = Date.now() >= groundingCooldownUntil;
+  const startedAt = Date.now();
+  const canUseGrounding = startedAt >= groundingCooldownUntil;
   const attempts: Array<{ model: string; useSearch: boolean; timeoutMs: number }> = canUseGrounding
     ? [
-        { model: 'gemini-4-hydrogen', useSearch: true, timeoutMs: 6000 },
-        { model: 'gemini-3.1-flash-lite', useSearch: false, timeoutMs: 8000 },
-        { model: 'gemini-4-hydrogen', useSearch: false, timeoutMs: 10000 },
+        { model: 'gemini-4-hydrogen', useSearch: true, timeoutMs: 6500 },
+        { model: 'gemini-3.1-flash-lite', useSearch: false, timeoutMs: 5000 },
       ]
     : [
-        { model: 'gemini-3.1-flash-lite', useSearch: false, timeoutMs: 8000 },
-        { model: 'gemini-4-hydrogen', useSearch: false, timeoutMs: 10000 },
+        { model: 'gemini-3.1-flash-lite', useSearch: false, timeoutMs: 6500 },
+        { model: 'gemini-4-hydrogen', useSearch: false, timeoutMs: 6500 },
       ];
   let lastError: unknown;
 
   for (const { model, useSearch, timeoutMs } of attempts) {
+    const remainingMs = TOTAL_SEARCH_DEADLINE_MS - (Date.now() - startedAt);
+    if (remainingMs < 2000) {
+      break;
+    }
+    const effectiveTimeoutMs = Math.min(timeoutMs, remainingMs);
+
     try {
       const config: Record<string, unknown> = {};
       if (useSearch) {
         config.tools = [{ googleSearch: {} }];
+      } else {
+        config.responseMimeType = 'application/json';
       }
       if (model === 'gemini-4-hydrogen') {
         config.thinkingConfig = { thinkingLevel: ThinkingLevel.LOW };
@@ -84,7 +94,7 @@ async function generatePlaceSearchResponse(ai: GoogleGenAI, prompt: string) {
           contents: prompt,
           ...(Object.keys(config).length > 0 ? { config } : {}),
         }),
-        timeoutMs
+        effectiveTimeoutMs
       );
     } catch (error: unknown) {
       lastError = error;
@@ -180,8 +190,8 @@ app.post('/api/places/search', async (req: Request, res: Response) => {
       });
       return;
     }
-    if (status === 503) {
-      res.status(503).json({
+    if (status === 503 || status === 504) {
+      res.status(status).json({
         error: '현재 AI 서버 사용량이 많아 응답이 지연되고 있습니다. 잠시 후 다시 눌러 주세요.',
       });
       return;

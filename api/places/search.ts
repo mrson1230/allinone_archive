@@ -1,0 +1,207 @@
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
+
+interface CategoryInput {
+  id: string;
+  name: string;
+  fields?: string[];
+}
+
+interface ServerlessRequest {
+  method?: string;
+  body?: unknown;
+}
+
+interface ServerlessResponse {
+  status(code: number): ServerlessResponse;
+  json(payload: unknown): void;
+}
+
+const SEARCH_CACHE_TTL_MS = 10 * 60 * 1000;
+const GROUNDING_COOLDOWN_MS = 5 * 60 * 1000;
+const searchCache = new Map<string, { placeInfo: unknown; expiresAt: number }>();
+let groundingCooldownUntil = 0;
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      const err = new Error('요청 시간이 초과되었습니다.') as Error & { status?: number };
+      err.status = 504;
+      reject(err);
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+const TOTAL_SEARCH_DEADLINE_MS = 9000;
+
+async function generatePlaceSearchResponse(ai: GoogleGenAI, prompt: string) {
+  const startedAt = Date.now();
+  const canUseGrounding = startedAt >= groundingCooldownUntil;
+  const attempts: Array<{ model: string; useSearch: boolean; timeoutMs: number }> = canUseGrounding
+    ? [
+        { model: 'gemini-4-hydrogen', useSearch: true, timeoutMs: 6500 },
+        { model: 'gemini-3.1-flash-lite', useSearch: false, timeoutMs: 5000 },
+      ]
+    : [
+        { model: 'gemini-3.1-flash-lite', useSearch: false, timeoutMs: 6500 },
+        { model: 'gemini-4-hydrogen', useSearch: false, timeoutMs: 6500 },
+      ];
+  let lastError: unknown;
+
+  for (const { model, useSearch, timeoutMs } of attempts) {
+    const remainingMs = TOTAL_SEARCH_DEADLINE_MS - (Date.now() - startedAt);
+    if (remainingMs < 2000) {
+      break;
+    }
+    const effectiveTimeoutMs = Math.min(timeoutMs, remainingMs);
+
+    try {
+      const config: Record<string, unknown> = {};
+      if (useSearch) {
+        config.tools = [{ googleSearch: {} }];
+      } else {
+        config.responseMimeType = 'application/json';
+      }
+      if (model === 'gemini-4-hydrogen') {
+        config.thinkingConfig = { thinkingLevel: ThinkingLevel.LOW };
+      }
+      return await withTimeout(
+        ai.models.generateContent({
+          model,
+          contents: prompt,
+          ...(Object.keys(config).length > 0 ? { config } : {}),
+        }),
+        effectiveTimeoutMs
+      );
+    } catch (error: unknown) {
+      lastError = error;
+      const status = (error as { status?: number })?.status;
+      if (useSearch && (status === 429 || status === 403 || status === 400 || status === 503 || status === 504)) {
+        groundingCooldownUntil = Date.now() + GROUNDING_COOLDOWN_MS;
+      }
+      const shouldFallback =
+        status === 429 ||
+        status === 503 ||
+        status === 504 ||
+        status === 500 ||
+        status === 404 ||
+        status === 403 ||
+        status === 400;
+      if (!shouldFallback) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+export default async function handler(req: ServerlessRequest, res: ServerlessResponse) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  try {
+    const parsedBody =
+      typeof req.body === 'string'
+        ? (JSON.parse(req.body || '{}') as { query?: string; categories?: CategoryInput[] })
+        : ((req.body || {}) as { query?: string; categories?: CategoryInput[] });
+
+    const { query, categories } = parsedBody;
+    if (!query || typeof query !== 'string' || !query.trim()) {
+      res.status(400).json({ error: '검색할 장소 링크 또는 가게 이름을 입력해 주세요.' });
+      return;
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      res.status(500).json({
+        error: '서버에 GEMINI_API_KEY가 설정되어 있지 않습니다. 배포 환경변수(GEMINI_API_KEY)를 설정해 주세요.',
+      });
+      return;
+    }
+
+    const safeCategories = Array.isArray(categories) ? categories : [];
+    const categoryKey = safeCategories.map((c) => c.id).join(',');
+    const cacheKey = `${query.trim().toLowerCase()}::${categoryKey}`;
+    const cached = searchCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      res.status(200).json({ placeInfo: cached.placeInfo });
+      return;
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        },
+      },
+    });
+
+    const categoryListDesc = safeCategories
+      .map((c) => `${c.id} (${c.name}: ${(c.fields || []).join(', ')})`)
+      .join(' / ');
+
+    const prompt = `사용자가 입력한 장소 정보 또는 URL: "${query.trim()}"
+위 장소에 대해 Google 실시간 검색을 수행하여 정확한 실제 정보를 찾아 아래 JSON 형식으로만 응답해줘. 마크다운 코드블록 없이 순수 JSON 객체만 출력해.
+- categoryId: 다음 카테고리 중 가장 적합한 id 선택 [${categoryListDesc}]
+- name: 실제 공식 상호명
+- address: 실제 도로명 주소 (지점이 여러 개인 경우 입력된 지역/지점의 정확한 도로명 주소)
+- hours: 실제 영업시간 및 휴무일 요약
+- todoItems: 대표 추천 메뉴 또는 즐길 거리 2~3개 (쉼표로 구분된 문자열)
+- memo: 주차 여부, 특징, 방문 꿀팁 한 줄 요약
+- customFields: 선택한 카테고리의 전용 기록 항목 이름(원문 키 이름 그대로)을 키로 사용하는 키-값 객체`;
+
+    const response = await generatePlaceSearchResponse(ai, prompt);
+    const rawText = response.text ?? '';
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      res.status(502).json({ error: '검색 결과를 구조화하지 못했습니다.' });
+      return;
+    }
+
+    const placeInfo = JSON.parse(jsonMatch[0]);
+    if (Array.isArray(placeInfo.todoItems)) {
+      placeInfo.todoItems = placeInfo.todoItems.join(', ');
+    }
+    searchCache.set(cacheKey, {
+      placeInfo,
+      expiresAt: Date.now() + SEARCH_CACHE_TTL_MS,
+    });
+    res.status(200).json({ placeInfo });
+  } catch (error: unknown) {
+    const errObj = error as { status?: number; message?: string };
+    const status = errObj?.status;
+
+    if (status === 403 || status === 400) {
+      res.status(status).json({
+        error: 'API 키가 유효하지 않거나 권한이 없습니다. GEMINI_API_KEY 설정을 확인해 주세요.',
+      });
+      return;
+    }
+    if (status === 429) {
+      res.status(429).json({
+        error: '현재 API 요청 한도(할당량)를 초과했습니다. 잠시 후 다시 시도하거나 결제가 연결된 API 키를 설정해 주세요.',
+      });
+      return;
+    }
+    if (status === 503 || status === 504) {
+      res.status(status).json({
+        error: '현재 AI 서버 사용량이 많아 응답이 지연되고 있습니다. 잠시 후 다시 눌러 주세요.',
+      });
+      return;
+    }
+
+    console.error('Serverless Gemini place search error:', error);
+    res.status(500).json({
+      error: errObj?.message || '장소 정보를 불러오는 중 오류가 발생했습니다.',
+    });
+  }
+}

@@ -31,6 +31,10 @@
             --header-grad-to: #7c3aed;
         }
 
+        html {
+            font-size: 18px;
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
             background-color: #e2e8f0; /* 데스크탑에서 모바일 프레임 돋보이게 하는 배경 */
@@ -101,7 +105,7 @@
                         <span class="text-xl">🗂️</span>
                     </div>
                     <div>
-                        <span class="text-[10px] font-extrabold uppercase tracking-widest theme-accent-soft px-2 py-0.5 rounded-full">ALL-IN-ONE</span>
+                        <span class="text-[12px] font-extrabold uppercase tracking-widest theme-accent-soft px-2 py-0.5 rounded-full">ALL-IN-ONE</span>
                         <h1 class="text-lg font-black tracking-tight theme-text-main mt-0.5">올인원 단골노트</h1>
                     </div>
                 </div>
@@ -125,14 +129,14 @@
 
                 <!-- PC 요약 통계 카드 -->
                 <div class="p-4 rounded-2xl bg-slate-500/5 border border-slate-500/10 space-y-2.5">
-                    <p class="text-[11px] font-extrabold theme-text-muted uppercase tracking-wider">나의 아카이브 현황</p>
+                    <p class="text-[13px] font-extrabold theme-text-muted uppercase tracking-wider">나의 아카이브 현황</p>
                     <div class="grid grid-cols-2 gap-2">
                         <div class="theme-card border rounded-xl p-2.5 text-center">
-                            <p class="text-[11px] theme-text-sub">단골/방문</p>
+                            <p class="text-[13px] theme-text-sub">단골/방문</p>
                             <p class="text-lg font-black theme-text-main mt-0.5"><span id="pcVisitedCount">0</span><span class="text-xs font-bold ml-0.5">곳</span></p>
                         </div>
                         <div class="theme-card border rounded-xl p-2.5 text-center">
-                            <p class="text-[11px] theme-text-sub">가볼 곳</p>
+                            <p class="text-[13px] theme-text-sub">가볼 곳</p>
                             <p class="text-lg font-black theme-text-main mt-0.5"><span id="pcWishlistCount">0</span><span class="text-xs font-bold ml-0.5">곳</span></p>
                         </div>
                     </div>
@@ -144,7 +148,7 @@
                 <div class="flex items-center gap-2.5 min-w-0">
                     <span id="pcCurrentMoodEmoji" class="text-xl shrink-0">✨</span>
                     <div class="min-w-0">
-                        <p class="text-[10px] font-bold theme-text-muted">현재 기분 테마</p>
+                        <p class="text-[12px] font-bold theme-text-muted">현재 기분 테마</p>
                         <p id="pcCurrentMoodLabel" class="text-xs font-extrabold theme-text-main truncate">설레는 기본</p>
                     </div>
                 </div>
@@ -171,7 +175,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full">ALL-IN-ONE ARCHIVE</span>
+                            <span class="text-[12px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full">ALL-IN-ONE ARCHIVE</span>
                         </div>
                         <h1 class="text-xl lg:text-2xl font-black tracking-tight leading-tight mt-0.5">올인원 단골노트</h1>
                     </div>
@@ -181,7 +185,7 @@
                 <button onclick="switchBottomTab('studio')" class="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 px-3 py-2 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm">
                     <span id="currentMoodEmoji">✨</span>
                     <span id="currentMoodLabel">설레는 기본</span>
-                    <span class="text-[10px] opacity-80 ml-0.5">⚙️</span>
+                    <span class="text-[12px] opacity-80 ml-0.5">⚙️</span>
                 </button>
             </div>
 
@@ -241,7 +245,7 @@
                     <!-- 레이아웃 빠른 전환 미니 버튼 -->
                     <button onclick="cycleLayout()" title="레이아웃 변경" class="theme-card border px-2.5 py-2 rounded-xl text-xs font-semibold theme-text-sub flex items-center gap-1.5 shadow-2xs active:scale-95">
                         <span id="layoutQuickIcon">📇</span>
-                        <span id="layoutQuickLabel" class="text-[11px]">카드형</span>
+                        <span id="layoutQuickLabel" class="text-[13px]">카드형</span>
                     </button>
                 </div>
             </div>
@@ -269,7 +273,7 @@
         <!-- ========================================== -->
         <div id="view-studio" class="hidden px-4 lg:px-8 pt-5 lg:pt-6 space-y-5 animate-slide-up">
             <div>
-                <span class="text-[11px] font-extrabold uppercase tracking-wider theme-accent-soft px-2.5 py-1 rounded-lg">ADMIN & MOOD STUDIO</span>
+                <span class="text-[13px] font-extrabold uppercase tracking-wider theme-accent-soft px-2.5 py-1 rounded-lg">ADMIN & MOOD STUDIO</span>
                 <h2 class="text-xl lg:text-2xl font-black theme-text-main mt-1.5">내 기분 맞춤형 디자인 스튜디오</h2>
                 <p class="text-xs lg:text-sm theme-text-sub mt-0.5">오늘의 기분과 취향에 맞춰 앱의 컬러, 분위기, 카드 레이아웃을 실시간으로 커스터마이징하세요.</p>
             </div>
@@ -295,17 +299,17 @@
                             <button onclick="setLayoutMode('card')" id="layout-btn-card" class="layout-opt-btn p-3 rounded-2xl border text-center transition flex flex-col items-center gap-1.5">
                                 <span class="text-lg">📇</span>
                                 <span class="text-xs font-bold">디테일 카드</span>
-                                <span class="text-[10px] opacity-70">모든 정보 한눈에</span>
+                                <span class="text-[12px] opacity-70">모든 정보 한눈에</span>
                             </button>
                             <button onclick="setLayoutMode('compact')" id="layout-btn-compact" class="layout-opt-btn p-3 rounded-2xl border text-center transition flex flex-col items-center gap-1.5">
                                 <span class="text-lg">📃</span>
                                 <span class="text-xs font-bold">슬림 리스트</span>
-                                <span class="text-[10px] opacity-70">빠르고 깔끔하게</span>
+                                <span class="text-[12px] opacity-70">빠르고 깔끔하게</span>
                             </button>
                             <button onclick="setLayoutMode('grid')" id="layout-btn-grid" class="layout-opt-btn p-3 rounded-2xl border text-center transition flex flex-col items-center gap-1.5">
                                 <span class="text-lg">🍱</span>
                                 <span class="text-xs font-bold">다단 갤러리</span>
-                                <span class="text-[10px] opacity-70">아기자기한 모아보기</span>
+                                <span class="text-[12px] opacity-70">아기자기한 모아보기</span>
                             </button>
                         </div>
                     </div>
@@ -331,7 +335,7 @@
                             <h3 class="text-sm font-bold theme-text-main flex items-center gap-2">
                                 <span>💾</span> 4. 데이터 영구 저장 & 백업 관리
                             </h3>
-                            <p class="text-[11px] theme-text-sub mt-1">모든 기록과 테마는 기기에 자동 저장됩니다. 기기를 바꾸거나 데이터를 안전하게 보관하려면 파일로 백업하세요.</p>
+                            <p class="text-[13px] theme-text-sub mt-1">모든 기록과 테마는 기기에 자동 저장됩니다. 기기를 바꾸거나 데이터를 안전하게 보관하려면 파일로 백업하세요.</p>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2">
@@ -350,7 +354,7 @@
                                 <span>🧹</span> 샘플/장소 기록 전체 비우기 (새로 시작)
                             </button>
                             <div id="clearConfirmBox" class="hidden mt-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 space-y-2">
-                                <p class="text-[11px] font-bold text-rose-700 text-center">저장된 모든 장소 기록이 삭제됩니다. 정말 비울까요?</p>
+                                <p class="text-[13px] font-bold text-rose-700 text-center">저장된 모든 장소 기록이 삭제됩니다. 정말 비울까요?</p>
                                 <div class="flex gap-2">
                                     <button onclick="cancelClearAllPlaces()" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-white/80 text-slate-600">취소</button>
                                     <button onclick="confirmClearAllPlaces()" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-rose-600 text-white">네, 전부 비우기</button>
@@ -427,10 +431,10 @@
     <!-- ========================================== -->
     <!-- 바텀 시트 / 센터 모달 2: 새 장소 기록 -->
     <!-- ========================================== -->
-    <div id="placeModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="placeModal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="theme-card w-full max-w-xl rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up max-h-[90dvh] flex flex-col">
             <div class="flex items-center justify-between pb-3 border-b border-slate-500/10 shrink-0">
-                <h3 class="text-lg font-black theme-text-main">새 공간 & 경험 기록</h3>
+                <h3 id="placeModalTitle" class="text-lg font-black theme-text-main">새 공간 & 경험 기록</h3>
                 <button onclick="closePlaceModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">
                     ✕
                 </button>
@@ -441,7 +445,7 @@
                 <div class="p-3 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 space-y-2">
                     <label class="flex items-center justify-between text-xs font-extrabold text-indigo-600">
                         <span class="flex items-center gap-1.5"><span>🔗</span> 장소 링크 또는 가게명·지역</span>
-                        <span class="text-[10px] font-semibold opacity-80">실제 웹 검색 자동 채우기</span>
+                        <span class="text-[12px] font-semibold opacity-80">실제 웹 검색 자동 채우기</span>
                     </label>
                     <div class="flex gap-1.5">
                         <input type="text" id="placeLink" placeholder="예: 성심당 대전 본점 또는 지도 URL..." class="theme-card flex-1 min-w-0 px-3 py-2 border rounded-xl text-xs focus:outline-none">
@@ -449,7 +453,7 @@
                             ⚡ 불러오기
                         </button>
                     </div>
-                    <p id="autoFillStatus" class="hidden text-[11px] font-semibold text-indigo-600"></p>
+                    <p id="autoFillStatus" class="hidden text-[13px] font-semibold text-indigo-600"></p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2.5">
@@ -475,7 +479,7 @@
                     <div>
                         <div class="flex items-center justify-between gap-1 mb-1">
                             <label class="block text-xs font-bold theme-text-main truncate">주소 / 위치</label>
-                            <button type="button" onclick="previewMapLocation()" class="text-[10px] font-extrabold text-indigo-600 hover:underline shrink-0 whitespace-nowrap">🗺️ 위치확인</button>
+                            <button type="button" onclick="previewMapLocation()" class="text-[12px] font-extrabold text-indigo-600 hover:underline shrink-0 whitespace-nowrap">🗺️ 위치확인</button>
                         </div>
                         <input type="text" id="placeAddress" placeholder="예: 세종시 나성동..." class="theme-card w-full px-3 py-2 border rounded-xl text-xs focus:outline-none">
                     </div>
@@ -494,7 +498,7 @@
                         <label class="text-xs font-extrabold theme-text-main flex items-center gap-1.5">
                             <span>📸</span> 방문 사진 & 현장 영상
                         </label>
-                        <span class="text-[10px] theme-text-muted">자동 용량 최적화</span>
+                        <span class="text-[12px] theme-text-muted">자동 용량 최적화</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -535,7 +539,7 @@
 
             <div class="pt-3 border-t border-slate-500/10 flex gap-2 shrink-0">
                 <button onclick="closePlaceModal()" class="flex-1 py-3 rounded-2xl text-xs font-bold bg-slate-500/10 theme-text-sub">취소</button>
-                <button onclick="saveNewPlace()" class="w-2/3 py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md">저장하기</button>
+                <button id="btnSavePlace" onclick="saveNewPlace()" class="w-2/3 py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md">저장하기</button>
             </div>
         </div>
     </div>
@@ -568,18 +572,40 @@
         <div class="theme-card w-full max-w-xl rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl animate-slide-up max-h-[88dvh] flex flex-col">
             <div class="flex items-center justify-between pb-3 border-b border-slate-500/10 shrink-0">
                 <span class="text-xs font-extrabold theme-text-muted uppercase tracking-wider">장소 전체 상세 정보</span>
-                <button onclick="closePlaceDetailModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">
-                    ✕
-                </button>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="openEditPlaceModal(activeDetailPlaceId)" class="px-2.5 py-1.5 rounded-full theme-accent-soft text-[13px] font-extrabold flex items-center gap-1 active:scale-95 transition">
+                        <span>✏️</span>
+                        <span>수정</span>
+                    </button>
+                    <button type="button" onclick="closePlaceDetailModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">
+                        ✕
+                    </button>
+                </div>
             </div>
             <div id="placeDetailContent" class="overflow-y-auto pt-3.5 pr-0.5 no-scrollbar flex-1">
                 <!-- JS로 buildDetailCardHTML 렌더링 -->
+            </div>
+            <div class="pt-3 mt-2 border-t border-slate-500/10 grid grid-cols-3 gap-2 shrink-0">
+                <label class="py-2.5 px-2 rounded-2xl text-[13px] font-extrabold theme-accent-soft flex items-center justify-center gap-1 cursor-pointer active:scale-95 transition">
+                    <span>🖼️</span>
+                    <span>사진 추가</span>
+                    <input type="file" accept="image/*" multiple onchange="appendPhotosToActiveDetailPlace(event)" class="hidden">
+                </label>
+                <label class="py-2.5 px-2 rounded-2xl text-[13px] font-extrabold bg-slate-500/10 theme-text-main flex items-center justify-center gap-1 cursor-pointer active:scale-95 transition">
+                    <span>🎬</span>
+                    <span>영상 추가</span>
+                    <input type="file" accept="video/*" onchange="appendVideoToActiveDetailPlace(event)" class="hidden">
+                </label>
+                <button type="button" onclick="openEditPlaceModal(activeDetailPlaceId)" class="py-2.5 px-2 rounded-2xl text-[13px] font-extrabold theme-accent-bg shadow-xs flex items-center justify-center gap-1 active:scale-95 transition">
+                    <span>✏️</span>
+                    <span>정보 수정</span>
+                </button>
             </div>
         </div>
     </div>
 
     <!-- 바텀 시트 / 센터 모달 5: 사진/영상 전체화면 라이트박스 뷰어 -->
-    <div id="mediaLightboxModal" onclick="if(event.target === this) closeMediaLightbox()" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+    <div id="mediaLightboxModal" onclick="if(event.target === this) closeMediaLightbox()" class="fixed inset-0 z-[70] hidden bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4">
         <button onclick="closeMediaLightbox()" class="self-end mb-3 w-9 h-9 rounded-full bg-white/20 text-white font-bold flex items-center justify-center">
             ✕
         </button>
@@ -587,7 +613,7 @@
     </div>
 
     <!-- 토스트 알림 -->
-    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[80] bg-slate-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
         <span>✅</span>
         <span id="toastMessage">저장되었습니다.</span>
     </div>
@@ -877,6 +903,7 @@
         let isCategoryDeleteMode = false;
         let selectedNewIcon = '⭐';
         let activeDetailPlaceId = null;
+        let editingPlaceId = null;
         let tempDraftMedia = []; // 모달에서 새로 첨부 중인 사진/영상 임시 목록
 
         const availableIcons = [
@@ -899,8 +926,10 @@
                     currentLayout
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+                return true;
             } catch (e) {
                 console.warn('로컬 저장소 저장 실패:', e);
+                return false;
             }
         }
 
@@ -1098,17 +1127,20 @@
                 <div class="${isModalView ? '' : 'theme-card border rounded-3xl p-4.5 shadow-xs'}">
                     <!-- 상단 뱃지 & 액션 -->
                     <div class="flex items-center justify-between gap-2 mb-2.5">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-extrabold theme-accent-soft">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[13px] font-extrabold theme-accent-soft">
                             <span>${category.icon}</span>
                             ${category.name}
                         </span>
                         <div class="flex items-center gap-1">
-                            <button onclick="togglePlaceStatus('${place.id}')" class="px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition ${isVisited ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}">
+                            <button onclick="togglePlaceStatus('${place.id}')" class="px-2.5 py-1 rounded-xl text-[13px] font-extrabold transition ${isVisited ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}">
                                 ${isVisited ? '⭐ 단골/방문완료' : '📌 가볼 곳(위시)'}
                             </button>
                             <!-- 링크 기반 최신 정보 자동 동기화 버튼 -->
                             <button onclick="syncPlaceFromLink('${place.id}')" title="링크에서 최신 정보 업데이트" class="w-7 h-7 rounded-xl bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 flex items-center justify-center transition active:scale-90">
                                 <span id="${syncIconId}" class="inline-block text-xs">🔄</span>
+                            </button>
+                            <button onclick="openEditPlaceModal('${place.id}')" title="기록 수정 및 사진/영상 추가" class="w-7 h-7 rounded-xl bg-slate-500/10 theme-text-sub hover:bg-slate-500/20 flex items-center justify-center transition active:scale-90 text-xs">
+                                ✏️
                             </button>
                             <button onclick="deletePlace('${place.id}')" class="theme-text-muted hover:text-rose-500 p-1 text-xs">
                                 🗑️
@@ -1126,13 +1158,13 @@
                     <!-- 원터치 내비게이션 & 길찾기 실행 바 (주소+상호명 정밀 매칭) -->
                     ${(place.address || place.name) ? `
                         <div class="mt-2.5 p-2 rounded-2xl bg-emerald-500/5 border border-emerald-500/15 flex items-center justify-between gap-1.5">
-                            <span class="text-[11px] font-extrabold text-emerald-700 flex items-center gap-1 shrink-0 pl-1">
+                            <span class="text-[13px] font-extrabold text-emerald-700 flex items-center gap-1 shrink-0 pl-1">
                                 <span>🧭</span> 바로 길찾기
                             </span>
                             <div class="flex items-center gap-1">
-                                <button type="button" onclick="launchNavigation('${place.id}', 'naver')" class="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-[#03C75A] text-white shadow-2xs active:scale-95 transition">네이버</button>
-                                <button type="button" onclick="launchNavigation('${place.id}', 'kakao')" class="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-[#FEE500] text-[#191919] shadow-2xs active:scale-95 transition">카카오</button>
-                                <button type="button" onclick="launchNavigation('${place.id}', 'tmap')" class="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-[#0064FF] text-white shadow-2xs active:scale-95 transition">티맵</button>
+                                <button type="button" onclick="launchNavigation('${place.id}', 'naver')" class="px-2 py-1 rounded-lg text-[12px] font-extrabold bg-[#03C75A] text-white shadow-2xs active:scale-95 transition">네이버</button>
+                                <button type="button" onclick="launchNavigation('${place.id}', 'kakao')" class="px-2 py-1 rounded-lg text-[12px] font-extrabold bg-[#FEE500] text-[#191919] shadow-2xs active:scale-95 transition">카카오</button>
+                                <button type="button" onclick="launchNavigation('${place.id}', 'tmap')" class="px-2 py-1 rounded-lg text-[12px] font-extrabold bg-[#0064FF] text-white shadow-2xs active:scale-95 transition">티맵</button>
                             </div>
                         </div>
                     ` : ''}
@@ -1140,16 +1172,16 @@
                     <!-- 연결된 링크 액션 바 -->
                     <div class="mt-2 flex items-center justify-between gap-2">
                         ${place.link ? `
-                            <a href="${place.link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition truncate max-w-[65%]">
+                            <a href="${place.link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[13px] font-bold bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition truncate max-w-[65%]">
                                 <span>🔗</span>
                                 <span class="truncate">지도/상세 링크 열기</span>
                             </a>
                         ` : `
-                            <button onclick="openLinkEditModal('${place.id}')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-slate-500/10 theme-text-sub hover:bg-slate-500/20 transition">
+                            <button onclick="openLinkEditModal('${place.id}')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[13px] font-bold bg-slate-500/10 theme-text-sub hover:bg-slate-500/20 transition">
                                 <span>🔗</span> 링크 연결하기
                             </button>
                         `}
-                        ${place.lastSynced ? `<span class="text-[10px] theme-text-muted shrink-0">✔️ ${place.lastSynced}</span>` : ''}
+                        ${place.lastSynced ? `<span class="text-[12px] theme-text-muted shrink-0">✔️ ${place.lastSynced}</span>` : ''}
                     </div>
 
                     <!-- 방문 사진 & 영상 갤러리 스트립 -->
@@ -1170,11 +1202,11 @@
                     <!-- 내가 먹은 것 / 해본 것 -->
                     ${place.doneItems.length > 0 ? `
                         <div class="mt-3">
-                            <p class="text-[10px] font-extrabold theme-text-muted uppercase tracking-wider mb-1.5">내가 먹은 것 / 해본 것</p>
+                            <p class="text-[12px] font-extrabold theme-text-muted uppercase tracking-wider mb-1.5">내가 먹은 것 / 해본 것</p>
                             <div class="flex flex-wrap gap-1.5">
                                 ${place.doneItems.map(item => `
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-500/10 theme-text-main">
-                                        <span class="text-indigo-500 text-[10px]">✓</span> ${item}
+                                        <span class="text-indigo-500 text-[12px]">✓</span> ${item}
                                     </span>
                                 `).join('')}
                             </div>
@@ -1184,9 +1216,9 @@
                     <!-- 다음에 먹어볼 것 / 해볼 것 (원터치 완료) -->
                     ${place.todoItems.length > 0 ? `
                         <div class="mt-3">
-                            <p class="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                            <p class="text-[12px] font-extrabold text-emerald-600 uppercase tracking-wider mb-1.5 flex items-center justify-between">
                                 <span>다음에 먹어볼 것 / 해볼 것</span>
-                                <span class="text-[10px] font-normal theme-text-muted">터치 시 완료</span>
+                                <span class="text-[12px] font-normal theme-text-muted">터치 시 완료</span>
                             </p>
                             <div class="flex flex-wrap gap-1.5">
                                 ${place.todoItems.map((item, idx) => `
@@ -1267,11 +1299,11 @@
                                     <div class="min-w-0">
                                         <div class="flex items-center gap-1.5">
                                             <h4 class="text-sm font-extrabold theme-text-main truncate">${place.name}</h4>
-                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${isVisited ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}">
+                                            <span class="text-[12px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${isVisited ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}">
                                                 ${isVisited ? '⭐ 단골' : '📌 위시'}
                                             </span>
                                         </div>
-                                        <p class="text-[11px] theme-text-sub truncate mt-0.5">${place.address || place.memo || cat.name}</p>
+                                        <p class="text-[13px] theme-text-sub truncate mt-0.5">${place.address || place.memo || cat.name}</p>
                                     </div>
                                 </div>
                                 <span class="theme-text-muted text-xs shrink-0">〉</span>
@@ -1297,13 +1329,13 @@
                                         </div>
                                     `}
                                     <div class="flex items-center justify-between gap-1 mb-1">
-                                        <span class="text-[10px] font-bold theme-text-muted truncate">${cat.name}</span>
-                                        <span class="text-[10px] font-extrabold shrink-0 ${isVisited ? 'text-amber-600' : 'text-emerald-600'}">
+                                        <span class="text-[12px] font-bold theme-text-muted truncate">${cat.name}</span>
+                                        <span class="text-[12px] font-extrabold shrink-0 ${isVisited ? 'text-amber-600' : 'text-emerald-600'}">
                                             ${isVisited ? '⭐' : '📌'}
                                         </span>
                                     </div>
                                     <h4 class="text-xs font-extrabold theme-text-main line-clamp-1">${place.name}</h4>
-                                    <p class="text-[10px] theme-text-sub line-clamp-1 mt-0.5">${place.address || place.memo || ''}</p>
+                                    <p class="text-[12px] theme-text-sub line-clamp-1 mt-0.5">${place.address || place.memo || ''}</p>
                                 </div>
                             </div>
                         `;
@@ -1377,7 +1409,7 @@
                         <span class="text-xl shrink-0">${mood.emoji}</span>
                         <div class="min-w-0">
                             <p class="text-xs font-extrabold theme-text-main truncate">${mood.name}</p>
-                            <p class="text-[10px] theme-text-sub line-clamp-1 mt-0.5">${mood.desc}</p>
+                            <p class="text-[12px] theme-text-sub line-clamp-1 mt-0.5">${mood.desc}</p>
                         </div>
                     </button>
                 `;
@@ -1413,11 +1445,11 @@
                         <span class="text-base">${cat.icon}</span>
                         <div class="min-w-0">
                             <p class="text-xs font-extrabold theme-text-main truncate">${cat.name}</p>
-                            <p class="text-[10px] theme-text-muted truncate">${cat.fields?.length ? cat.fields.join(', ') : '기본 필드만 사용'}</p>
+                            <p class="text-[12px] theme-text-muted truncate">${cat.fields?.length ? cat.fields.join(', ') : '기본 필드만 사용'}</p>
                         </div>
                     </div>
                     ${categories.length > 1 ? `
-                        <button onclick="deleteCategory('${cat.id}')" class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 shrink-0">
+                        <button onclick="deleteCategory('${cat.id}')" class="px-2.5 py-1 rounded-xl text-[13px] font-bold bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 shrink-0">
                             삭제
                         </button>
                     ` : ''}
@@ -1446,7 +1478,7 @@
 
             return `
                 <div class="mt-3">
-                    <p class="text-[10px] font-extrabold theme-text-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                    <p class="text-[12px] font-extrabold theme-text-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
                         <span>📸 추억 사진 & 영상 (${mediaList.length})</span>
                         <span class="font-normal">터치 시 크게 보기</span>
                     </p>
@@ -1463,14 +1495,14 @@
                                 return `
                                     <button type="button" onclick="openMediaLightbox('video', '${item.url}')" class="relative w-20 h-20 rounded-2xl overflow-hidden shrink-0 border border-slate-500/15 bg-slate-900 flex flex-col items-center justify-center text-white active:scale-95 transition">
                                         <span class="text-xl">▶️</span>
-                                        <span class="text-[9px] font-bold mt-1">현장 영상</span>
+                                        <span class="text-[11px] font-bold mt-1">현장 영상</span>
                                     </button>
                                 `;
                             }
                             return `
                                 <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="w-20 h-20 rounded-2xl shrink-0 border border-rose-500/20 bg-rose-500/10 text-rose-600 flex flex-col items-center justify-center p-1.5 text-center active:scale-95 transition">
                                     <span class="text-lg">🎬</span>
-                                    <span class="text-[9px] font-extrabold leading-tight mt-1">릴스/쇼츠<br>영상 보기</span>
+                                    <span class="text-[11px] font-extrabold leading-tight mt-1">릴스/쇼츠<br>영상 보기</span>
                                 </a>
                             `;
                         }).join('')}
@@ -1594,10 +1626,15 @@
             showToast(`'${name}' 카테고리가 추가되었습니다!`);
         }
 
-        // 장소 추가 모달
+        // 장소 추가 및 수정 모달
         function openPlaceModal() {
+            editingPlaceId = null;
+            document.getElementById('placeModalTitle').innerText = '새 공간 & 경험 기록';
+            document.getElementById('btnSavePlace').innerText = '저장하기';
+
             const select = document.getElementById('placeCategory');
             select.innerHTML = categories.map(c => `<option value="${c.id}" ${c.id === selectedCategory ? 'selected' : ''}>${c.name}</option>`).join('');
+            document.getElementById('placeStatus').value = 'visited';
             
             ['placeLink', 'placeName', 'placeAddress', 'placeHours', 'placeDoneItems', 'placeTodoItems', 'placeMemo', 'placeVideoUrl'].forEach(id => {
                 const el = document.getElementById(id);
@@ -1608,6 +1645,113 @@
             document.getElementById('autoFillStatus').classList.add('hidden');
             updateCustomFieldsInput();
             document.getElementById('placeModal').classList.remove('hidden');
+        }
+
+        function openEditPlaceModal(placeId) {
+            const place = places.find(p => p.id === placeId);
+            if (!place) return;
+
+            editingPlaceId = place.id;
+            document.getElementById('placeModalTitle').innerText = '공간 & 경험 기록 수정';
+            document.getElementById('btnSavePlace').innerText = '수정 저장하기';
+
+            const select = document.getElementById('placeCategory');
+            const targetCatId = categories.some(c => c.id === place.categoryId) ? place.categoryId : categories[0]?.id;
+            select.innerHTML = categories.map(c => `<option value="${c.id}" ${c.id === targetCatId ? 'selected' : ''}>${c.name}</option>`).join('');
+            document.getElementById('placeStatus').value = place.status || 'visited';
+
+            document.getElementById('placeLink').value = place.link || '';
+            document.getElementById('placeName').value = place.name || '';
+            document.getElementById('placeAddress').value = place.address || '';
+            document.getElementById('placeHours').value = place.hours || '';
+            document.getElementById('placeDoneItems').value = Array.isArray(place.doneItems) ? place.doneItems.join(', ') : '';
+            document.getElementById('placeTodoItems').value = Array.isArray(place.todoItems) ? place.todoItems.join(', ') : '';
+            document.getElementById('placeMemo').value = place.memo || '';
+
+            updateCustomFieldsInput();
+            if (place.customValues) {
+                document.querySelectorAll('.custom-field-input').forEach(input => {
+                    const fieldName = input.getAttribute('data-custom-field');
+                    if (place.customValues[fieldName]) {
+                        input.value = place.customValues[fieldName];
+                    }
+                });
+            }
+
+            const existingMedia = Array.isArray(place.media) ? place.media.map(m => ({ ...m })) : [];
+            const firstVideoUrlItem = existingMedia.find(m => m.type === 'video_url');
+            const videoUrlVal = place.videoUrl || (firstVideoUrlItem ? firstVideoUrlItem.url : '');
+            document.getElementById('placeVideoUrl').value = videoUrlVal;
+
+            let skippedFirstVideoUrl = false;
+            tempDraftMedia = existingMedia.filter(m => {
+                if (!skippedFirstVideoUrl && m.type === 'video_url' && m.url === videoUrlVal) {
+                    skippedFirstVideoUrl = true;
+                    return false;
+                }
+                return true;
+            });
+
+            renderDraftMediaPreview();
+            document.getElementById('autoFillStatus').classList.add('hidden');
+            document.getElementById('placeModal').classList.remove('hidden');
+        }
+
+        async function appendPhotosToActiveDetailPlace(event) {
+            const place = places.find(p => p.id === activeDetailPlaceId);
+            const files = Array.from(event.target.files || []);
+            if (!place || files.length === 0) {
+                event.target.value = '';
+                return;
+            }
+            if (!Array.isArray(place.media)) place.media = [];
+
+            showToast('🖼️ 추가 사진을 가볍게 최적화하는 중...');
+            let addedCount = 0;
+            for (const file of files.slice(0, 6)) {
+                try {
+                    const compressedDataUrl = await compressImageFile(file);
+                    place.media.push({ type: 'image', url: compressedDataUrl });
+                    addedCount++;
+                } catch (err) {
+                    console.warn('이미지 압축 실패:', err);
+                }
+            }
+            event.target.value = '';
+
+            if (addedCount === 0) return showToast('⚠️ 사진을 불러오지 못했습니다.');
+            if (!saveAppState()) {
+                place.media.splice(place.media.length - addedCount, addedCount);
+                return showToast('⚠️ 브라우저 저장 공간이 부족합니다. 일부 사진이나 영상을 정리해 주세요.');
+            }
+            renderPlaces();
+            showToast(`✅ 사진 ${addedCount}장이 추가되었습니다!`);
+        }
+
+        function appendVideoToActiveDetailPlace(event) {
+            const place = places.find(p => p.id === activeDetailPlaceId);
+            const file = event.target.files?.[0];
+            if (!place || !file) {
+                event.target.value = '';
+                return;
+            }
+            if (file.size > 3.5 * 1024 * 1024) {
+                event.target.value = '';
+                return showToast('⚠️ 브라우저 저장 한도 보호를 위해 3.5MB 이하 짧은 영상 또는 수정 모드의 영상 링크를 이용해 주세요!');
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (!Array.isArray(place.media)) place.media = [];
+                place.media.push({ type: 'video', url: e.target.result });
+                if (!saveAppState()) {
+                    place.media.pop();
+                    return showToast('⚠️ 브라우저 저장 공간이 부족합니다. 영상 크기를 줄이거나 외부 영상 링크를 이용해 주세요.');
+                }
+                renderPlaces();
+                showToast('🎬 추가 현장 영상이 첨부되었습니다!');
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
         }
 
         // 스마트폰 이미지 자동 리사이징 압축 (localStorage 용량 최적화)
@@ -1692,12 +1836,13 @@
                         ? `<img src="${item.url}" alt="미리보기" class="w-full h-full object-cover">`
                         : `<span class="text-white text-xs font-bold">🎬 영상 첨부됨</span>`
                     }
-                    <button type="button" onclick="removeDraftMedia(${idx})" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-[10px] font-bold flex items-center justify-center">✕</button>
+                    <button type="button" onclick="removeDraftMedia(${idx})" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-[12px] font-bold flex items-center justify-center">✕</button>
                 </div>
             `).join('');
         }
 
         function closePlaceModal() {
+            editingPlaceId = null;
             document.getElementById('placeModal').classList.add('hidden');
         }
 
@@ -1714,12 +1859,12 @@
 
             container.classList.remove('hidden');
             container.innerHTML = `
-                <p class="text-[11px] font-extrabold flex items-center gap-1.5 mb-1.5">
+                <p class="text-[13px] font-extrabold flex items-center gap-1.5 mb-1.5">
                     <span>${category.icon}</span> ${category.name} 전용 기록 항목
                 </p>
                 ${category.fields.map(field => `
                     <div>
-                        <label class="block text-[10px] font-bold opacity-80 mb-0.5">${field}</label>
+                        <label class="block text-[12px] font-bold opacity-80 mb-0.5">${field}</label>
                         <input type="text" data-custom-field="${field}" placeholder="${field} 입력..." class="custom-field-input theme-card w-full px-3 py-1.5 border rounded-xl text-xs focus:outline-none">
                     </div>
                 `).join('')}
@@ -1749,27 +1894,54 @@
                 finalMedia.push({ type: 'video_url', url: videoUrlVal });
             }
 
-            places.unshift({
-                id: 'p_' + Date.now(),
+            const placePayload = {
                 categoryId: document.getElementById('placeCategory').value,
                 status: document.getElementById('placeStatus').value,
                 name,
                 address: addressVal,
                 hours: document.getElementById('placeHours').value.trim(),
                 link: linkVal,
-                lastSynced: rawInput ? '실시간 검색 동기화됨' : '',
                 media: finalMedia,
+                videoUrl: videoUrlVal,
                 customValues,
                 doneItems: splitItems('placeDoneItems'),
                 todoItems: splitItems('placeTodoItems'),
                 memo: document.getElementById('placeMemo').value.trim()
-            });
+            };
 
-            saveAppState();
+            const isEditing = Boolean(editingPlaceId);
+            let editIdx = -1;
+            let prevSnapshot = null;
+            if (isEditing) {
+                editIdx = places.findIndex(p => p.id === editingPlaceId);
+                if (editIdx !== -1) {
+                    prevSnapshot = places[editIdx];
+                    places[editIdx] = {
+                        ...prevSnapshot,
+                        ...placePayload,
+                        lastSynced: prevSnapshot.lastSynced || (rawInput ? '실시간 검색 동기화됨' : '')
+                    };
+                }
+            } else {
+                places.unshift({
+                    id: 'p_' + Date.now(),
+                    ...placePayload,
+                    lastSynced: rawInput ? '실시간 검색 동기화됨' : ''
+                });
+            }
+
+            if (!saveAppState()) {
+                if (isEditing && editIdx !== -1 && prevSnapshot) {
+                    places[editIdx] = prevSnapshot;
+                } else if (!isEditing) {
+                    places.shift();
+                }
+                return showToast('⚠️ 브라우저 저장 공간이 부족합니다. 일부 사진/영상을 줄여서 다시 저장해 주세요.');
+            }
             closePlaceModal();
-            switchBottomTab('home');
+            if (!isEditing) switchBottomTab('home');
             renderPlaces();
-            showToast(`'${name}' 기록이 저장되었습니다!`);
+            showToast(isEditing ? `✏️ '${name}' 기록이 수정되었습니다!` : `'${name}' 기록이 저장되었습니다!`);
         }
 
         // 입력 중인 주소+상호명이 정확한 지점인지 지도에서 미리 확인
