@@ -3,7 +3,7 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,47 +34,43 @@ function getGeminiClient(): GoogleGenAI {
   });
 }
 
-async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error: unknown) {
-      lastError = error;
-      const status = (error as { status?: number })?.status;
-      const isRetryable = status === 503 || status === 500;
-      if (!isRetryable || attempt === maxRetries) {
-        throw error;
-      }
-      const delayMs = 500 * Math.pow(2, attempt);
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
-  }
-  throw lastError;
-}
-
 const SEARCH_CACHE_TTL_MS = 10 * 60 * 1000;
 const searchCache = new Map<string, { placeInfo: unknown; expiresAt: number }>();
 
 async function generatePlaceSearchResponse(ai: GoogleGenAI, prompt: string) {
-  const candidateModels = ['gemini-4-hydrogen', 'gemini-3.1-flash-lite'];
+  const attempts: Array<{ model: string; useSearch: boolean }> = [
+    { model: 'gemini-4-hydrogen', useSearch: true },
+    { model: 'gemini-3.1-flash-lite', useSearch: true },
+    { model: 'gemini-4-hydrogen', useSearch: false },
+    { model: 'gemini-3.1-flash-lite', useSearch: false },
+  ];
   let lastError: unknown;
 
-  for (const model of candidateModels) {
+  for (const { model, useSearch } of attempts) {
     try {
-      return await withRetry(() =>
-        ai.models.generateContent({
-          model,
-          contents: prompt,
-          config: {
-            tools: [{ googleSearch: {} }],
-          },
-        })
-      );
+      const config: Record<string, unknown> = {};
+      if (useSearch) {
+        config.tools = [{ googleSearch: {} }];
+      }
+      if (model === 'gemini-4-hydrogen') {
+        config.thinkingConfig = { thinkingLevel: ThinkingLevel.LOW };
+      }
+      return await ai.models.generateContent({
+        model,
+        contents: prompt,
+        ...(Object.keys(config).length > 0 ? { config } : {}),
+      });
     } catch (error: unknown) {
       lastError = error;
       const status = (error as { status?: number })?.status;
-      if (status !== 429 && status !== 404) {
+      const shouldFallback =
+        status === 429 ||
+        status === 503 ||
+        status === 500 ||
+        status === 404 ||
+        status === 403 ||
+        status === 400;
+      if (!shouldFallback) {
         throw error;
       }
     }
@@ -118,7 +114,7 @@ app.post('/api/places/search', async (req: Request, res: Response) => {
 - hours: 실제 영업시간 및 휴무일 요약
 - todoItems: 대표 추천 메뉴 또는 즐길 거리 2~3개 (쉼표로 구분된 문자열)
 - memo: 주차 여부, 특징, 방문 꿀팁 한 줄 요약
-- customFields: 선택한 카테고리의 전용 기록 항목 키-값 객체`;
+- customFields: 선택한 카테고리의 전용 기록 항목 이름(원문 키 이름 그대로)을 키로 사용하는 키-값 객체`;
 
     const response = await generatePlaceSearchResponse(ai, prompt);
 
@@ -130,6 +126,9 @@ app.post('/api/places/search', async (req: Request, res: Response) => {
     }
 
     const placeInfo = JSON.parse(jsonMatch[0]);
+    if (Array.isArray(placeInfo.todoItems)) {
+      placeInfo.todoItems = placeInfo.todoItems.join(', ');
+    }
     searchCache.set(cacheKey, {
       placeInfo,
       expiresAt: Date.now() + SEARCH_CACHE_TTL_MS,
@@ -148,6 +147,12 @@ app.post('/api/places/search', async (req: Request, res: Response) => {
     if (status === 429) {
       res.status(429).json({
         error: '현재 API 요청 한도(할당량)를 초과했습니다. 잠시 후 다시 시도하거나 Settings > Secrets 패널에서 결제가 연결된 API 키를 선택해 주세요.',
+      });
+      return;
+    }
+    if (status === 503) {
+      res.status(503).json({
+        error: '현재 AI 서버 사용량이 많아 응답이 지연되고 있습니다. 잠시 후 다시 눌러 주세요.',
       });
       return;
     }
