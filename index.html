@@ -1,0 +1,1949 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>올인원 단골노트 - 기분 맞춤형 공간 아카이브</title>
+    <meta name="description" content="올인원 단골노트 - 기분 맞춤형 공간 아카이브" />
+    <meta property="og:title" content="올인원 단골노트" />
+    <meta property="og:description" content="올인원 단골노트 - 기분 맞춤형 공간 아카이브" />
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Pretendard 스타일의 Noto Sans KR & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons (깨짐 없는 안정적 벡터 아이콘) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* CSS 변수를 활용한 실시간 테마 시스템 */
+        :root {
+            --bg-main: #f4f6fb;
+            --bg-card: #ffffff;
+            --bg-sub: #eef2ff;
+            --text-main: #0f172a;
+            --text-sub: #475569;
+            --text-muted: #94a3b8;
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --accent-light: #e0e7ff;
+            --accent-text: #ffffff;
+            --border-color: #e2e8f0;
+            --header-grad-from: #4f46e5;
+            --header-grad-to: #7c3aed;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
+            background-color: #e2e8f0; /* 데스크탑에서 모바일 프레임 돋보이게 하는 배경 */
+            color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 모바일 앱 컨테이너 (모바일에서는 100% 풀화면, 태블릿/PC에서는 넓은 반응형 워크스페이스로 확장) */
+        .app-shell {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100dvh;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* 스크롤바 숨김 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 동적 테마 유틸리티 클래스 */
+        .theme-header {
+            background: linear-gradient(135deg, var(--header-grad-from), var(--header-grad-to));
+            transition: background 0.5s ease;
+        }
+        .theme-card {
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .theme-card:active {
+            transform: scale(0.985);
+        }
+        .theme-accent-bg {
+            background-color: var(--accent);
+            color: var(--accent-text);
+        }
+        .theme-accent-soft {
+            background-color: var(--accent-light);
+            color: var(--accent);
+        }
+        .theme-text-main { color: var(--text-main); }
+        .theme-text-sub { color: var(--text-sub); }
+        .theme-text-muted { color: var(--text-muted); }
+
+        /* 바텀 시트 애니메이션 */
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-200/70">
+
+    <!-- 반응형 앱 컨테이너 (모바일: 풀화면, PC/태블릿: 최대 1280px 좌측 사이드바 + 메인 피드 구조) -->
+    <div class="app-shell w-full max-w-7xl mx-auto relative shadow-2xl overflow-x-hidden pb-28 lg:pb-12 lg:flex lg:min-h-screen">
+
+        <!-- ========================================== -->
+        <!-- PC / 데스크탑 전용 좌측 고정 사이드바 (lg 이상에서만 표시) -->
+        <!-- ========================================== -->
+        <aside class="hidden lg:flex lg:flex-col lg:w-72 lg:shrink-0 border-r border-slate-500/15 p-5 sticky top-0 h-screen justify-between theme-card">
+            <div class="space-y-6">
+                <!-- PC 브랜드 로고 -->
+                <div class="flex items-center gap-3 px-1">
+                    <div class="w-11 h-11 rounded-2xl theme-accent-bg flex items-center justify-center shadow-md">
+                        <span class="text-xl">🗂️</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest theme-accent-soft px-2 py-0.5 rounded-full">ALL-IN-ONE</span>
+                        <h1 class="text-lg font-black tracking-tight theme-text-main mt-0.5">올인원 단골노트</h1>
+                    </div>
+                </div>
+
+                <!-- PC 메인 액션 버튼 -->
+                <button onclick="openPlaceModal()" class="w-full py-3.5 px-4 rounded-2xl theme-accent-bg font-extrabold text-sm shadow-lg hover:opacity-95 transition active:scale-95 flex items-center justify-center gap-2">
+                    <span class="text-base">＋</span> 새 공간 & 경험 기록
+                </button>
+
+                <!-- PC 내비게이션 메뉴 -->
+                <nav class="space-y-1.5">
+                    <button onclick="switchBottomTab('home')" id="pc-nav-home" class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 text-sm font-bold theme-accent-soft transition">
+                        <span class="text-lg">🏠</span>
+                        <span>단골 피드 & 아카이브</span>
+                    </button>
+                    <button onclick="switchBottomTab('studio')" id="pc-nav-studio" class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 text-sm font-medium theme-text-sub hover:bg-slate-500/5 transition">
+                        <span class="text-lg">🎨</span>
+                        <span>기분 · 테마 스튜디오</span>
+                    </button>
+                </nav>
+
+                <!-- PC 요약 통계 카드 -->
+                <div class="p-4 rounded-2xl bg-slate-500/5 border border-slate-500/10 space-y-2.5">
+                    <p class="text-[11px] font-extrabold theme-text-muted uppercase tracking-wider">나의 아카이브 현황</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="theme-card border rounded-xl p-2.5 text-center">
+                            <p class="text-[11px] theme-text-sub">단골/방문</p>
+                            <p class="text-lg font-black theme-text-main mt-0.5"><span id="pcVisitedCount">0</span><span class="text-xs font-bold ml-0.5">곳</span></p>
+                        </div>
+                        <div class="theme-card border rounded-xl p-2.5 text-center">
+                            <p class="text-[11px] theme-text-sub">가볼 곳</p>
+                            <p class="text-lg font-black theme-text-main mt-0.5"><span id="pcWishlistCount">0</span><span class="text-xs font-bold ml-0.5">곳</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PC 하단 현재 기분 무드 뱃지 -->
+            <button onclick="switchBottomTab('studio')" class="w-full p-3.5 rounded-2xl border border-slate-500/15 bg-slate-500/5 hover:bg-slate-500/10 flex items-center justify-between transition text-left">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <span id="pcCurrentMoodEmoji" class="text-xl shrink-0">✨</span>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-bold theme-text-muted">현재 기분 테마</p>
+                        <p id="pcCurrentMoodLabel" class="text-xs font-extrabold theme-text-main truncate">설레는 기본</p>
+                    </div>
+                </div>
+                <span class="text-xs opacity-70">⚙️</span>
+            </button>
+        </aside>
+
+        <!-- 메인 콘텐츠 영역 (모바일 & PC 공용) -->
+        <div class="flex-1 min-w-0">
+
+        <!-- ========================================== -->
+        <!-- 상단 비주얼 히어로 헤더 (시선을 사로잡는 그라데이션 & 기분 배너) -->
+        <!-- ========================================== -->
+        <header class="theme-header text-white pt-6 pb-7 px-5 lg:px-8 rounded-b-[2rem] lg:rounded-none lg:rounded-bl-[2rem] shadow-lg relative overflow-hidden">
+            <!-- 배경 장식용 블러 원형 -->
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute bottom-0 left-5 w-24 h-24 bg-black/10 rounded-full blur-xl pointer-events-none"></div>
+
+            <!-- 상단 타이틀 & 현재 기분 상태 뱃지 (모바일/태블릿에서는 브랜드 표시, PC에서는 환영 배너) -->
+            <div class="relative z-10 flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner lg:hidden">
+                        <span class="text-lg">🗂️</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full">ALL-IN-ONE ARCHIVE</span>
+                        </div>
+                        <h1 class="text-xl lg:text-2xl font-black tracking-tight leading-tight mt-0.5">올인원 단골노트</h1>
+                    </div>
+                </div>
+
+                <!-- 기분/테마 스튜디오 바로가기 버튼 -->
+                <button onclick="switchBottomTab('studio')" class="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 px-3 py-2 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm">
+                    <span id="currentMoodEmoji">✨</span>
+                    <span id="currentMoodLabel">설레는 기본</span>
+                    <span class="text-[10px] opacity-80 ml-0.5">⚙️</span>
+                </button>
+            </div>
+
+            <!-- 오늘의 기분 인사말 & 요약 대시보드 카드 -->
+            <div class="relative z-10 bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-3.5 lg:p-4 flex items-center justify-between">
+                <div>
+                    <p id="moodGreeting" class="text-xs lg:text-sm font-medium text-white/90">오늘도 나만의 특별한 공간을 채워보세요!</p>
+                    <div class="flex items-center gap-3 mt-1.5">
+                        <div class="text-xs">
+                            <span class="opacity-75">단골/방문</span>
+                            <strong id="headerVisitedCount" class="text-sm font-extrabold ml-1">0</strong>곳
+                        </div>
+                        <span class="w-1 h-1 rounded-full bg-white/40"></span>
+                        <div class="text-xs">
+                            <span class="opacity-75">가볼 곳</span>
+                            <strong id="headerWishlistCount" class="text-sm font-extrabold ml-1">0</strong>곳
+                        </div>
+                    </div>
+                </div>
+                <button onclick="openPlaceModal()" class="bg-white text-slate-900 font-extrabold text-xs lg:text-sm px-3.5 lg:px-5 py-2.5 rounded-xl shadow-md hover:bg-slate-50 transition active:scale-95 shrink-0 flex items-center gap-1">
+                    <span>＋</span> 기록하기
+                </button>
+            </div>
+        </header>
+
+        <!-- ========================================== -->
+        <!-- 뷰 1: 홈 (공간 아카이브 피드) -->
+        <!-- ========================================== -->
+        <div id="view-home" class="px-4 lg:px-8 pt-4 lg:pt-6">
+            
+            <!-- 커스텀 카테고리 그리드 영역 (모바일 3~4열, 태블릿 5열, PC 7열 반응형 자동 줄바꿈) -->
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-2 pb-2" id="categoryContainer">
+                <!-- JS로 동적 렌더링 -->
+            </div>
+
+            <!-- 검색창 & 상태 필터 세그먼트 (PC에서는 가로 1줄 배치로 공간 효율 극대화) -->
+            <div class="mt-2 lg:mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="relative flex-1 md:max-w-md">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 theme-text-muted text-sm">🔍</span>
+                    <input type="text" id="searchInput" oninput="renderPlaces()" placeholder="장소, 먹은 메뉴, 위시리스트, 꿀팁 검색..." class="theme-card w-full pl-10 pr-4 py-2.5 border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition shadow-2xs">
+                </div>
+
+                <!-- 방문 상태 탭 + 현재 레이아웃 표시 -->
+                <div class="flex items-center justify-between md:justify-end gap-2">
+                    <div class="inline-flex p-1 rounded-xl theme-card border shadow-2xs">
+                        <button onclick="setStatusFilter('all')" id="filter-all" class="status-tab px-3 py-1.5 rounded-lg text-xs font-bold theme-accent-bg transition">
+                            전체 <span id="count-all" class="ml-0.5 opacity-80">0</span>
+                        </button>
+                        <button onclick="setStatusFilter('visited')" id="filter-visited" class="status-tab px-3 py-1.5 rounded-lg text-xs font-semibold theme-text-sub transition">
+                            단골/가본곳 <span id="count-visited" class="ml-0.5 opacity-70">0</span>
+                        </button>
+                        <button onclick="setStatusFilter('wishlist')" id="filter-wishlist" class="status-tab px-3 py-1.5 rounded-lg text-xs font-semibold theme-text-sub transition">
+                            가볼 곳 <span id="count-wishlist" class="ml-0.5 opacity-70">0</span>
+                        </button>
+                    </div>
+
+                    <!-- 레이아웃 빠른 전환 미니 버튼 -->
+                    <button onclick="cycleLayout()" title="레이아웃 변경" class="theme-card border px-2.5 py-2 rounded-xl text-xs font-semibold theme-text-sub flex items-center gap-1.5 shadow-2xs active:scale-95">
+                        <span id="layoutQuickIcon">📇</span>
+                        <span id="layoutQuickLabel" class="text-[11px]">카드형</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 장소 리스트 영역 (레이아웃 모드 및 화면 크기에 따라 반응형 그리드 동적 변경) -->
+            <div id="placesGrid" class="mt-4 lg:mt-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <!-- JS로 렌더링 -->
+            </div>
+
+            <!-- 데이터 없음 화면 -->
+            <div id="emptyState" class="hidden text-center py-14 theme-card rounded-3xl border border-dashed mt-4 px-4">
+                <div class="w-14 h-14 theme-accent-soft rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl">
+                    🧭
+                </div>
+                <h3 class="text-base font-bold theme-text-main">조건에 맞는 공간이 없어요</h3>
+                <p class="text-xs theme-text-sub mt-1 mb-4">새로운 단골집이나 나만의 펜션, 놀이터를 추가해보세요!</p>
+                <button onclick="openPlaceModal()" class="text-xs font-bold theme-accent-bg px-4 py-2.5 rounded-xl shadow-sm active:scale-95 transition">
+                    + 첫 번째 공간 기록하기
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 뷰 2: 기분 & 테마 관리자 스튜디오 (관리자 페이지 - PC에서는 2단 배치) -->
+        <!-- ========================================== -->
+        <div id="view-studio" class="hidden px-4 lg:px-8 pt-5 lg:pt-6 space-y-5 animate-slide-up">
+            <div>
+                <span class="text-[11px] font-extrabold uppercase tracking-wider theme-accent-soft px-2.5 py-1 rounded-lg">ADMIN & MOOD STUDIO</span>
+                <h2 class="text-xl lg:text-2xl font-black theme-text-main mt-1.5">내 기분 맞춤형 디자인 스튜디오</h2>
+                <p class="text-xs lg:text-sm theme-text-sub mt-0.5">오늘의 기분과 취향에 맞춰 앱의 컬러, 분위기, 카드 레이아웃을 실시간으로 커스터마이징하세요.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                <!-- 1. 기분별 컬러 무드 프리셋 -->
+                <div class="theme-card border rounded-3xl p-4 lg:p-5 shadow-xs">
+                    <h3 class="text-sm font-bold theme-text-main flex items-center gap-2 mb-3">
+                        <span>🎨</span> 1. 오늘의 기분 컬러 선택
+                    </h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2.5" id="moodPresetGrid">
+                        <!-- JS로 기분 테마 카드 생성 -->
+                    </div>
+                </div>
+
+                <div class="space-y-5">
+                    <!-- 2. 레이아웃 스타일 변경 -->
+                    <div class="theme-card border rounded-3xl p-4 lg:p-5 shadow-xs">
+                        <h3 class="text-sm font-bold theme-text-main flex items-center gap-2 mb-3">
+                            <span>📐</span> 2. 화면 레이아웃 구조 선택
+                        </h3>
+                        <div class="grid grid-cols-3 gap-2" id="layoutSelectorGrid">
+                            <button onclick="setLayoutMode('card')" id="layout-btn-card" class="layout-opt-btn p-3 rounded-2xl border text-center transition flex flex-col items-center gap-1.5">
+                                <span class="text-lg">📇</span>
+                                <span class="text-xs font-bold">디테일 카드</span>
+                                <span class="text-[10px] opacity-70">모든 정보 한눈에</span>
+                            </button>
+                            <button onclick="setLayoutMode('compact')" id="layout-btn-compact" class="layout-opt-btn p-3 rounded-2xl border text-center transition flex flex-col items-center gap-1.5">
+                                <span class="text-lg">📃</span>
+                                <span class="text-xs font-bold">슬림 리스트</span>
+                                <span class="text-[10px] opacity-70">빠르고 깔끔하게</span>
+                            </button>
+                            <button onclick="setLayoutMode('grid')" id="layout-btn-grid" class="layout-opt-btn p-3 rounded-2xl border text-center transition flex flex-col items-center gap-1.5">
+                                <span class="text-lg">🍱</span>
+                                <span class="text-xs font-bold">다단 갤러리</span>
+                                <span class="text-[10px] opacity-70">아기자기한 모아보기</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. 나만의 카테고리 관리 (순서 및 삭제/추가) -->
+                    <div class="theme-card border rounded-3xl p-4 lg:p-5 shadow-xs">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-bold theme-text-main flex items-center gap-2">
+                                <span>📁</span> 3. 커스텀 카테고리 관리
+                            </h3>
+                            <button onclick="openCategoryModal()" class="text-xs font-bold theme-accent-soft px-2.5 py-1.5 rounded-xl">
+                                + 새 카테고리
+                            </button>
+                        </div>
+                        <div id="adminCategoryList" class="space-y-2">
+                            <!-- JS로 카테고리 관리 리스트 렌더링 -->
+                        </div>
+                    </div>
+
+                    <!-- 4. 데이터 영구 보존 & 외부 호스팅(Vercel) 설정 -->
+                    <div class="theme-card border rounded-3xl p-4 lg:p-5 shadow-xs space-y-3.5">
+                        <div>
+                            <h3 class="text-sm font-bold theme-text-main flex items-center gap-2">
+                                <span>💾</span> 4. 데이터 영구 저장 & 백업 관리
+                            </h3>
+                            <p class="text-[11px] theme-text-sub mt-1">모든 기록과 테마는 기기에 자동 저장됩니다. 기기를 바꾸거나 데이터를 안전하게 보관하려면 파일로 백업하세요.</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="exportBackupData()" class="py-2.5 px-3 rounded-xl text-xs font-bold theme-accent-soft flex items-center justify-center gap-1.5 active:scale-95 transition">
+                                <span>📤</span> 데이터 백업 (.json)
+                            </button>
+                            <label class="py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-500/10 theme-text-main flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition">
+                                <span>📥</span> 백업 파일 복원
+                                <input type="file" accept=".json" onchange="importBackupData(event)" class="hidden">
+                            </label>
+                        </div>
+
+                        <!-- 샘플 및 전체 기록 일괄 비우기 버튼 -->
+                        <div id="clearAllContainer" class="pt-1">
+                            <button onclick="requestClearAllPlaces()" class="w-full py-2.5 px-3 rounded-xl text-xs font-bold bg-rose-500/10 text-rose-600 hover:bg-rose-500/15 flex items-center justify-center gap-1.5 active:scale-95 transition">
+                                <span>🧹</span> 샘플/장소 기록 전체 비우기 (새로 시작)
+                            </button>
+                            <div id="clearConfirmBox" class="hidden mt-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 space-y-2">
+                                <p class="text-[11px] font-bold text-rose-700 text-center">저장된 모든 장소 기록이 삭제됩니다. 정말 비울까요?</p>
+                                <div class="flex gap-2">
+                                    <button onclick="cancelClearAllPlaces()" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-white/80 text-slate-600">취소</button>
+                                    <button onclick="confirmClearAllPlaces()" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-rose-600 text-white">네, 전부 비우기</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div><!-- 메인 콘텐츠 영역 닫기 -->
+
+        <!-- ========================================== -->
+        <!-- 하단 플로팅 모바일 내비게이션 탭 바 (모바일/태블릿 전용, PC에서는 좌측 사이드바로 대체) -->
+        <!-- ========================================== -->
+        <nav class="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[448px] z-40">
+            <div class="theme-card border rounded-3xl p-1.5 shadow-xl flex items-center justify-around backdrop-blur-lg bg-opacity-95">
+                <button onclick="switchBottomTab('home')" id="nav-home" class="flex-1 py-2.5 rounded-2xl flex flex-col items-center gap-0.5 text-xs font-bold theme-accent-soft transition">
+                    <span class="text-base">🏠</span>
+                    <span>단골 피드</span>
+                </button>
+
+                <!-- 중앙 플로팅 빠른 추가 버튼 -->
+                <button onclick="openPlaceModal()" class="w-12 h-12 -mt-6 rounded-2xl theme-accent-bg shadow-lg flex items-center justify-center text-xl font-black active:scale-90 transition border-4 border-white/80">
+                    ＋
+                </button>
+
+                <button onclick="switchBottomTab('studio')" id="nav-studio" class="flex-1 py-2.5 rounded-2xl flex flex-col items-center gap-0.5 text-xs font-medium theme-text-sub transition">
+                    <span class="text-base">🎨</span>
+                    <span>기분·테마 설정</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 바텀 시트 / 센터 모달 1: 커스텀 카테고리 추가 -->
+    <!-- ========================================== -->
+    <div id="categoryModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="theme-card w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-black theme-text-main">나만의 카테고리 만들기</h3>
+                <button onclick="closeCategoryModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">
+                    ✕
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold theme-text-main mb-1">카테고리 이름 *</label>
+                    <input type="text" id="newCatName" placeholder="예: 나만의 펜션, 단골 펍, 비밀 아지트" class="theme-card w-full px-3.5 py-2.5 border rounded-2xl text-sm focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold theme-text-main mb-1.5">아이콘 선택 (산 · 바다 · 지역 · 여행)</label>
+                    <div class="grid grid-cols-6 gap-2 max-h-36 overflow-y-auto pr-1" id="iconSelector">
+                        <!-- JS 렌더링 -->
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold theme-text-main mb-1">전용 기록 항목 (쉼표로 구분)</label>
+                    <input type="text" id="newCatFields" placeholder="예: 입퇴실 시간, 바베큐 여부, 추천 객실" class="theme-card w-full px-3.5 py-2.5 border rounded-2xl text-sm focus:outline-none">
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-2">
+                <button onclick="closeCategoryModal()" class="flex-1 py-3 rounded-2xl text-xs font-bold bg-slate-500/10 theme-text-sub">취소</button>
+                <button onclick="saveNewCategory()" class="flex-2 w-2/3 py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md">카테고리 생성</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 바텀 시트 / 센터 모달 2: 새 장소 기록 -->
+    <!-- ========================================== -->
+    <div id="placeModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="theme-card w-full max-w-xl rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up max-h-[90dvh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-500/10 shrink-0">
+                <h3 class="text-lg font-black theme-text-main">새 공간 & 경험 기록</h3>
+                <button onclick="closePlaceModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">
+                    ✕
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto space-y-3.5 py-4 pr-1 no-scrollbar flex-1">
+                <!-- 스마트 링크 자동 불러오기 영역 -->
+                <div class="p-3 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 space-y-2">
+                    <label class="flex items-center justify-between text-xs font-extrabold text-indigo-600">
+                        <span class="flex items-center gap-1.5"><span>🔗</span> 장소 링크 또는 가게명·지역</span>
+                        <span class="text-[10px] font-semibold opacity-80">실제 웹 검색 자동 채우기</span>
+                    </label>
+                    <div class="flex gap-1.5">
+                        <input type="text" id="placeLink" placeholder="예: 성심당 대전 본점 또는 지도 URL..." class="theme-card flex-1 min-w-0 px-3 py-2 border rounded-xl text-xs focus:outline-none">
+                        <button type="button" onclick="autoFillFromLink()" id="btnAutoFill" class="theme-accent-bg px-3 py-2 rounded-xl text-xs font-extrabold shrink-0 whitespace-nowrap flex items-center gap-1 shadow-xs active:scale-95 transition">
+                            ⚡ 불러오기
+                        </button>
+                    </div>
+                    <p id="autoFillStatus" class="hidden text-[11px] font-semibold text-indigo-600"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-bold theme-text-main mb-1">카테고리</label>
+                        <select id="placeCategory" onchange="updateCustomFieldsInput()" class="theme-card w-full px-3 py-2.5 border rounded-xl text-xs font-bold focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold theme-text-main mb-1">방문 상태</label>
+                        <select id="placeStatus" class="theme-card w-full px-3 py-2.5 border rounded-xl text-xs font-bold focus:outline-none">
+                            <option value="visited">⭐ 단골 / 가본 곳</option>
+                            <option value="wishlist">📌 앞으로 가볼 곳</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold theme-text-main mb-1">장소 / 가게 이름 *</label>
+                    <input type="text" id="placeName" placeholder="예: 바닷가 앞 오션뷰 펜션" class="theme-card w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <div class="flex items-center justify-between gap-1 mb-1">
+                            <label class="block text-xs font-bold theme-text-main truncate">주소 / 위치</label>
+                            <button type="button" onclick="previewMapLocation()" class="text-[10px] font-extrabold text-indigo-600 hover:underline shrink-0 whitespace-nowrap">🗺️ 위치확인</button>
+                        </div>
+                        <input type="text" id="placeAddress" placeholder="예: 세종시 나성동..." class="theme-card w-full px-3 py-2 border rounded-xl text-xs focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold theme-text-main mb-1">영업시간 / 운영</label>
+                        <input type="text" id="placeHours" placeholder="예: 10:00 - 22:00" class="theme-card w-full px-3 py-2 border rounded-xl text-xs focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- 카테고리별 동적 필드 -->
+                <div id="dynamicCustomFields" class="hidden p-3 rounded-2xl theme-accent-soft space-y-2"></div>
+
+                <!-- 방문 사진 & 영상 기록 -->
+                <div class="p-3 rounded-2xl bg-slate-500/5 border border-slate-500/15 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-extrabold theme-text-main flex items-center gap-1.5">
+                            <span>📸</span> 방문 사진 & 현장 영상
+                        </label>
+                        <span class="text-[10px] theme-text-muted">자동 용량 최적화</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="py-2 px-3 rounded-xl text-xs font-bold theme-accent-soft flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition">
+                            <span>🖼️</span> 사진 첨부 (여러 장)
+                            <input type="file" accept="image/*" multiple onchange="handlePhotoFilesSelect(event)" class="hidden">
+                        </label>
+                        <label class="py-2 px-3 rounded-xl text-xs font-bold bg-slate-500/10 theme-text-main flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition">
+                            <span>🎬</span> 짧은 영상 (3.5MB↓)
+                            <input type="file" accept="video/*" onchange="handleVideoFileSelect(event)" class="hidden">
+                        </label>
+                    </div>
+
+                    <!-- 첨부된 미디어 미리보기 썸네일 그리드 -->
+                    <div id="mediaPreviewContainer" class="hidden grid grid-cols-3 gap-2 pt-1"></div>
+
+                    <!-- 유튜브 쇼츠 / 인스타 릴스 등 외부 영상 링크 연동 -->
+                    <div>
+                        <input type="url" id="placeVideoUrl" placeholder="또는 유튜브 쇼츠 / 인스타 릴스 영상 링크 붙여넣기..." class="theme-card w-full px-3 py-2 border rounded-xl text-xs focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold theme-text-main mb-1">내가 먹은 것 / 해본 것 (쉼표 구분)</label>
+                    <input type="text" id="placeDoneItems" placeholder="예: 시그니처 라떼, 소금빵" class="theme-card w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-emerald-600 mb-1">다음에 먹어볼 것 / 해볼 것 (위시리스트)</label>
+                    <input type="text" id="placeTodoItems" placeholder="예: 말차 테린느, 루프탑 야경" class="theme-card w-full px-3.5 py-2 border border-emerald-500/30 rounded-xl text-xs focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold theme-text-main mb-1">나만의 팁 / 후기 메모</label>
+                    <textarea id="placeMemo" rows="2" placeholder="주차 팁, 추천 자리, 재방문 의사 등" class="theme-card w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-500/10 flex gap-2 shrink-0">
+                <button onclick="closePlaceModal()" class="flex-1 py-3 rounded-2xl text-xs font-bold bg-slate-500/10 theme-text-sub">취소</button>
+                <button onclick="saveNewPlace()" class="w-2/3 py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 바텀 시트 / 센터 모달 3: 기존 장소에 링크 연결 / 수정 -->
+    <div id="linkEditModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="theme-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-base font-black theme-text-main flex items-center gap-1.5">
+                    <span>🔗</span> 장소 링크 연결 및 동기화
+                </h3>
+                <button onclick="closeLinkEditModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">
+                    ✕
+                </button>
+            </div>
+            <p id="linkEditPlaceName" class="text-xs font-bold text-indigo-600 mb-3"></p>
+            <input type="hidden" id="linkEditPlaceId">
+            <input type="url" id="linkEditInput" placeholder="https://map.naver.com/... 또는 예약 페이지 URL" class="theme-card w-full px-3.5 py-2.5 border rounded-2xl text-xs focus:outline-none mb-4">
+            <div class="flex gap-2">
+                <button onclick="closeLinkEditModal()" class="flex-1 py-3 rounded-2xl text-xs font-bold bg-slate-500/10 theme-text-sub">취소</button>
+                <button onclick="saveAndSyncEditedLink()" class="w-2/3 py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md flex items-center justify-center gap-1.5">
+                    <span>🔄</span> 저장 및 최신 정보 업데이트
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 바텀 시트 / 센터 모달 4: 장소 전체 상세 보기 (슬림형/갤러리형 터치 시 표시) -->
+    <div id="placeDetailModal" onclick="if(event.target === this) closePlaceDetailModal()" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="theme-card w-full max-w-xl rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl animate-slide-up max-h-[88dvh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-500/10 shrink-0">
+                <span class="text-xs font-extrabold theme-text-muted uppercase tracking-wider">장소 전체 상세 정보</span>
+                <button onclick="closePlaceDetailModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">
+                    ✕
+                </button>
+            </div>
+            <div id="placeDetailContent" class="overflow-y-auto pt-3.5 pr-0.5 no-scrollbar flex-1">
+                <!-- JS로 buildDetailCardHTML 렌더링 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 바텀 시트 / 센터 모달 5: 사진/영상 전체화면 라이트박스 뷰어 -->
+    <div id="mediaLightboxModal" onclick="if(event.target === this) closeMediaLightbox()" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+        <button onclick="closeMediaLightbox()" class="self-end mb-3 w-9 h-9 rounded-full bg-white/20 text-white font-bold flex items-center justify-center">
+            ✕
+        </button>
+        <div id="mediaLightboxContent" class="w-full max-w-3xl flex items-center justify-center"></div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
+        <span>✅</span>
+        <span id="toastMessage">저장되었습니다.</span>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 기분별 컬러 무드 테마 프리셋 데이터
+        // ==========================================
+        const moodPresets = [
+            {
+                id: 'energetic',
+                emoji: '✨',
+                name: '설레는 기본',
+                desc: '깔끔하고 생동감 있는 인디고',
+                greeting: '오늘도 나만의 특별한 공간을 채워보세요!',
+                vars: {
+                    '--bg-main': '#f4f6fb',
+                    '--bg-card': '#ffffff',
+                    '--text-main': '#0f172a',
+                    '--text-sub': '#475569',
+                    '--text-muted': '#94a3b8',
+                    '--accent': '#4f46e5',
+                    '--accent-light': '#e0e7ff',
+                    '--accent-text': '#ffffff',
+                    '--border-color': '#e2e8f0',
+                    '--header-grad-from': '#4f46e5',
+                    '--header-grad-to': '#7c3aed'
+                }
+            },
+            {
+                id: 'cozy',
+                emoji: '☕',
+                name: '포근한 카페감성',
+                desc: '따뜻한 라떼 & 테라코타 톤',
+                greeting: '따뜻한 커피 한 잔처럼 포근한 하루 되세요.',
+                vars: {
+                    '--bg-main': '#faf6f2',
+                    '--bg-card': '#ffffff',
+                    '--text-main': '#292524',
+                    '--text-sub': '#57534e',
+                    '--text-muted': '#a8a29e',
+                    '--accent': '#c2410c',
+                    '--accent-light': '#ffedd5',
+                    '--accent-text': '#ffffff',
+                    '--border-color': '#e7e5e4',
+                    '--header-grad-from': '#9a3412',
+                    '--header-grad-to': '#d97706'
+                }
+            },
+            {
+                id: 'healing',
+                emoji: '🌿',
+                name: '상쾌한 숲속힐링',
+                desc: '눈이 편안한 에메랄드 포레스트',
+                greeting: '초록빛 여유와 함께 나만의 아지트를 찾아볼까요?',
+                vars: {
+                    '--bg-main': '#f0fdf4',
+                    '--bg-card': '#ffffff',
+                    '--text-main': '#064e3b',
+                    '--text-sub': '#374151',
+                    '--text-muted': '#6b7280',
+                    '--accent': '#059669',
+                    '--accent-light': '#d1fae5',
+                    '--accent-text': '#ffffff',
+                    '--border-color': '#d1fae5',
+                    '--header-grad-from': '#047857',
+                    '--header-grad-to': '#10b981'
+                }
+            },
+            {
+                id: 'night',
+                emoji: '🌙',
+                name: '센치한 미드나잇',
+                desc: '어두운 밤에 어울리는 다크 모드',
+                greeting: '고요한 밤, 나만의 비밀 플레이스를 정리해보세요.',
+                vars: {
+                    '--bg-main': '#0f172a',
+                    '--bg-card': '#1e293b',
+                    '--text-main': '#f8fafc',
+                    '--text-sub': '#cbd5e1',
+                    '--text-muted': '#64748b',
+                    '--accent': '#38bdf8',
+                    '--accent-light': '#0c4a6e',
+                    '--accent-text': '#0f172a',
+                    '--border-color': '#334155',
+                    '--header-grad-from': '#1e1b4b',
+                    '--header-grad-to': '#312e81'
+                }
+            },
+            {
+                id: 'lovely',
+                emoji: '🌸',
+                name: '달콤한 설렘핑크',
+                desc: '화사하고 사랑스러운 로즈 핑크',
+                greeting: '기분 좋은 설렘이 가득한 장소들을 모아봤어요!',
+                vars: {
+                    '--bg-main': '#fff1f2',
+                    '--bg-card': '#ffffff',
+                    '--text-main': '#4c0519',
+                    '--text-sub': '#881337',
+                    '--text-muted': '#fda4af',
+                    '--accent': '#e11d48',
+                    '--accent-light': '#ffe4e6',
+                    '--accent-text': '#ffffff',
+                    '--border-color': '#fecdd3',
+                    '--header-grad-from': '#be123c',
+                    '--header-grad-to': '#f43f5e'
+                }
+            },
+            {
+                id: 'minimal',
+                emoji: '🖤',
+                name: '시크한 모노블랙',
+                desc: '군더더기 없는 무채색 미니멀리즘',
+                greeting: '가장 본질에 집중하는 나만의 큐레이션 노트.',
+                vars: {
+                    '--bg-main': '#f4f4f5',
+                    '--bg-card': '#ffffff',
+                    '--text-main': '#18181b',
+                    '--text-sub': '#52525b',
+                    '--text-muted': '#a1a1aa',
+                    '--accent': '#18181b',
+                    '--accent-light': '#e4e4e7',
+                    '--accent-text': '#ffffff',
+                    '--border-color': '#e4e4e7',
+                    '--header-grad-from': '#18181b',
+                    '--header-grad-to': '#3f3f46'
+                }
+            },
+            {
+                id: 'ocean',
+                emoji: '🌊',
+                name: '시원한 오션블루',
+                desc: '청량하고 맑은 바다 감성',
+                greeting: '탁 트인 바다처럼 시원하고 상쾌한 하루 보내세요!',
+                vars: {
+                    '--bg-main': '#f0f9ff',
+                    '--bg-card': '#ffffff',
+                    '--text-main': '#0c4a6e',
+                    '--text-sub': '#334155',
+                    '--text-muted': '#64748b',
+                    '--accent': '#0284c7',
+                    '--accent-light': '#e0f2fe',
+                    '--accent-text': '#ffffff',
+                    '--border-color': '#bae6fd',
+                    '--header-grad-from': '#0369a1',
+                    '--header-grad-to': '#06b6d4'
+                }
+            },
+            {
+                id: 'sunshine',
+                emoji: '☀️',
+                name: '활기찬 썬샤인',
+                desc: '기분까지 밝아지는 햇살 옐로우',
+                greeting: '따스한 햇살처럼 에너지 넘치는 발걸음을 응원해요!',
+                vars: {
+                    '--bg-main': '#fefce8',
+                    '--bg-card': '#ffffff',
+                    '--text-main': '#422006',
+                    '--text-sub': '#713f12',
+                    '--text-muted': '#a16207',
+                    '--accent': '#d97706',
+                    '--accent-light': '#fef3c7',
+                    '--accent-text': '#ffffff',
+                    '--border-color': '#fde68a',
+                    '--header-grad-from': '#d97706',
+                    '--header-grad-to': '#f59e0b'
+                }
+            },
+            {
+                id: 'lavender',
+                emoji: '🍇',
+                name: '몽환적 라벤더',
+                desc: '차분하고 감성적인 퍼플 무드',
+                greeting: '은은한 라벤더 향기처럼 여유로운 기록의 시간.',
+                vars: {
+                    '--bg-main': '#faf5ff',
+                    '--bg-card': '#ffffff',
+                    '--text-main': '#3b0764',
+                    '--text-sub': '#581c87',
+                    '--text-muted': '#9333ea',
+                    '--accent': '#7e22ce',
+                    '--accent-light': '#f3e8ff',
+                    '--accent-text': '#ffffff',
+                    '--border-color': '#e9d5ff',
+                    '--header-grad-from': '#6b21a8',
+                    '--header-grad-to': '#a855f7'
+                }
+            },
+            {
+                id: 'sunset',
+                emoji: '🌅',
+                name: '노을빛 선셋코랄',
+                desc: '로맨틱하고 아늑한 저녁 노을 톤',
+                greeting: '아름다운 노을빛처럼 기억에 남을 공간을 담아보세요.',
+                vars: {
+                    '--bg-main': '#fff7ed',
+                    '--bg-card': '#ffffff',
+                    '--text-main': '#431407',
+                    '--text-sub': '#7c2d12',
+                    '--text-muted': '#c2410c',
+                    '--accent': '#ea580c',
+                    '--accent-light': '#ffedd5',
+                    '--accent-text': '#ffffff',
+                    '--border-color': '#fed7aa',
+                    '--header-grad-from': '#ea580c',
+                    '--header-grad-to': '#f43f5e'
+                }
+            }
+        ];
+
+        // ==========================================
+        // 2. 기본 카테고리 및 샘플 장소 데이터
+        // ==========================================
+        let categories = [
+            { id: 'cat_food', name: '단골 식당', icon: '🍽️', fields: ['대표 메뉴', '브레이크 타임', '웨이팅 팁'] },
+            { id: 'cat_cafe', name: '단골 카페', icon: '☕', fields: ['커스텀 주문', '콘센트/작업'] },
+            { id: 'cat_stay', name: '나만의 펜션/숙소', icon: '🏡', fields: ['체크인/아웃', '바베큐/시설', '추천 객실'] },
+            { id: 'cat_play', name: '나만의 놀이터', icon: '🎡', fields: ['이용요금', '추천 시간대', '준비물'] }
+        ];
+
+        let places = [
+            {
+                id: 'p1',
+                categoryId: 'cat_cafe',
+                status: 'visited',
+                name: '오후의 햇살 로스터리',
+                address: '세종시 나성동 123-4 2층',
+                hours: '09:00 - 22:00',
+                link: 'https://map.naver.com/v5/search/오후의햇살로스터리',
+                lastSynced: '오늘 12:30 동기화됨',
+                customValues: { '커스텀 주문': '아아 산미원두 + 샷추가', '콘센트/작업': '창가 바 테이블 콘센트 완비' },
+                doneItems: ['아이스 아메리카노', '바스크 치즈케이크'],
+                todoItems: ['수제 티라미수', '콜드브루 보틀'],
+                memo: '점심시간 피해서 가면 조용하고 채광이 예술임.'
+            },
+            {
+                id: 'p2',
+                categoryId: 'cat_stay',
+                status: 'visited',
+                name: '별빛 계곡 프라이빗 펜션',
+                address: '충남 공주시 반포면 계곡길 45',
+                hours: '입실 15:00 / 퇴실 11:00',
+                link: 'https://www.yanolja.com',
+                lastSynced: '어제 동기화됨',
+                customValues: { '체크인/아웃': '15:00 / 11:00', '바베큐/시설': '개별 테라스 숯불, 온수 스파', '추천 객실': '203호 (계곡 뷰)' },
+                doneItems: ['개별 바베큐', '야간 별 구경'],
+                todoItems: ['불멍 세트 추가', '근처 계곡 백숙집'],
+                memo: '침구류가 호텔식으로 깨끗해서 재방문 의사 100%.'
+            },
+            {
+                id: 'p3',
+                categoryId: 'cat_play',
+                status: 'wishlist',
+                name: '숲속 어드벤처 & 피크닉 파크',
+                address: '대전 유성구 월드컵대로 인근',
+                hours: '10:00 - 19:00 (월 휴무)',
+                link: 'https://map.kakao.com',
+                lastSynced: '2일 전 동기화됨',
+                customValues: { '이용요금': '성인 15,000원', '추천 시간대': '오후 3시 노을 질 때', '준비물': '돗자리, 편한 운동화' },
+                doneItems: [],
+                todoItems: ['집라인 체험', '잔디광장 피크닉', '전망대 포토존'],
+                memo: '주말엔 주차장이 빨리 차므로 오전 방문 추천.'
+            },
+            {
+                id: 'p4',
+                categoryId: 'cat_food',
+                status: 'visited',
+                name: '할머니 손칼국수 & 보쌈',
+                address: '세종시 조치원읍 전통시장길 18',
+                hours: '11:00 - 20:30',
+                link: '',
+                lastSynced: '',
+                customValues: { '대표 메뉴': '들깨 손칼국수, 마늘 보쌈', '브레이크 타임': '15:00 - 17:00', '웨이팅 팁': '11시 30분 전 도착' },
+                doneItems: ['들깨 손칼국수', '겉절이 김치'],
+                todoItems: ['마늘 보쌈 중자', '해물파전 + 막걸리'],
+                memo: '비 오는 날마다 생각나는 찐 단골집.'
+            }
+        ];
+
+        // 앱 상태 변수
+        const STORAGE_KEY = 'all_in_one_dangol_note_v1';
+        let selectedCategory = 'all';
+        let selectedStatus = 'all';
+        let currentMoodId = 'energetic';
+        let currentLayout = 'card'; // 'card' | 'compact' | 'grid'
+        let isCategoryDeleteMode = false;
+        let selectedNewIcon = '⭐';
+        let activeDetailPlaceId = null;
+        let tempDraftMedia = []; // 모달에서 새로 첨부 중인 사진/영상 임시 목록
+
+        const availableIcons = [
+            '🍽️', '☕', '🏡', '🎡', '⛺', '🍺',
+            '⛰️', '🏔️', '🌊', '🏖️', '🏝️', '🌲',
+            '🏙️', '🗺️', '📍', '🧭', '🏯', '🗼',
+            '✈️', '🚗', '♨️', '🎣', '⛳', '🛍️',
+            '🏋️', '📚', '🎬', '🎵', '🐾', '❤️'
+        ];
+
+        // ==========================================
+        // 3. 영구 저장(localStorage) & 초기화 제어 함수
+        // ==========================================
+        function saveAppState() {
+            try {
+                const payload = {
+                    categories,
+                    places,
+                    currentMoodId,
+                    currentLayout
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+            } catch (e) {
+                console.warn('로컬 저장소 저장 실패:', e);
+            }
+        }
+
+        function loadAppState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const saved = JSON.parse(raw);
+                if (Array.isArray(saved.categories) && saved.categories.length > 0) categories = saved.categories;
+                if (Array.isArray(saved.places)) places = saved.places;
+                if (saved.currentMoodId) currentMoodId = saved.currentMoodId;
+                if (saved.currentLayout) currentLayout = saved.currentLayout;
+            } catch (e) {
+                console.warn('로컬 저장소 불러오기 실패:', e);
+            }
+        }
+
+        function exportBackupData() {
+            const payload = {
+                exportedAt: new Date().toISOString(),
+                categories,
+                places,
+                currentMoodId,
+                currentLayout
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `올인원단골노트_백업_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('📤 백업 파일이 다운로드되었습니다!');
+        }
+
+        function importBackupData(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported.categories)) categories = imported.categories;
+                    if (Array.isArray(imported.places)) places = imported.places;
+                    if (imported.currentMoodId) currentMoodId = imported.currentMoodId;
+                    if (imported.currentLayout) currentLayout = imported.currentLayout;
+                    saveAppState();
+                    applyMoodTheme(currentMoodId, false);
+                    renderCategories();
+                    renderAdminCategoryList();
+                    setLayoutMode(currentLayout, false);
+                    renderPlaces();
+                    showToast('📥 백업 데이터가 성공적으로 복원되었습니다!');
+                } catch (err) {
+                    showToast('⚠️ 올바른 백업(.json) 파일이 아닙니다.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function requestClearAllPlaces() {
+            document.getElementById('clearConfirmBox').classList.remove('hidden');
+        }
+
+        function cancelClearAllPlaces() {
+            document.getElementById('clearConfirmBox').classList.add('hidden');
+        }
+
+        function confirmClearAllPlaces() {
+            places = [];
+            activeDetailPlaceId = null;
+            saveAppState();
+            cancelClearAllPlaces();
+            renderPlaces();
+            switchBottomTab('home');
+            showToast('🧹 모든 샘플 및 장소 기록이 깨끗하게 비워졌습니다!');
+        }
+
+        window.onload = function() {
+            loadAppState();
+            applyMoodTheme(currentMoodId, false);
+            renderCategories();
+            renderMoodPresets();
+            renderAdminCategoryList();
+            setLayoutMode(currentLayout, false);
+            renderPlaces();
+        };
+
+        function switchBottomTab(tab) {
+            const viewHome = document.getElementById('view-home');
+            const viewStudio = document.getElementById('view-studio');
+            const navHome = document.getElementById('nav-home');
+            const navStudio = document.getElementById('nav-studio');
+            const pcNavHome = document.getElementById('pc-nav-home');
+            const pcNavStudio = document.getElementById('pc-nav-studio');
+
+            if (tab === 'home') {
+                viewHome.classList.remove('hidden');
+                viewStudio.classList.add('hidden');
+                if (navHome && navStudio) {
+                    navHome.classList.add('theme-accent-soft', 'font-bold');
+                    navHome.classList.remove('theme-text-sub', 'font-medium');
+                    navStudio.classList.remove('theme-accent-soft', 'font-bold');
+                    navStudio.classList.add('theme-text-sub', 'font-medium');
+                }
+                if (pcNavHome && pcNavStudio) {
+                    pcNavHome.classList.add('theme-accent-soft', 'font-bold');
+                    pcNavHome.classList.remove('theme-text-sub', 'font-medium');
+                    pcNavStudio.classList.remove('theme-accent-soft', 'font-bold');
+                    pcNavStudio.classList.add('theme-text-sub', 'font-medium');
+                }
+            } else {
+                viewHome.classList.add('hidden');
+                viewStudio.classList.remove('hidden');
+                if (navStudio && navHome) {
+                    navStudio.classList.add('theme-accent-soft', 'font-bold');
+                    navStudio.classList.remove('theme-text-sub', 'font-medium');
+                    navHome.classList.remove('theme-accent-soft', 'font-bold');
+                    navHome.classList.add('theme-text-sub', 'font-medium');
+                }
+                if (pcNavStudio && pcNavHome) {
+                    pcNavStudio.classList.add('theme-accent-soft', 'font-bold');
+                    pcNavStudio.classList.remove('theme-text-sub', 'font-medium');
+                    pcNavHome.classList.remove('theme-accent-soft', 'font-bold');
+                    pcNavHome.classList.add('theme-text-sub', 'font-medium');
+                }
+            }
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoryContainer');
+            let html = `
+                <button onclick="selectCategory('all')" class="px-2 py-2.5 rounded-2xl text-xs font-extrabold transition flex items-center justify-center gap-1 border shadow-2xs truncate ${selectedCategory === 'all' ? 'theme-accent-bg border-transparent' : 'theme-card theme-text-sub'}">
+                    <span>🗂️</span>
+                    <span class="truncate">전체</span>
+                </button>
+            `;
+
+            categories.forEach(cat => {
+                const isSelected = selectedCategory === cat.id;
+                const canDelete = categories.length > 1;
+                if (isCategoryDeleteMode && canDelete) {
+                    html += `
+                        <button onclick="deleteCategory('${cat.id}')" class="px-2 py-2.5 rounded-2xl text-xs font-extrabold transition flex items-center justify-center gap-1 border border-rose-400/70 bg-rose-500/10 text-rose-600 shadow-2xs truncate animate-pulse">
+                            <span>🗑️</span>
+                            <span class="truncate">${cat.name}</span>
+                        </button>
+                    `;
+                } else {
+                    html += `
+                        <button onclick="selectCategory('${cat.id}')" class="px-2 py-2.5 rounded-2xl text-xs font-extrabold transition flex items-center justify-center gap-1 border shadow-2xs truncate ${isSelected ? 'theme-accent-bg border-transparent' : 'theme-card theme-text-sub'}">
+                            <span>${cat.icon}</span>
+                            <span class="truncate">${cat.name}</span>
+                        </button>
+                    `;
+                }
+            });
+
+            html += `
+                <button onclick="openCategoryModal()" class="px-2 py-2.5 rounded-2xl text-xs font-extrabold border border-dashed border-indigo-400/60 text-indigo-600 bg-indigo-500/5 hover:bg-indigo-500/10 transition flex items-center justify-center gap-1 truncate">
+                    <span>＋</span>
+                    <span class="truncate">추가</span>
+                </button>
+            `;
+
+            if (categories.length > 1) {
+                html += `
+                    <button onclick="toggleCategoryDeleteMode()" class="px-2 py-2.5 rounded-2xl text-xs font-extrabold border transition flex items-center justify-center gap-1 truncate ${isCategoryDeleteMode ? 'bg-rose-600 text-white border-rose-600 shadow-sm' : 'border-dashed border-rose-400/60 text-rose-600 bg-rose-500/5 hover:bg-rose-500/10'}">
+                        <span>${isCategoryDeleteMode ? '✔️' : '🗑️'}</span>
+                        <span class="truncate">${isCategoryDeleteMode ? '완료' : '삭제'}</span>
+                    </button>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function toggleCategoryDeleteMode() {
+            isCategoryDeleteMode = !isCategoryDeleteMode;
+            renderCategories();
+            if (isCategoryDeleteMode) {
+                showToast('🗑️ 삭제할 카테고리를 터치하세요. (완료 시 ✔️ 완료 클릭)');
+            }
+        }
+
+        // 디테일 카드 HTML 공통 생성 함수 (기본 카드 피드 및 슬림/갤러리 터치 상세 모달 공용)
+        function buildDetailCardHTML(place, isModalView = false) {
+            const category = categories.find(c => c.id === place.categoryId) || { name: '기타', icon: '📍' };
+            const isVisited = place.status === 'visited';
+            const customEntries = Object.entries(place.customValues || {}).filter(([_, val]) => val && val.trim() !== '');
+            const syncIconId = isModalView ? `modal-sync-icon-${place.id}` : `sync-icon-${place.id}`;
+
+            return `
+                <div class="${isModalView ? '' : 'theme-card border rounded-3xl p-4.5 shadow-xs'}">
+                    <!-- 상단 뱃지 & 액션 -->
+                    <div class="flex items-center justify-between gap-2 mb-2.5">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-extrabold theme-accent-soft">
+                            <span>${category.icon}</span>
+                            ${category.name}
+                        </span>
+                        <div class="flex items-center gap-1">
+                            <button onclick="togglePlaceStatus('${place.id}')" class="px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition ${isVisited ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}">
+                                ${isVisited ? '⭐ 단골/방문완료' : '📌 가볼 곳(위시)'}
+                            </button>
+                            <!-- 링크 기반 최신 정보 자동 동기화 버튼 -->
+                            <button onclick="syncPlaceFromLink('${place.id}')" title="링크에서 최신 정보 업데이트" class="w-7 h-7 rounded-xl bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 flex items-center justify-center transition active:scale-90">
+                                <span id="${syncIconId}" class="inline-block text-xs">🔄</span>
+                            </button>
+                            <button onclick="deletePlace('${place.id}')" class="theme-text-muted hover:text-rose-500 p-1 text-xs">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 장소명 & 위치/영업시간 -->
+                    <h3 class="text-base font-black theme-text-main leading-snug">${place.name}</h3>
+                    <div class="mt-1 space-y-0.5 text-xs theme-text-sub">
+                        ${place.address ? `<p class="flex items-center gap-1.5"><span class="opacity-70">📍</span> ${place.address}</p>` : ''}
+                        ${place.hours ? `<p class="flex items-center gap-1.5"><span class="opacity-70">🕒</span> ${place.hours}</p>` : ''}
+                    </div>
+
+                    <!-- 원터치 내비게이션 & 길찾기 실행 바 (주소+상호명 정밀 매칭) -->
+                    ${(place.address || place.name) ? `
+                        <div class="mt-2.5 p-2 rounded-2xl bg-emerald-500/5 border border-emerald-500/15 flex items-center justify-between gap-1.5">
+                            <span class="text-[11px] font-extrabold text-emerald-700 flex items-center gap-1 shrink-0 pl-1">
+                                <span>🧭</span> 바로 길찾기
+                            </span>
+                            <div class="flex items-center gap-1">
+                                <button type="button" onclick="launchNavigation('${place.id}', 'naver')" class="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-[#03C75A] text-white shadow-2xs active:scale-95 transition">네이버</button>
+                                <button type="button" onclick="launchNavigation('${place.id}', 'kakao')" class="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-[#FEE500] text-[#191919] shadow-2xs active:scale-95 transition">카카오</button>
+                                <button type="button" onclick="launchNavigation('${place.id}', 'tmap')" class="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-[#0064FF] text-white shadow-2xs active:scale-95 transition">티맵</button>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- 연결된 링크 액션 바 -->
+                    <div class="mt-2 flex items-center justify-between gap-2">
+                        ${place.link ? `
+                            <a href="${place.link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition truncate max-w-[65%]">
+                                <span>🔗</span>
+                                <span class="truncate">지도/상세 링크 열기</span>
+                            </a>
+                        ` : `
+                            <button onclick="openLinkEditModal('${place.id}')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-slate-500/10 theme-text-sub hover:bg-slate-500/20 transition">
+                                <span>🔗</span> 링크 연결하기
+                            </button>
+                        `}
+                        ${place.lastSynced ? `<span class="text-[10px] theme-text-muted shrink-0">✔️ ${place.lastSynced}</span>` : ''}
+                    </div>
+
+                    <!-- 방문 사진 & 영상 갤러리 스트립 -->
+                    ${renderPlaceMediaSection(place)}
+
+                    <!-- 카테고리 맞춤형 정보 박스 -->
+                    ${customEntries.length > 0 ? `
+                        <div class="mt-3 p-2.5 rounded-2xl bg-slate-500/5 border border-slate-500/10 space-y-1 text-xs">
+                            ${customEntries.map(([k, v]) => `
+                                <div class="flex items-start gap-1.5">
+                                    <span class="font-bold theme-text-sub shrink-0">${k}:</span>
+                                    <span class="theme-text-main">${v}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    <!-- 내가 먹은 것 / 해본 것 -->
+                    ${place.doneItems.length > 0 ? `
+                        <div class="mt-3">
+                            <p class="text-[10px] font-extrabold theme-text-muted uppercase tracking-wider mb-1.5">내가 먹은 것 / 해본 것</p>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${place.doneItems.map(item => `
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-500/10 theme-text-main">
+                                        <span class="text-indigo-500 text-[10px]">✓</span> ${item}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- 다음에 먹어볼 것 / 해볼 것 (원터치 완료) -->
+                    ${place.todoItems.length > 0 ? `
+                        <div class="mt-3">
+                            <p class="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                                <span>다음에 먹어볼 것 / 해볼 것</span>
+                                <span class="text-[10px] font-normal theme-text-muted">터치 시 완료</span>
+                            </p>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${place.todoItems.map((item, idx) => `
+                                    <button onclick="completeTodoItem('${place.id}', ${idx})" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 active:scale-95 transition">
+                                        <span>□</span> ${item}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- 나만의 메모 -->
+                    ${place.memo ? `
+                        <div class="mt-3 pt-2.5 border-t border-slate-500/10 text-xs theme-text-sub flex items-start gap-1.5">
+                            <span class="shrink-0">📝</span>
+                            <p>${place.memo}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderPlaces() {
+            const grid = document.getElementById('placesGrid');
+            const emptyState = document.getElementById('emptyState');
+            const searchQuery = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+
+            const visitedCount = places.filter(p => p.status === 'visited').length;
+            const wishlistCount = places.filter(p => p.status === 'wishlist').length;
+
+            document.getElementById('headerVisitedCount').innerText = visitedCount;
+            document.getElementById('headerWishlistCount').innerText = wishlistCount;
+            const pcVisitedEl = document.getElementById('pcVisitedCount');
+            const pcWishlistEl = document.getElementById('pcWishlistCount');
+            if (pcVisitedEl) pcVisitedEl.innerText = visitedCount;
+            if (pcWishlistEl) pcWishlistEl.innerText = wishlistCount;
+            document.getElementById('count-all').innerText = places.length;
+            document.getElementById('count-visited').innerText = visitedCount;
+            document.getElementById('count-wishlist').innerText = wishlistCount;
+
+            const filtered = places.filter(place => {
+                const matchCat = selectedCategory === 'all' || place.categoryId === selectedCategory;
+                const matchStatus = selectedStatus === 'all' || place.status === selectedStatus;
+                if (!matchCat || !matchStatus) return false;
+                if (!searchQuery) return true;
+
+                const searchableText = [
+                    place.name,
+                    place.address,
+                    place.memo,
+                    ...(place.doneItems || []),
+                    ...(place.todoItems || []),
+                    ...Object.values(place.customValues || {})
+                ].join(' ').toLowerCase();
+
+                return searchableText.includes(searchQuery);
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                if (currentLayout === 'card') {
+                    grid.className = 'mt-4 lg:mt-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start';
+                    grid.innerHTML = filtered.map(place => buildDetailCardHTML(place, false)).join('');
+                } else if (currentLayout === 'compact') {
+                    grid.className = 'mt-4 lg:mt-5 grid grid-cols-1 md:grid-cols-2 gap-2.5';
+                    grid.innerHTML = filtered.map(place => {
+                        const cat = categories.find(c => c.id === place.categoryId) || { name: '기타', icon: '📍' };
+                        const isVisited = place.status === 'visited';
+                        return `
+                            <div onclick="openPlaceDetailModal('${place.id}')" class="theme-card border rounded-2xl p-3 shadow-2xs flex items-center justify-between gap-2.5 cursor-pointer">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <div class="w-10 h-10 rounded-xl theme-accent-soft flex items-center justify-center text-base shrink-0">
+                                        ${cat.icon}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-1.5">
+                                            <h4 class="text-sm font-extrabold theme-text-main truncate">${place.name}</h4>
+                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${isVisited ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}">
+                                                ${isVisited ? '⭐ 단골' : '📌 위시'}
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] theme-text-sub truncate mt-0.5">${place.address || place.memo || cat.name}</p>
+                                    </div>
+                                </div>
+                                <span class="theme-text-muted text-xs shrink-0">〉</span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    grid.className = 'mt-4 lg:mt-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3';
+                    grid.innerHTML = filtered.map(place => {
+                        const cat = categories.find(c => c.id === place.categoryId) || { name: '기타', icon: '📍' };
+                        const isVisited = place.status === 'visited';
+                        const firstImg = (place.media || []).find(m => m.type === 'image');
+                        return `
+                            <div onclick="openPlaceDetailModal('${place.id}')" class="theme-card border rounded-2xl p-3 shadow-2xs flex flex-col justify-between cursor-pointer">
+                                <div>
+                                    ${firstImg ? `
+                                        <div class="w-full h-24 rounded-xl overflow-hidden mb-2 bg-slate-100">
+                                            <img src="${firstImg.url}" alt="${place.name}" class="w-full h-full object-cover">
+                                        </div>
+                                    ` : `
+                                        <div class="w-full h-16 rounded-xl theme-accent-soft flex items-center justify-center text-2xl mb-2">
+                                            ${cat.icon}
+                                        </div>
+                                    `}
+                                    <div class="flex items-center justify-between gap-1 mb-1">
+                                        <span class="text-[10px] font-bold theme-text-muted truncate">${cat.name}</span>
+                                        <span class="text-[10px] font-extrabold shrink-0 ${isVisited ? 'text-amber-600' : 'text-emerald-600'}">
+                                            ${isVisited ? '⭐' : '📌'}
+                                        </span>
+                                    </div>
+                                    <h4 class="text-xs font-extrabold theme-text-main line-clamp-1">${place.name}</h4>
+                                    <p class="text-[10px] theme-text-sub line-clamp-1 mt-0.5">${place.address || place.memo || ''}</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            if (activeDetailPlaceId) {
+                renderPlaceDetailContent(activeDetailPlaceId);
+            }
+        }
+
+        function selectCategory(catId) {
+            selectedCategory = catId;
+            renderCategories();
+            renderPlaces();
+        }
+
+        function setStatusFilter(status) {
+            selectedStatus = status;
+            ['all', 'visited', 'wishlist'].forEach(key => {
+                const btn = document.getElementById(`filter-${key}`);
+                if (!btn) return;
+                if (key === status) {
+                    btn.classList.add('theme-accent-bg', 'font-bold');
+                    btn.classList.remove('theme-text-sub', 'font-semibold');
+                } else {
+                    btn.classList.remove('theme-accent-bg', 'font-bold');
+                    btn.classList.add('theme-text-sub', 'font-semibold');
+                }
+            });
+            renderPlaces();
+        }
+
+        function setLayoutMode(mode, persist = true) {
+            currentLayout = mode;
+            const iconMap = { card: '📇', compact: '📃', grid: '🍱' };
+            const labelMap = { card: '카드형', compact: '슬림형', grid: '갤러리' };
+            document.getElementById('layoutQuickIcon').innerText = iconMap[mode] || '📇';
+            document.getElementById('layoutQuickLabel').innerText = labelMap[mode] || '카드형';
+
+            ['card', 'compact', 'grid'].forEach(m => {
+                const btn = document.getElementById(`layout-btn-${m}`);
+                if (!btn) return;
+                if (m === mode) {
+                    btn.classList.add('theme-accent-soft', 'border-indigo-500');
+                } else {
+                    btn.classList.remove('theme-accent-soft', 'border-indigo-500');
+                }
+            });
+
+            if (persist) saveAppState();
+            renderPlaces();
+        }
+
+        function cycleLayout() {
+            const order = ['card', 'compact', 'grid'];
+            const next = order[(order.indexOf(currentLayout) + 1) % order.length];
+            setLayoutMode(next, true);
+            const names = { card: '디테일 카드형', compact: '슬림 리스트형', grid: '2단 갤러리형' };
+            showToast(`레이아웃: ${names[next]}`);
+        }
+
+        function renderMoodPresets() {
+            const grid = document.getElementById('moodPresetGrid');
+            if (!grid) return;
+            grid.innerHTML = moodPresets.map(mood => {
+                const isSelected = mood.id === currentMoodId;
+                return `
+                    <button onclick="applyMoodTheme('${mood.id}')" class="p-3 rounded-2xl border text-left transition flex items-start gap-2.5 ${isSelected ? 'theme-accent-soft border-indigo-500 ring-2 ring-indigo-500/20' : 'theme-card'}">
+                        <span class="text-xl shrink-0">${mood.emoji}</span>
+                        <div class="min-w-0">
+                            <p class="text-xs font-extrabold theme-text-main truncate">${mood.name}</p>
+                            <p class="text-[10px] theme-text-sub line-clamp-1 mt-0.5">${mood.desc}</p>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function applyMoodTheme(moodId, persist = true) {
+            const mood = moodPresets.find(m => m.id === moodId) || moodPresets[0];
+            currentMoodId = mood.id;
+            Object.entries(mood.vars).forEach(([key, val]) => {
+                document.documentElement.style.setProperty(key, val);
+            });
+            document.getElementById('currentMoodEmoji').innerText = mood.emoji;
+            document.getElementById('currentMoodLabel').innerText = mood.name;
+            const pcMoodEmoji = document.getElementById('pcCurrentMoodEmoji');
+            const pcMoodLabel = document.getElementById('pcCurrentMoodLabel');
+            if (pcMoodEmoji) pcMoodEmoji.innerText = mood.emoji;
+            if (pcMoodLabel) pcMoodLabel.innerText = mood.name;
+            document.getElementById('moodGreeting').innerText = mood.greeting;
+            renderMoodPresets();
+            if (persist) {
+                saveAppState();
+                showToast(`${mood.emoji} '${mood.name}' 테마가 적용되었습니다!`);
+            }
+        }
+
+        function renderAdminCategoryList() {
+            const list = document.getElementById('adminCategoryList');
+            if (!list) return;
+            list.innerHTML = categories.map(cat => `
+                <div class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-500/5 border border-slate-500/10">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-base">${cat.icon}</span>
+                        <div class="min-w-0">
+                            <p class="text-xs font-extrabold theme-text-main truncate">${cat.name}</p>
+                            <p class="text-[10px] theme-text-muted truncate">${cat.fields?.length ? cat.fields.join(', ') : '기본 필드만 사용'}</p>
+                        </div>
+                    </div>
+                    ${categories.length > 1 ? `
+                        <button onclick="deleteCategory('${cat.id}')" class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 shrink-0">
+                            삭제
+                        </button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function deleteCategory(catId) {
+            categories = categories.filter(c => c.id !== catId);
+            if (selectedCategory === catId) selectedCategory = 'all';
+            if (categories.length <= 1) isCategoryDeleteMode = false;
+            saveAppState();
+            renderCategories();
+            renderAdminCategoryList();
+            renderPlaces();
+            showToast('카테고리가 삭제되었습니다.');
+        }
+
+        // 사진 & 영상 갤러리 HTML 렌더링 헬퍼
+        function renderPlaceMediaSection(place) {
+            const mediaList = Array.isArray(place.media) ? [...place.media] : [];
+            if (place.videoUrl && !mediaList.some(m => m.url === place.videoUrl)) {
+                mediaList.push({ type: 'video_url', url: place.videoUrl });
+            }
+            if (mediaList.length === 0) return '';
+
+            return `
+                <div class="mt-3">
+                    <p class="text-[10px] font-extrabold theme-text-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                        <span>📸 추억 사진 & 영상 (${mediaList.length})</span>
+                        <span class="font-normal">터치 시 크게 보기</span>
+                    </p>
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        ${mediaList.map(item => {
+                            if (item.type === 'image') {
+                                return `
+                                    <button type="button" onclick="openMediaLightbox('image', '${item.url}')" class="relative w-20 h-20 rounded-2xl overflow-hidden shrink-0 border border-slate-500/15 bg-slate-100 active:scale-95 transition">
+                                        <img src="${item.url}" alt="방문 사진" class="w-full h-full object-cover">
+                                    </button>
+                                `;
+                            }
+                            if (item.type === 'video') {
+                                return `
+                                    <button type="button" onclick="openMediaLightbox('video', '${item.url}')" class="relative w-20 h-20 rounded-2xl overflow-hidden shrink-0 border border-slate-500/15 bg-slate-900 flex flex-col items-center justify-center text-white active:scale-95 transition">
+                                        <span class="text-xl">▶️</span>
+                                        <span class="text-[9px] font-bold mt-1">현장 영상</span>
+                                    </button>
+                                `;
+                            }
+                            return `
+                                <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="w-20 h-20 rounded-2xl shrink-0 border border-rose-500/20 bg-rose-500/10 text-rose-600 flex flex-col items-center justify-center p-1.5 text-center active:scale-95 transition">
+                                    <span class="text-lg">🎬</span>
+                                    <span class="text-[9px] font-extrabold leading-tight mt-1">릴스/쇼츠<br>영상 보기</span>
+                                </a>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function openMediaLightbox(type, url) {
+            const container = document.getElementById('mediaLightboxContent');
+            if (type === 'image') {
+                container.innerHTML = `<img src="${url}" alt="확대 사진" class="max-h-[78dvh] w-auto rounded-2xl shadow-2xl object-contain">`;
+            } else {
+                container.innerHTML = `<video src="${url}" controls autoplay playsinline class="max-h-[78dvh] w-full rounded-2xl shadow-2xl bg-black"></video>`;
+            }
+            document.getElementById('mediaLightboxModal').classList.remove('hidden');
+        }
+
+        function closeMediaLightbox() {
+            document.getElementById('mediaLightboxContent').innerHTML = '';
+            document.getElementById('mediaLightboxModal').classList.add('hidden');
+        }
+
+        // 슬림형 / 갤러리형 장소 터치 시 상세 바텀 시트 열기 & 닫기
+        function openPlaceDetailModal(placeId) {
+            activeDetailPlaceId = placeId;
+            renderPlaceDetailContent(placeId);
+            document.getElementById('placeDetailModal').classList.remove('hidden');
+        }
+
+        function closePlaceDetailModal() {
+            activeDetailPlaceId = null;
+            document.getElementById('placeDetailModal').classList.add('hidden');
+        }
+
+        function renderPlaceDetailContent(placeId) {
+            const place = places.find(p => p.id === placeId);
+            if (!place) {
+                closePlaceDetailModal();
+                return;
+            }
+            document.getElementById('placeDetailContent').innerHTML = buildDetailCardHTML(place, true);
+        }
+
+        // ==========================================
+        // 5. 인터랙션 및 모달 제어 함수
+        // ==========================================
+        function completeTodoItem(placeId, itemIndex) {
+            const place = places.find(p => p.id === placeId);
+            if (!place) return;
+            const completed = place.todoItems.splice(itemIndex, 1)[0];
+            place.doneItems.push(completed);
+            if (place.status === 'wishlist') {
+                place.status = 'visited';
+                showToast(`'${completed}' 완료! 단골/방문완료로 전환되었습니다.`);
+            } else {
+                showToast(`'${completed}' 완료 처리되었습니다!`);
+            }
+            saveAppState();
+            renderPlaces();
+        }
+
+        function togglePlaceStatus(placeId) {
+            const place = places.find(p => p.id === placeId);
+            if (!place) return;
+            place.status = place.status === 'visited' ? 'wishlist' : 'visited';
+            saveAppState();
+            renderPlaces();
+            showToast(place.status === 'visited' ? '⭐ 단골/방문완료로 변경!' : '📌 가볼 곳(위시)으로 변경!');
+        }
+
+        function deletePlace(placeId) {
+            places = places.filter(p => p.id !== placeId);
+            if (activeDetailPlaceId === placeId) closePlaceDetailModal();
+            saveAppState();
+            renderPlaces();
+            showToast('기록이 삭제되었습니다.');
+        }
+
+        // 카테고리 모달
+        function renderIconSelector() {
+            document.getElementById('iconSelector').innerHTML = availableIcons.map(icon => `
+                <button type="button" onclick="selectIcon('${icon}')" class="w-10 h-10 rounded-xl border flex items-center justify-center text-base transition ${selectedNewIcon === icon ? 'theme-accent-bg border-transparent' : 'theme-card theme-text-sub'}">
+                    ${icon}
+                </button>
+            `).join('');
+        }
+
+        function selectIcon(icon) {
+            selectedNewIcon = icon;
+            renderIconSelector();
+        }
+
+        function openCategoryModal() {
+            document.getElementById('newCatName').value = '';
+            document.getElementById('newCatFields').value = '';
+            selectedNewIcon = availableIcons[0];
+            renderIconSelector();
+            document.getElementById('categoryModal').classList.remove('hidden');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.add('hidden');
+        }
+
+        function saveNewCategory() {
+            const name = document.getElementById('newCatName').value.trim();
+            if (!name) return showToast('카테고리 이름을 입력해주세요!');
+            const fieldsStr = document.getElementById('newCatFields').value.trim();
+            const fields = fieldsStr ? fieldsStr.split(',').map(f => f.trim()).filter(Boolean) : [];
+            
+            const newCat = { id: 'cat_' + Date.now(), name, icon: selectedNewIcon, fields };
+            categories.push(newCat);
+            selectedCategory = newCat.id;
+            saveAppState();
+            
+            closeCategoryModal();
+            renderCategories();
+            renderAdminCategoryList();
+            renderPlaces();
+            showToast(`'${name}' 카테고리가 추가되었습니다!`);
+        }
+
+        // 장소 추가 모달
+        function openPlaceModal() {
+            const select = document.getElementById('placeCategory');
+            select.innerHTML = categories.map(c => `<option value="${c.id}" ${c.id === selectedCategory ? 'selected' : ''}>${c.name}</option>`).join('');
+            
+            ['placeLink', 'placeName', 'placeAddress', 'placeHours', 'placeDoneItems', 'placeTodoItems', 'placeMemo', 'placeVideoUrl'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            tempDraftMedia = [];
+            renderDraftMediaPreview();
+            document.getElementById('autoFillStatus').classList.add('hidden');
+            updateCustomFieldsInput();
+            document.getElementById('placeModal').classList.remove('hidden');
+        }
+
+        // 스마트폰 이미지 자동 리사이징 압축 (localStorage 용량 최적화)
+        function compressImageFile(file, maxWidth = 720, quality = 0.72) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function handlePhotoFilesSelect(event) {
+            const files = Array.from(event.target.files || []);
+            if (files.length === 0) return;
+            showToast('🖼️ 사진을 가볍게 최적화하는 중...');
+            for (const file of files.slice(0, 6)) {
+                try {
+                    const compressedDataUrl = await compressImageFile(file);
+                    tempDraftMedia.push({ type: 'image', url: compressedDataUrl });
+                } catch (err) {
+                    console.warn('이미지 압축 실패:', err);
+                }
+            }
+            renderDraftMediaPreview();
+            event.target.value = '';
+            showToast(`✅ 사진 ${files.slice(0, 6).length}장이 첨부되었습니다!`);
+        }
+
+        function handleVideoFileSelect(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            if (file.size > 3.5 * 1024 * 1024) {
+                event.target.value = '';
+                return showToast('⚠️ 브라우저 저장 한도 보호를 위해 3.5MB 이하 짧은 영상 또는 아래 영상 링크를 이용해 주세요!');
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempDraftMedia.push({ type: 'video', url: e.target.result });
+                renderDraftMediaPreview();
+                showToast('🎬 짧은 현장 영상이 첨부되었습니다!');
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function removeDraftMedia(index) {
+            tempDraftMedia.splice(index, 1);
+            renderDraftMediaPreview();
+        }
+
+        function renderDraftMediaPreview() {
+            const container = document.getElementById('mediaPreviewContainer');
+            if (!container) return;
+            if (tempDraftMedia.length === 0) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
+            }
+            container.classList.remove('hidden');
+            container.innerHTML = tempDraftMedia.map((item, idx) => `
+                <div class="relative h-20 rounded-xl overflow-hidden border border-slate-500/20 bg-slate-900 flex items-center justify-center">
+                    ${item.type === 'image'
+                        ? `<img src="${item.url}" alt="미리보기" class="w-full h-full object-cover">`
+                        : `<span class="text-white text-xs font-bold">🎬 영상 첨부됨</span>`
+                    }
+                    <button type="button" onclick="removeDraftMedia(${idx})" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-[10px] font-bold flex items-center justify-center">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function closePlaceModal() {
+            document.getElementById('placeModal').classList.add('hidden');
+        }
+
+        function updateCustomFieldsInput() {
+            const catId = document.getElementById('placeCategory').value;
+            const category = categories.find(c => c.id === catId);
+            const container = document.getElementById('dynamicCustomFields');
+
+            if (!category || !category.fields || category.fields.length === 0) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
+            }
+
+            container.classList.remove('hidden');
+            container.innerHTML = `
+                <p class="text-[11px] font-extrabold flex items-center gap-1.5 mb-1.5">
+                    <span>${category.icon}</span> ${category.name} 전용 기록 항목
+                </p>
+                ${category.fields.map(field => `
+                    <div>
+                        <label class="block text-[10px] font-bold opacity-80 mb-0.5">${field}</label>
+                        <input type="text" data-custom-field="${field}" placeholder="${field} 입력..." class="custom-field-input theme-card w-full px-3 py-1.5 border rounded-xl text-xs focus:outline-none">
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function saveNewPlace() {
+            const name = document.getElementById('placeName').value.trim();
+            if (!name) return showToast('장소 이름을 입력해주세요!');
+
+            const addressVal = document.getElementById('placeAddress').value.trim();
+            const rawInput = document.getElementById('placeLink').value.trim();
+            // 같은 상호명의 다른 지점과 헷갈리지 않도록 '주소 + 장소명' 결합 정밀 검색 URL 생성
+            const exactSearchQuery = addressVal ? `${addressVal} ${name}` : name;
+            const linkVal = rawInput.startsWith('http')
+                ? rawInput
+                : `https://map.naver.com/v5/search/${encodeURIComponent(exactSearchQuery)}`;
+            const customValues = {};
+            document.querySelectorAll('.custom-field-input').forEach(input => {
+                if (input.value.trim()) customValues[input.getAttribute('data-custom-field')] = input.value.trim();
+            });
+
+            const splitItems = (id) => document.getElementById(id).value.split(',').map(i => i.trim()).filter(Boolean);
+            const videoUrlVal = document.getElementById('placeVideoUrl').value.trim();
+            const finalMedia = [...tempDraftMedia];
+            if (videoUrlVal) {
+                finalMedia.push({ type: 'video_url', url: videoUrlVal });
+            }
+
+            places.unshift({
+                id: 'p_' + Date.now(),
+                categoryId: document.getElementById('placeCategory').value,
+                status: document.getElementById('placeStatus').value,
+                name,
+                address: addressVal,
+                hours: document.getElementById('placeHours').value.trim(),
+                link: linkVal,
+                lastSynced: rawInput ? '실시간 검색 동기화됨' : '',
+                media: finalMedia,
+                customValues,
+                doneItems: splitItems('placeDoneItems'),
+                todoItems: splitItems('placeTodoItems'),
+                memo: document.getElementById('placeMemo').value.trim()
+            });
+
+            saveAppState();
+            closePlaceModal();
+            switchBottomTab('home');
+            renderPlaces();
+            showToast(`'${name}' 기록이 저장되었습니다!`);
+        }
+
+        // 입력 중인 주소+상호명이 정확한 지점인지 지도에서 미리 확인
+        function previewMapLocation() {
+            const name = document.getElementById('placeName').value.trim();
+            const addr = document.getElementById('placeAddress').value.trim();
+            const query = [addr, name].filter(Boolean).join(' ');
+            if (!query) return showToast('장소 이름이나 주소를 먼저 입력해주세요!');
+            window.open(`https://map.naver.com/v5/search/${encodeURIComponent(query)}`, '_blank', 'noopener,noreferrer');
+        }
+
+        // 네이버 지도 / 카카오맵 / 티맵 원터치 내비게이션 실행
+        function launchNavigation(placeId, provider) {
+            const place = places.find(p => p.id === placeId);
+            if (!place) return;
+
+            const destQuery = [place.address, place.name].filter(Boolean).join(' ').trim();
+            if (!destQuery) return showToast('길찾기할 주소나 장소명이 없습니다.');
+
+            const encoded = encodeURIComponent(destQuery);
+            let navUrl = '';
+            let providerLabel = '';
+
+            if (provider === 'naver') {
+                navUrl = `https://map.naver.com/v5/search/${encoded}`;
+                providerLabel = '네이버 지도';
+            } else if (provider === 'kakao') {
+                navUrl = `https://map.kakao.com/link/search/${encoded}`;
+                providerLabel = '카카오맵';
+            } else if (provider === 'tmap') {
+                navUrl = `https://surl.tmobiapi.com/search?name=${encoded}`;
+                providerLabel = '티맵(TMAP)';
+            }
+
+            showToast(`🧭 ${providerLabel}에서 '${place.name}' 길찾기를 실행합니다!`);
+            window.open(navUrl, '_blank', 'noopener,noreferrer');
+        }
+
+        // 서버 API를 통한 실시간 Google 검색 Grounding 연동 장소 정보 조회
+        async function fetchRealPlaceInfoFromWeb(userQuery) {
+            const response = await fetch('/api/places/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query: userQuery,
+                    categories: categories.map(c => ({
+                        id: c.id,
+                        name: c.name,
+                        fields: c.fields || []
+                    }))
+                })
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.error || `API 오류 (${response.status})`);
+            }
+            if (!data.placeInfo) {
+                throw new Error('검색 결과를 구조화하지 못했습니다.');
+            }
+            return data.placeInfo;
+        }
+
+        async function autoFillFromLink() {
+            const urlInput = document.getElementById('placeLink').value.trim();
+            if (!urlInput) return showToast('분석할 장소 링크(URL)나 가게 이름을 먼저 입력해주세요!');
+
+            const btn = document.getElementById('btnAutoFill');
+            const statusText = document.getElementById('autoFillStatus');
+            
+            btn.disabled = true;
+            btn.innerHTML = '⏳ 검색중';
+            statusText.classList.remove('hidden');
+            statusText.innerText = '🌐 Google 실시간 검색으로 실제 장소 주소와 영업시간을 조회하는 중...';
+
+            try {
+                const info = await fetchRealPlaceInfoFromWeb(urlInput);
+
+                if (info.categoryId && categories.some(c => c.id === info.categoryId)) {
+                    document.getElementById('placeCategory').value = info.categoryId;
+                    updateCustomFieldsInput();
+                }
+
+                if (info.name) document.getElementById('placeName').value = info.name;
+                if (info.address) document.getElementById('placeAddress').value = info.address;
+                if (info.hours) document.getElementById('placeHours').value = info.hours;
+                if (info.todoItems) document.getElementById('placeTodoItems').value = info.todoItems;
+                if (info.memo) document.getElementById('placeMemo').value = info.memo;
+
+                if (info.customFields) {
+                    document.querySelectorAll('.custom-field-input').forEach(input => {
+                        const fieldName = input.getAttribute('data-custom-field');
+                        if (info.customFields[fieldName]) {
+                            input.value = info.customFields[fieldName];
+                        }
+                    });
+                }
+
+                statusText.innerText = `✅ '${info.name || '장소'}' 실제 정보가 자동으로 입력되었습니다!`;
+                showToast(`'${info.name || '장소'}' 실제 정보를 불러왔습니다!`);
+            } catch (e) {
+                statusText.innerText = `⚠️ ${e?.message || '검색 정보를 가져오지 못했습니다.'}`;
+                showToast('장소 정보를 불러오지 못했습니다.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '⚡ 불러오기';
+            }
+        }
+
+        // 카드 내 동기화 버튼 클릭 시 실시간 검색 기반 최신 정보 업데이트
+        async function syncPlaceFromLink(placeId) {
+            const place = places.find(p => p.id === placeId);
+            if (!place) return;
+
+            const icon = document.getElementById(`sync-icon-${placeId}`);
+            const modalIcon = document.getElementById(`modal-sync-icon-${placeId}`);
+            if (icon) icon.classList.add('animate-spin');
+            if (modalIcon) modalIcon.classList.add('animate-spin');
+            showToast(`🔄 '${place.name}' 최신 영업정보를 검색하는 중...`);
+
+            try {
+                const query = place.link ? `${place.name} ${place.address} (${place.link})` : `${place.name} ${place.address}`;
+                const info = await fetchRealPlaceInfoFromWeb(query);
+                const now = new Date();
+                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+                if (info.address) place.address = info.address;
+                if (info.hours) place.hours = info.hours;
+                if (info.memo) place.memo = info.memo;
+                place.lastSynced = `실시간(${timeStr}) 업데이트됨`;
+
+                saveAppState();
+                renderPlaces();
+                showToast(`✅ '${place.name}' 최신 정보가 반영되었습니다!`);
+            } catch (err) {
+                showToast(err?.message || '최신 정보를 불러오는 중 일시적인 오류가 발생했습니다.');
+            } finally {
+                if (icon) icon.classList.remove('animate-spin');
+                if (modalIcon) modalIcon.classList.remove('animate-spin');
+            }
+        }
+
+        function openLinkEditModal(placeId) {
+            const place = places.find(p => p.id === placeId);
+            if (!place) return;
+            document.getElementById('linkEditPlaceId').value = place.id;
+            document.getElementById('linkEditPlaceName').innerText = `대상 장소: ${place.name}`;
+            document.getElementById('linkEditInput').value = place.link || '';
+            document.getElementById('linkEditModal').classList.remove('hidden');
+        }
+
+        function closeLinkEditModal() {
+            document.getElementById('linkEditModal').classList.add('hidden');
+        }
+
+        function saveAndSyncEditedLink() {
+            const placeId = document.getElementById('linkEditPlaceId').value;
+            const url = document.getElementById('linkEditInput').value.trim();
+            if (!url) return showToast('연결할 URL 링크를 입력해주세요!');
+
+            const place = places.find(p => p.id === placeId);
+            if (place) {
+                place.link = url;
+                closeLinkEditModal();
+                syncPlaceFromLink(placeId);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = msg;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => toast.classList.add('opacity-0'), 2500);
+        }
+    </script>
+</body>
+</html>

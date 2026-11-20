@@ -1,0 +1,6 @@
+{
+  "name": "올인원 단골노트",
+  "description": "올인원 단골노트 - 기분 맞춤형 공간 아카이브",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
