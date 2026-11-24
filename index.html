@@ -83,6 +83,48 @@
             to { transform: rotate(360deg); }
         }
         .animate-spin-fast { animation: spin 0.8s linear infinite; }
+
+        .storage-tooltip-wrap {
+            position: relative;
+        }
+        .storage-tooltip-bubble {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(4px);
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+        }
+        .storage-tooltip-wrap:hover .storage-tooltip-bubble,
+        .storage-tooltip-wrap:focus-within .storage-tooltip-bubble {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .lightbox-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: transform;
+        }
+        .lightbox-slide {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 0.5rem;
+        }
+
+        @keyframes voicePulseRing {
+            0% { transform: scale(0.95); opacity: 0.85; }
+            75%, 100% { transform: scale(2.1); opacity: 0; }
+        }
+        .voice-rec-ring {
+            animation: voicePulseRing 1.25s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col lg:flex-row selection:bg-orange-200 selection:text-orange-900">
@@ -100,7 +142,17 @@
                 </div>
                 <div class="mt-2 flex flex-wrap items-center gap-1.5">
                     <span id="sidebarMoodBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold theme-accent-soft">☀️ 포근한 웜코랄 무드</span>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-500/10 theme-text-sub">💾 자동 저장</span>
+                    <div class="storage-tooltip-wrap inline-flex">
+                        <button type="button" onclick="openStorageGuideModal()" aria-label="브라우저 저장 및 기기 간 백업 안내" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-500/10 theme-text-sub hover:bg-slate-500/20 transition cursor-pointer">
+                            <span>💾 자동 저장</span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-slate-500/20 text-[9px] font-black flex items-center justify-center">?</span>
+                        </button>
+                        <div class="storage-tooltip-bubble absolute left-0 top-full mt-2 z-50 w-64 p-3 rounded-2xl bg-slate-900 text-white text-[11px] leading-relaxed shadow-xl">
+                            <p class="font-extrabold text-amber-300 mb-1">💡 기기(브라우저) 단독 저장 안내</p>
+                            <p class="text-slate-200">데이터는 현재 브라우저(localStorage)에만 저장됩니다. 다른 기기에서 이용하려면 수동 백업(.json) 후 새 기기에서 복원해 주세요.</p>
+                            <p class="text-[10px] text-slate-400 mt-1">클릭하면 자세한 안내 창을 열 수 있어요.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -163,8 +215,12 @@
                     <p id="currentMoodSubtitle" class="text-[11px] font-medium theme-text-sub mt-0.5">☀️ 포근한 웜코랄 무드로 기록 중</p>
                 </div>
 
-                <!-- 빠른 기분 전환 & 디자인 스튜디오 진입 버튼 -->
+                <!-- 빠른 기분 전환 & 저장 안내 & 디자인 스튜디오 진입 버튼 -->
                 <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="openStorageGuideModal()" title="브라우저 저장 및 백업 안내" aria-label="브라우저 저장 및 백업 안내" class="px-2.5 py-2 rounded-2xl text-xs font-bold theme-card border flex items-center gap-1 active:scale-95 transition">
+                        <span>💾</span>
+                        <span class="text-[11px]">안내</span>
+                    </button>
                     <button onclick="quickSwitchMood()" title="기분 컬러 즉시 변경" class="px-2.5 py-2 rounded-2xl text-xs font-bold theme-accent-soft flex items-center gap-1 active:scale-95 transition">
                         <span>🎨</span>
                         <span class="hidden sm:inline">기분전환</span>
@@ -220,28 +276,44 @@
                 </div>
             </section>
 
-            <!-- 2. 검색바 + 상태 필터 + 화면 보기 모드 전환 -->
-            <section class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <!-- 검색창 -->
-                <div class="relative flex-1 max-w-xl">
-                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm opacity-60">🔍</span>
-                    <input type="text" id="searchInput" oninput="renderPlaces()" placeholder="장소명, 메뉴, 객실 팁, 준비물 검색..." class="theme-card w-full pl-9 pr-4 py-2.5 border text-sm focus:outline-none focus:ring-2 focus:ring-orange-400/50 transition">
-                </div>
-
-                <!-- 필터 칩 & 보기 방식 전환 버튼 -->
-                <div class="flex items-center justify-between md:justify-end gap-2">
-                    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                        <button onclick="setStatusFilter('all')" id="filter-all" class="px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">전체</button>
-                        <button onclick="setStatusFilter('visited')" id="filter-visited" class="px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">⭐ 단골·완료</button>
-                        <button onclick="setStatusFilter('wishlist')" id="filter-wishlist" class="px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">📌 가볼 곳</button>
+            <!-- 2. 검색바 + 정렬 + 상태 필터 + 화면 보기 모드 전환 -->
+            <section class="space-y-2.5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <!-- 검색창 & 정렬 선택 -->
+                    <div class="flex items-center gap-2 flex-1 max-w-2xl">
+                        <div class="relative flex-1 min-w-0">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm opacity-60">🔍</span>
+                            <input type="text" id="searchInput" oninput="renderPlaces()" placeholder="장소명, 메뉴, #태그, 메모 검색..." class="theme-card w-full pl-9 pr-8 py-2.5 border text-sm focus:outline-none focus:ring-2 focus:ring-orange-400/50 transition">
+                            <button type="button" id="clearSearchBtn" onclick="clearSearchFilter()" aria-label="검색어 지우기" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-500/15 theme-text-sub hover:bg-slate-500/25 text-[10px] font-black flex items-center justify-center">✕</button>
+                        </div>
+                        <div class="relative shrink-0">
+                            <select id="sortSelect" onchange="setSortMode(this.value)" aria-label="장소 카드 정렬" class="theme-card pl-3 pr-7 py-2.5 border text-xs font-extrabold theme-text-main appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-400/50 transition">
+                                <option value="newest">🕒 최신 등록순</option>
+                                <option value="name">🔤 가나다순</option>
+                                <option value="status">⭐ 방문 상태별</option>
+                            </select>
+                            <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] theme-text-sub">▼</span>
+                        </div>
                     </div>
 
-                    <!-- 빠른 레이아웃 보기 전환 -->
-                    <button onclick="cycleLayout()" id="quickLayoutBtn" title="화면 배치 변경" class="px-3 py-2 rounded-xl text-xs font-bold theme-card border flex items-center gap-1.5 shrink-0 active:scale-95 transition">
-                        <span id="layoutIcon">🗂️</span>
-                        <span id="layoutLabel">카드형</span>
-                    </button>
+                    <!-- 필터 칩 & 보기 방식 전환 버튼 -->
+                    <div class="flex items-center justify-between md:justify-end gap-2">
+                        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                            <button onclick="setStatusFilter('all')" id="filter-all" class="px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">전체</button>
+                            <button onclick="setStatusFilter('visited')" id="filter-visited" class="px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">⭐ 단골·완료</button>
+                            <button onclick="setStatusFilter('wishlist')" id="filter-wishlist" class="px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">📌 가볼 곳</button>
+                        </div>
+
+                        <!-- 빠른 레이아웃 보기 전환 -->
+                        <button onclick="cycleLayout()" id="quickLayoutBtn" title="화면 배치 변경" class="px-3 py-2 rounded-xl text-xs font-bold theme-card border flex items-center gap-1.5 shrink-0 active:scale-95 transition">
+                            <span id="layoutIcon">🗂️</span>
+                            <span id="layoutLabel">카드형</span>
+                        </button>
+                    </div>
                 </div>
+
+                <!-- 메모 #태그 빠른 검색 바 -->
+                <div id="hashtagFilterBar" class="hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5"></div>
             </section>
 
             <!-- 3. 장소 리스트 피드 컨테이너 (모바일 1열 -> 태블릿/PC 다단 그리드) -->
@@ -350,15 +422,33 @@
 
                 <!-- 4. 데이터 영구 저장 & 백업 관리 -->
                 <section class="theme-card p-5 border space-y-3.5 lg:col-span-2">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
                         <h3 class="text-sm font-extrabold theme-text-main flex items-center gap-1.5">
                             <span>💾</span> 4. 데이터 영구 저장 & 백업 관리
                         </h3>
-                        <span class="text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-0.5 rounded-full">기기 자동 저장 ON</span>
+                        <div class="flex items-center gap-1.5">
+                            <div class="storage-tooltip-wrap inline-flex">
+                                <button type="button" onclick="openStorageGuideModal()" class="text-[11px] font-bold theme-accent-soft px-2.5 py-1 rounded-full flex items-center gap-1 hover:opacity-90 transition">
+                                    <span>ⓘ 기기 간 이동 안내</span>
+                                </button>
+                                <div class="storage-tooltip-bubble absolute right-0 bottom-full mb-2 z-50 w-64 p-3 rounded-2xl bg-slate-900 text-white text-[11px] leading-relaxed shadow-xl">
+                                    데이터는 현재 브라우저의 localStorage에 저장됩니다. 다른 기기에서는 자동 연동되지 않으니 아래 백업/복원 파일을 이용해 주세요.
+                                </div>
+                            </div>
+                            <span class="text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full">브라우저 저장 ON</span>
+                        </div>
                     </div>
-                    <p class="text-[11px] theme-text-sub leading-relaxed">
-                        폰 전원을 끄거나 앱을 닫아도 현재 기기에 자동 영구 저장되며, 백업 파일(.json)로 언제든 내보내거나 복원할 수 있습니다.
-                    </p>
+
+                    <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5">
+                        <span class="text-base leading-none mt-0.5 shrink-0">💡</span>
+                        <div class="text-[11px] theme-text-main leading-relaxed space-y-1">
+                            <p class="font-extrabold">다른 PC나 모바일에서도 기록을 이어서 보시겠어요?</p>
+                            <p class="theme-text-sub">
+                                모든 데이터는 <strong>현재 브라우저의 localStorage(로컬 저장소)</strong>에만 보관되므로 다른 기기나 다른 브라우저에서는 자동으로 보이지 않습니다.
+                                다른 기기에서 이용하려면 아래 <strong>[데이터 백업 (.json)]</strong>으로 파일을 다운로드한 뒤, 새 기기에서 <strong>[백업 파일 복원]</strong>을 눌러 불러와 주세요.
+                            </p>
+                        </div>
+                    </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                         <button onclick="exportDataBackup()" class="py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1">
@@ -558,8 +648,31 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold theme-text-main mb-1">💡 나만의 꿀팁 / 커스텀 메모</label>
-                    <textarea id="placeMemo" rows="2" placeholder="예: 창가 자리가 햇살 맛집, 주차는 건물 뒤편 공터 무료 이용 가능" class="theme-card w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-none"></textarea>
+                    <div class="flex flex-wrap items-center justify-between gap-1.5 mb-1">
+                        <label class="block text-xs font-bold theme-text-main">💡 나만의 꿀팁 / 커스텀 메모</label>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-bold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-full">✨ AI 요약 · #태그</span>
+                            <button type="button" id="btnMemoVoice" onclick="toggleMemoVoiceInput()" aria-label="음성으로 메모 이어 쓰기" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-500/10 hover:bg-slate-500/20 theme-text-main text-[11px] font-extrabold transition active:scale-95">
+                                <span id="memoVoiceBtnIcon">🎙️</span>
+                                <span id="memoVoiceBtnText">음성 입력</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 음성 녹음 중 상태 표시 배너 (빨간 점 애니메이션 + 실시간 인식 안내) -->
+                    <div id="memoVoiceStatus" class="hidden mb-1.5 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="relative flex h-2.5 w-2.5 shrink-0" aria-hidden="true">
+                                <span class="voice-rec-ring absolute inline-flex h-full w-full rounded-full bg-rose-500"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600"></span>
+                            </span>
+                            <span id="memoVoiceStatusText" class="text-[11px] font-extrabold text-rose-600 truncate">녹음 중 · 기존 메모 뒤에 이어서 입력됩니다</span>
+                        </div>
+                        <button type="button" onclick="stopMemoVoiceInput()" class="text-[10px] font-extrabold px-2 py-0.5 rounded-lg bg-rose-600 text-white shrink-0 hover:bg-rose-700 transition">중지</button>
+                    </div>
+
+                    <textarea id="placeMemo" rows="3" oninput="handleMemoManualInput()" placeholder="예: 창가 자리가 햇살 맛집, 주차는 건물 뒤편 공터 무료 #뷰맛집 #주차가능" class="theme-card w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-none"></textarea>
+                    <div id="memoHashtagPreview" class="hidden mt-1.5 flex flex-wrap items-center gap-1.5"></div>
                 </div>
             </div>
 
@@ -631,24 +744,148 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- 모달 6: 사진 & 영상 전체화면 갤러리 뷰어 -->
+    <!-- 모달 6: 사진 & 영상 이미지 갤러리 슬라이더 (슬라이드 쇼) -->
     <!-- ========================================== -->
-    <div id="mediaLightboxModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-sm flex flex-col justify-between p-4 animate-fade-in">
-        <div class="flex items-center justify-between text-white max-w-4xl w-full mx-auto">
-            <span id="lightboxCounter" class="text-xs font-bold bg-white/15 px-3 py-1 rounded-full">1 / 1</span>
-            <button onclick="closeMediaLightbox()" class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-sm font-bold">✕</button>
+    <div id="mediaLightboxModal" onclick="if (event.target === this) closeMediaLightbox()" class="fixed inset-0 z-[60] hidden bg-black/92 backdrop-blur-md flex flex-col justify-between p-3 sm:p-5 animate-fade-in select-none">
+        <!-- 상단 컨트롤 바 -->
+        <div class="flex items-center justify-between gap-2 text-white max-w-5xl w-full mx-auto shrink-0">
+            <div class="flex items-center gap-2 min-w-0">
+                <span id="lightboxCounter" class="text-xs font-extrabold bg-white/15 px-3 py-1.5 rounded-full shrink-0">1 / 1</span>
+                <span id="lightboxPlaceTitle" class="text-xs sm:text-sm font-bold text-white/90 truncate"></span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button" id="lightboxSlideshowBtn" onclick="toggleLightboxSlideshow()" class="px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-extrabold flex items-center gap-1.5 transition">
+                    <span>▶</span>
+                    <span>슬라이드 쇼</span>
+                </button>
+                <button type="button" onclick="closeMediaLightbox()" aria-label="갤러리 닫기" class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-sm font-bold transition">✕</button>
+            </div>
         </div>
-        <div id="lightboxStage" class="flex-1 flex items-center justify-center my-3 overflow-hidden max-w-4xl w-full mx-auto">
-            <!-- 이미지 또는 비디오 렌더링 -->
+
+        <!-- 중앙 슬라이더 뷰포트 (좌/우 화살표 + 터치 스와이프) -->
+        <div id="lightboxViewport" class="relative flex-1 my-3 overflow-hidden max-w-5xl w-full mx-auto flex items-center">
+            <div id="lightboxTrack" class="lightbox-track">
+                <!-- 슬라이드 동적 렌더링 -->
+            </div>
+
+            <button type="button" id="lightboxPrevBtn" onclick="navigateLightbox(-1)" aria-label="이전 미디어" class="hidden absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/55 hover:bg-black/80 text-white border border-white/20 flex items-center justify-center text-lg font-bold shadow-lg backdrop-blur-xs transition active:scale-90">
+                ‹
+            </button>
+            <button type="button" id="lightboxNextBtn" onclick="navigateLightbox(1)" aria-label="다음 미디어" class="hidden absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/55 hover:bg-black/80 text-white border border-white/20 flex items-center justify-center text-lg font-bold shadow-lg backdrop-blur-xs transition active:scale-90">
+                ›
+            </button>
         </div>
-        <div class="flex items-center justify-center gap-3 max-w-4xl w-full mx-auto pb-2">
-            <button onclick="navigateLightbox(-1)" class="px-4 py-2 rounded-xl bg-white/15 text-white text-xs font-bold hover:bg-white/25">◀ 이전</button>
-            <button onclick="navigateLightbox(1)" class="px-4 py-2 rounded-xl bg-white/15 text-white text-xs font-bold hover:bg-white/25">다음 ▶</button>
+
+        <!-- 하단 인디케이터 도트 & 썸네일 스트립 -->
+        <div class="max-w-5xl w-full mx-auto space-y-2.5 shrink-0 pb-1">
+            <div id="lightboxDots" class="flex items-center justify-center gap-1.5"></div>
+            <div id="lightboxThumbs" class="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-1 px-2"></div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 모달 7: 브라우저 저장소(localStorage) & 백업/복원 안내 -->
+    <!-- ========================================== -->
+    <div id="storageGuideModal" onclick="if (event.target === this) closeStorageGuideModal()" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="theme-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 shadow-2xl animate-slide-up">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl theme-accent-soft flex items-center justify-center text-xl shrink-0">💾</div>
+                    <div>
+                        <h3 class="text-base font-black theme-text-main">데이터 저장 및 기기 이동 안내</h3>
+                        <p class="text-[11px] theme-text-sub mt-0.5">브라우저 localStorage 저장 방식</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeStorageGuideModal()" aria-label="안내 닫기" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-slate-500/5 border border-slate-500/10 space-y-2.5 text-xs leading-relaxed">
+                <p class="theme-text-main font-semibold">
+                    이 앱의 기록·카테고리·테마 설정은 서버 동기화 없이 <span class="theme-accent-text font-extrabold">현재 브라우저의 localStorage</span>에만 안전하게 저장됩니다.
+                </p>
+                <ul class="space-y-1.5 text-[11px] theme-text-sub">
+                    <li class="flex items-start gap-1.5">
+                        <span class="shrink-0">1️⃣</span>
+                        <span><strong>다른 PC나 모바일</strong>에서 이어서 이용하려면 현재 기기에서 <strong>수동으로 백업 파일(.json)을 다운로드</strong>해 주세요.</span>
+                    </li>
+                    <li class="flex items-start gap-1.5">
+                        <span class="shrink-0">2️⃣</span>
+                        <span>새 기기에서 앱을 연 뒤 <strong>[테마·설정 → 백업 파일 복원]</strong>으로 해당 파일을 불러오면 기록이 그대로 복원됩니다.</span>
+                    </li>
+                    <li class="flex items-start gap-1.5">
+                        <span class="shrink-0">⚠️</span>
+                        <span>브라우저 캐시/사이트 데이터를 삭제하면 저장된 기록도 함께 지워지므로 정기적인 파일 백업을 권장합니다.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="exportDataBackup(); closeStorageGuideModal();" class="py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1">
+                    <span>📤</span> 지금 백업받기
+                </button>
+                <button type="button" onclick="goToBackupSection()" class="py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1">
+                    <span>📥</span> 복원하러 가기
+                </button>
+            </div>
+
+            <button type="button" onclick="closeStorageGuideModal()" class="w-full py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md active:scale-98 transition">
+                확인했어요
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 모달 8: 장소 카카오톡 / 문자 공유 모달 -->
+    <!-- ========================================== -->
+    <div id="placeShareModal" onclick="if (event.target === this) closePlaceShareModal()" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="theme-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 shadow-2xl animate-slide-up">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0" style="background-color: #FEE500; color: #191919;">💬</div>
+                    <div>
+                        <h3 class="text-base font-black theme-text-main">장소 정보 공유하기</h3>
+                        <p id="sharePlaceSubtitle" class="text-[11px] theme-text-sub mt-0.5 truncate max-w-[230px]"></p>
+                    </div>
+                </div>
+                <button type="button" onclick="closePlaceShareModal()" aria-label="공유 창 닫기" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold theme-text-sub mb-1.5">공유될 메시지 미리보기 (장소명 · 네이버/카카오 지도 링크)</label>
+                <textarea id="sharePreviewText" rows="5" readonly class="theme-card w-full px-3.5 py-2.5 border rounded-2xl text-xs leading-relaxed theme-text-main focus:outline-none resize-none"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="copyShareLinkOnly('naver')" class="py-2 px-3 rounded-xl bg-emerald-500/15 text-emerald-700 text-[11px] font-extrabold hover:bg-emerald-500/25 active:scale-95 transition">
+                    🟢 네이버 지도 링크 복사
+                </button>
+                <button type="button" onclick="copyShareLinkOnly('kakao')" class="py-2 px-3 rounded-xl bg-amber-400/20 text-amber-800 text-[11px] font-extrabold hover:bg-amber-400/30 active:scale-95 transition">
+                    🟡 카카오맵 링크 복사
+                </button>
+            </div>
+
+            <div class="space-y-2 pt-1">
+                <button type="button" onclick="copyFullShareText()" class="w-full py-3 rounded-2xl text-xs font-extrabold shadow-md active:scale-98 transition flex items-center justify-center gap-1.5" style="background-color: #FEE500; color: #191919;">
+                    <span>📋</span>
+                    <span>전체 복사 (카카오톡에 바로 붙여넣기)</span>
+                </button>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <a id="shareSmsAnchor" href="sms:" class="py-2.5 px-3 rounded-2xl border border-slate-500/20 text-xs font-extrabold theme-text-main hover:bg-slate-500/5 active:scale-95 transition flex items-center justify-center gap-1.5">
+                        <span>✉️</span>
+                        <span>문자로 보내기</span>
+                    </a>
+                    <button type="button" id="nativeShareBtn" onclick="triggerNativePlaceShare()" class="py-2.5 px-3 rounded-2xl theme-accent-bg text-xs font-extrabold shadow-sm hover:opacity-95 active:scale-95 transition flex items-center justify-center gap-1.5">
+                        <span>📤</span>
+                        <span>앱으로 공유</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- 토스트 알림 -->
-    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900/95 text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-xl backdrop-blur-md transition-all"></div>
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[70] hidden bg-slate-900/95 text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-xl backdrop-blur-md transition-all"></div>
 
     <!-- ========================================== -->
     <!-- JavaScript 애플리케이션 로직 -->
@@ -923,7 +1160,8 @@
         const STORAGE_KEYS = {
             CATEGORIES: 'dangol_note_categories_v1',
             PLACES: 'dangol_note_places_v1',
-            SETTINGS: 'dangol_note_settings_v1'
+            SETTINGS: 'dangol_note_settings_v1',
+            STORAGE_GUIDE_SEEN: 'dangol_note_storage_guide_seen_v1'
         };
 
         function loadFromStorage(key, fallback) {
@@ -942,7 +1180,8 @@
                 localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({
                     currentMoodId,
                     currentLayout,
-                    currentRadius
+                    currentRadius,
+                    currentSort
                 }));
             } catch (e) {
                 showToast('⚠️ 브라우저 저장 공간이 가득 찼습니다. 백업 후 불필요한 사진을 정리해 주세요.');
@@ -956,6 +1195,7 @@
         let selectedCategory = 'all';
         let isCategoryDeleteMode = false;
         let statusFilter = 'all';
+        let currentSort = ['newest', 'name', 'status'].includes(savedSettings.currentSort) ? savedSettings.currentSort : 'newest';
         let currentMoodId = savedSettings.currentMoodId || 'warm-coral';
         let currentLayout = savedSettings.currentLayout || 'card';
         let currentRadius = savedSettings.currentRadius || '24px';
@@ -963,6 +1203,9 @@
         let tempDraftMedia = []; // 장소 등록 모달 내 임시 첨부 사진/영상 목록
         let lightboxMediaList = []; // 라이트박스 뷰어용 미디어 배열
         let lightboxCurrentIndex = 0;
+        let activeDetailPlaceId = null;
+        const aiSummarizingIds = new Set();
+        const aiSummaryErrors = new Map();
 
         // 초기화
         window.onload = function() {
@@ -970,9 +1213,18 @@
             applyMoodTheme(currentMoodId, false);
             setCardRadius(currentRadius, currentRadius === '12px' ? '단정한 각짐 (12px)' : currentRadius === '32px' ? '둥근 조약돌 (32px)' : '몽글몽글 (24px)', false);
             setLayoutMode(currentLayout, false);
+            setSortMode(currentSort, false);
             renderCategories();
             renderPlaces();
             renderAdminCategoryList();
+
+            try {
+                if (!localStorage.getItem(STORAGE_KEYS.STORAGE_GUIDE_SEEN)) {
+                    openStorageGuideModal();
+                }
+            } catch (e) {
+                // ignore storage read error
+            }
         };
 
         // ==========================================
@@ -1174,6 +1426,34 @@
             renderPlaces();
         }
 
+        function setSortMode(sortMode, notify = true) {
+            currentSort = ['newest', 'name', 'status'].includes(sortMode) ? sortMode : 'newest';
+            const sortSelect = document.getElementById('sortSelect');
+            if (sortSelect) sortSelect.value = currentSort;
+            saveAppState();
+            renderPlaces();
+            if (notify) {
+                const labels = {
+                    newest: '🕒 최신 등록순으로 정렬되었습니다.',
+                    name: '🔤 가나다순으로 정렬되었습니다.',
+                    status: '⭐ 방문 상태별(단골 우선)로 정렬되었습니다.'
+                };
+                showToast(labels[currentSort]);
+            }
+        }
+
+        function getPlaceCreatedOrder(place, index) {
+            if (place && place.createdAt) {
+                const parsed = new Date(place.createdAt).getTime();
+                if (Number.isFinite(parsed)) return parsed;
+            }
+            if (place && typeof place.id === 'string') {
+                const match = place.id.match(/^p_(\d+)/);
+                if (match) return Number(match[1]);
+            }
+            return places.length - index;
+        }
+
         // PC 사이드바 통계 업데이트
         function updateSidebarStats() {
             const visitedCount = places.filter(p => p.status === 'visited').length;
@@ -1184,24 +1464,205 @@
             if (elW) elW.innerText = wishlistCount;
         }
 
+        function extractHashtags(text) {
+            if (!text || typeof text !== 'string') return [];
+            const pattern = /https?:\/\/[^\s]+|#[가-힣a-zA-Z0-9_-]+/g;
+            const seen = new Set();
+            const tags = [];
+            let match;
+            while ((match = pattern.exec(text)) !== null) {
+                const token = match[0];
+                if (!token.startsWith('#') || token.length < 2) continue;
+                const key = token.toLowerCase();
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    tags.push(token);
+                }
+            }
+            return tags;
+        }
+
+        function formatMemoWithHashtags(text) {
+            if (!text || typeof text !== 'string') return '';
+            const pattern = /https?:\/\/[^\s]+|#[가-힣a-zA-Z0-9_-]+/g;
+            let result = '';
+            let lastIdx = 0;
+            let match;
+
+            while ((match = pattern.exec(text)) !== null) {
+                if (match.index > lastIdx) {
+                    result += escapeHtml(text.slice(lastIdx, match.index)).replace(/\n/g, '<br>');
+                }
+                const token = match[0];
+                if (token.startsWith('#') && token.length >= 2) {
+                    const safeTag = escapeHtml(token);
+                    result += `<button type="button" onclick="event.stopPropagation(); searchByHashtag('${safeTag}')" class="inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded-lg theme-accent-soft font-extrabold hover:opacity-85 active:scale-95 transition cursor-pointer">${safeTag}</button>`;
+                } else {
+                    result += escapeHtml(token);
+                }
+                lastIdx = pattern.lastIndex;
+            }
+
+            if (lastIdx < text.length) {
+                result += escapeHtml(text.slice(lastIdx)).replace(/\n/g, '<br>');
+            }
+            return result;
+        }
+
+        function renderMemoHashtagPreview() {
+            const memoEl = document.getElementById('placeMemo');
+            const previewEl = document.getElementById('memoHashtagPreview');
+            if (!memoEl || !previewEl) return;
+
+            const tags = extractHashtags(memoEl.value);
+            if (tags.length === 0) {
+                previewEl.classList.add('hidden');
+                previewEl.innerHTML = '';
+                return;
+            }
+
+            previewEl.classList.remove('hidden');
+            previewEl.innerHTML = `
+                <span class="text-[10px] font-bold theme-text-muted">🏷️ 감지된 태그 (클릭 시 검색):</span>
+                ${tags.map(tag => `
+                    <button type="button" onclick="searchByHashtag('${escapeHtml(tag)}')" class="px-2 py-0.5 rounded-full text-[11px] font-extrabold theme-accent-soft hover:opacity-85 active:scale-95 transition">
+                        ${escapeHtml(tag)}
+                    </button>
+                `).join('')}
+            `;
+        }
+
+        function renderHashtagFilterBar(activeKeyword) {
+            const bar = document.getElementById('hashtagFilterBar');
+            if (!bar) return;
+
+            const tagCounts = new Map();
+            places.forEach(place => {
+                extractHashtags(place.memo || '').forEach(tag => {
+                    const lower = tag.toLowerCase();
+                    const prev = tagCounts.get(lower);
+                    if (prev) {
+                        prev.count += 1;
+                    } else {
+                        tagCounts.set(lower, { tag, count: 1 });
+                    }
+                });
+            });
+
+            if (tagCounts.size === 0) {
+                bar.classList.add('hidden');
+                bar.innerHTML = '';
+                return;
+            }
+
+            const sortedTags = Array.from(tagCounts.values()).sort((a, b) => {
+                if (b.count !== a.count) return b.count - a.count;
+                return a.tag.localeCompare(b.tag, 'ko');
+            });
+
+            bar.classList.remove('hidden');
+            bar.innerHTML = `
+                <span class="text-[11px] font-extrabold theme-text-muted shrink-0 mr-0.5">🏷️ 태그</span>
+                ${sortedTags.map(({ tag, count }) => {
+                    const isActive = activeKeyword === tag.toLowerCase();
+                    return `
+                        <button type="button" onclick="${isActive ? 'clearSearchFilter()' : `searchByHashtag('${escapeHtml(tag)}')`}" class="px-2.5 py-1 rounded-full text-[11px] font-extrabold whitespace-nowrap shrink-0 transition active:scale-95 ${isActive ? 'theme-accent-bg shadow-xs' : 'theme-accent-soft hover:opacity-85'}">
+                            ${escapeHtml(tag)} <span class="opacity-70 text-[10px]">${count}</span>
+                        </button>
+                    `;
+                }).join('')}
+                ${activeKeyword.startsWith('#') ? `
+                    <button type="button" onclick="clearSearchFilter()" class="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-500/10 theme-text-sub hover:bg-slate-500/20 whitespace-nowrap shrink-0">
+                        ✕ 태그 해제
+                    </button>
+                ` : ''}
+            `;
+        }
+
+        function searchByHashtag(tag) {
+            const cleanTag = String(tag || '').trim();
+            if (!cleanTag) return;
+
+            const placeModal = document.getElementById('placeModal');
+            if (placeModal && !placeModal.classList.contains('hidden')) {
+                closePlaceModal();
+            }
+            const detailModal = document.getElementById('placeDetailModal');
+            if (detailModal && !detailModal.classList.contains('hidden')) {
+                activeDetailPlaceId = null;
+                detailModal.classList.add('hidden');
+            }
+
+            switchBottomTab('home');
+            const input = document.getElementById('searchInput');
+            if (input) {
+                input.value = cleanTag;
+            }
+            renderPlaces();
+            showToast(`🏷️ '${cleanTag}' 태그가 포함된 장소를 검색했습니다.`);
+        }
+
+        function clearSearchFilter() {
+            const input = document.getElementById('searchInput');
+            if (input) input.value = '';
+            renderPlaces();
+        }
+
         function renderPlaces() {
             updateSidebarStats();
-            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchInputEl = document.getElementById('searchInput');
+            const keyword = (searchInputEl?.value || '').toLowerCase().trim();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (clearBtn) clearBtn.classList.toggle('hidden', !keyword);
+
+            renderHashtagFilterBar(keyword);
+
             const container = document.getElementById('placesContainer');
             const emptyState = document.getElementById('emptyState');
+
+            const indexMap = new Map(places.map((p, idx) => [p.id, idx]));
 
             const filtered = places.filter(place => {
                 const matchCat = selectedCategory === 'all' || place.categoryId === selectedCategory;
                 const matchStatus = statusFilter === 'all' || place.status === statusFilter;
                 const customText = Object.values(place.customValues || {}).join(' ').toLowerCase();
-                const matchKeyword = !keyword ||
-                    (place.name || '').toLowerCase().includes(keyword) ||
-                    (place.address || '').toLowerCase().includes(keyword) ||
-                    (place.memo || '').toLowerCase().includes(keyword) ||
-                    customText.includes(keyword) ||
-                    (place.doneItems || []).some(i => i.toLowerCase().includes(keyword)) ||
-                    (place.todoItems || []).some(i => i.toLowerCase().includes(keyword));
+                const memoTags = extractHashtags(place.memo || '').map(t => t.toLowerCase());
+                const summaryText = place.aiSummary
+                    ? `${place.aiSummary.headline || ''} ${(place.aiSummary.badges || []).map(b => `${b.label} ${b.value}`).join(' ')}`.toLowerCase()
+                    : '';
+
+                const matchKeyword = !keyword
+                    ? true
+                    : keyword.startsWith('#')
+                        ? memoTags.some(t => t === keyword || t.includes(keyword))
+                        : (place.name || '').toLowerCase().includes(keyword) ||
+                          (place.address || '').toLowerCase().includes(keyword) ||
+                          (place.memo || '').toLowerCase().includes(keyword) ||
+                          customText.includes(keyword) ||
+                          summaryText.includes(keyword) ||
+                          (place.doneItems || []).some(i => i.toLowerCase().includes(keyword)) ||
+                          (place.todoItems || []).some(i => i.toLowerCase().includes(keyword));
                 return matchCat && matchStatus && matchKeyword;
+            });
+
+            filtered.sort((a, b) => {
+                const idxA = indexMap.get(a.id) ?? 0;
+                const idxB = indexMap.get(b.id) ?? 0;
+
+                if (currentSort === 'name') {
+                    const nameCmp = (a.name || '').localeCompare(b.name || '', 'ko');
+                    if (nameCmp !== 0) return nameCmp;
+                    return getPlaceCreatedOrder(b, idxB) - getPlaceCreatedOrder(a, idxA);
+                }
+                if (currentSort === 'status') {
+                    const rankA = a.status === 'visited' ? 0 : 1;
+                    const rankB = b.status === 'visited' ? 0 : 1;
+                    if (rankA !== rankB) return rankA - rankB;
+                    return getPlaceCreatedOrder(b, idxB) - getPlaceCreatedOrder(a, idxA);
+                }
+                // default: 'newest'
+                const timeDiff = getPlaceCreatedOrder(b, idxB) - getPlaceCreatedOrder(a, idxA);
+                return timeDiff !== 0 ? timeDiff : idxA - idxB;
             });
 
             if (filtered.length === 0) {
@@ -1239,6 +1700,7 @@
                                     <div class="flex items-center gap-1.5">
                                         <h3 class="text-sm font-extrabold theme-text-main truncate">${escapeHtml(place.name)}</h3>
                                         <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${isVisited ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}">${isVisited ? '단골' : '위시'}</span>
+                                        ${place.aiSummary?.headline ? `<span class="text-[10px] font-bold bg-indigo-500/10 text-indigo-600 px-1.5 py-0.5 rounded-md shrink-0">✨ AI 요약</span>` : ''}
                                         ${mediaCount > 0 ? `<span class="text-[10px] font-bold theme-accent-soft px-1.5 py-0.5 rounded-md shrink-0">📸 ${mediaCount}</span>` : ''}
                                     </div>
                                     <p class="text-[11px] theme-text-sub truncate mt-0.5">${escapeHtml(place.address || '위치 미지정')} · ${escapeHtml(place.hours || '시간 정보 없음')}</p>
@@ -1257,9 +1719,15 @@
                     return `
                         <div onclick="openPlaceDetail('${escapeHtml(place.id)}')" class="theme-card p-3.5 border flex flex-col justify-between cursor-pointer active:scale-[0.98]">
                             <div>
-                                ${gridMedia && gridMedia.type === 'image'
-                                    ? `<div class="relative w-full h-28 mb-2.5 rounded-2xl overflow-hidden bg-slate-500/10">
-                                        <img src="${escapeHtml(gridMedia.url)}" alt="${escapeHtml(place.name)}" class="w-full h-full object-cover">
+                                ${gridMedia
+                                    ? `<div onclick="event.stopPropagation(); openMediaLightbox('${escapeHtml(place.id)}', ${Math.max(0, (place.media || []).indexOf(gridMedia))})" class="relative w-full h-28 mb-2.5 rounded-2xl overflow-hidden bg-slate-900 group">
+                                        ${gridMedia.type === 'image'
+                                            ? `<img src="${escapeHtml(gridMedia.url)}" alt="${escapeHtml(place.name)}" class="w-full h-full object-cover group-hover:scale-105 transition">`
+                                            : `<video src="${escapeHtml(gridMedia.url)}" class="w-full h-full object-cover opacity-85" muted playsinline></video>
+                                               <span class="absolute inset-0 flex items-center justify-center">
+                                                   <span class="w-8 h-8 rounded-full bg-black/65 text-white flex items-center justify-center text-xs shadow-md">▶</span>
+                                               </span>`
+                                        }
                                         <span class="absolute top-2 left-2 text-[10px] font-extrabold px-2 py-0.5 rounded-full backdrop-blur-md ${isVisited ? 'bg-amber-500/90 text-white' : 'bg-emerald-500/90 text-white'}">${isVisited ? '⭐ 단골' : '📌 위시'}</span>
                                         ${gridMediaCount > 1 ? `<span class="absolute bottom-2 right-2 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-black/65 text-white">+${gridMediaCount - 1}</span>` : ''}
                                        </div>`
@@ -1271,10 +1739,11 @@
                                 <h3 class="text-sm font-extrabold theme-text-main line-clamp-1">${escapeHtml(place.name)}</h3>
                                 <p class="text-[11px] theme-text-sub line-clamp-1 mt-0.5">${escapeHtml(place.address || category.name)}</p>
                             </div>
-                            <div class="mt-3 pt-2 border-t border-slate-500/10">
+                            <div class="mt-3 pt-2 border-t border-slate-500/10 flex items-center justify-between gap-1.5">
                                 <p class="text-[11px] font-semibold theme-accent-text line-clamp-1">
-                                    ${escapeHtml(firstCustom ? `${firstCustom[1]}` : ((place.doneItems || [])[0] || (place.todoItems || [])[0] || '메모 보기'))}
+                                    ${escapeHtml(place.aiSummary?.headline || (firstCustom ? `${firstCustom[1]}` : ((place.doneItems || [])[0] || (place.todoItems || [])[0] || '메모 보기')))}
                                 </p>
+                                ${place.aiSummary?.headline ? `<span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 shrink-0">✨ AI</span>` : ''}
                             </div>
                         </div>
                     `;
@@ -1420,13 +1889,16 @@
                     </div>
 
                     <div>
-                        <!-- 나만의 커스텀 메모 -->
+                        <!-- 나만의 커스텀 메모 (#해시태그 클릭 검색 지원) -->
                         ${place.memo ? `
                             <div class="p-3 rounded-2xl text-xs leading-relaxed theme-text-sub bg-slate-500/5 flex items-start gap-2 mb-2.5">
                                 <span class="shrink-0">💡</span>
-                                <span>${escapeHtml(place.memo)}</span>
+                                <div class="min-w-0 break-words">${formatMemoWithHashtags(place.memo)}</div>
                             </div>
                         ` : ''}
+
+                        <!-- AI 메모 요약 배지 -->
+                        ${buildAiSummaryBadgeHTML(place)}
 
                         <!-- 원터치 내비게이션(길찾기) 실행 바 -->
                         <div class="pt-2.5 border-t border-slate-500/10 flex items-center justify-between gap-1.5">
@@ -1445,9 +1917,151 @@
                                 </a>
                             </div>
                         </div>
+
+                        <!-- 카카오톡 / 문자 공유 버튼 -->
+                        <div class="pt-2">
+                            <button type="button" onclick="openPlaceShareModal('${escapeHtml(place.id)}')" class="w-full py-2 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-xs hover:opacity-95 active:scale-[0.99] transition" style="background-color: #FEE500; color: #191919;">
+                                <span>💬</span>
+                                <span>카카오톡/문자로 공유</span>
+                            </button>
+                        </div>
                     </div>
                 </article>
             `;
+        }
+
+        function buildAiSummaryBadgeHTML(place) {
+            const memo = (place.memo || '').trim();
+            if (!memo && !place.aiSummary) return '';
+
+            const isLoading = aiSummarizingIds.has(place.id);
+            const errorMsg = aiSummaryErrors.get(place.id);
+            const summary = place.aiSummary;
+            const isFresh = Boolean(summary && (!memo || summary.memoSnapshot === memo));
+
+            if (isLoading) {
+                return `
+                    <div class="mb-2.5 p-2.5 rounded-2xl bg-indigo-500/8 border border-indigo-500/20 flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-extrabold shrink-0">
+                            <span class="animate-spin-fast inline-block">✨</span> AI 요약
+                        </span>
+                        <span class="text-[11px] font-semibold text-indigo-600">메모에서 핵심 정보를 추출하는 중...</span>
+                    </div>
+                `;
+            }
+
+            if (isFresh && summary) {
+                const badges = Array.isArray(summary.badges) ? summary.badges : [];
+                return `
+                    <div class="mb-2.5 p-2.5 rounded-2xl bg-indigo-500/6 border border-indigo-500/20 space-y-1.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex items-center gap-1.5 flex-wrap min-w-0">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-extrabold shrink-0">
+                                    <span>✨</span> AI 요약
+                                </span>
+                                ${summary.headline ? `<span class="text-[11px] font-extrabold theme-text-main leading-snug">${escapeHtml(summary.headline)}</span>` : ''}
+                            </div>
+                            <button type="button" onclick="generatePlaceAiSummary('${escapeHtml(place.id)}', false)" title="AI 요약 다시 생성" aria-label="AI 요약 다시 생성" class="text-[11px] font-bold text-indigo-500 hover:text-indigo-700 px-1.5 py-0.5 rounded-lg hover:bg-indigo-500/10 shrink-0 transition">↻</button>
+                        </div>
+                        ${badges.length > 0 ? `
+                            <div class="flex flex-wrap gap-1.5">
+                                ${badges.map(b => `
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/80 dark:bg-slate-800/70 border border-indigo-500/15 text-[10px] font-bold theme-text-main">
+                                        <span class="text-indigo-600 font-extrabold">${escapeHtml(b.label)}</span>
+                                        <span class="opacity-40">·</span>
+                                        <span>${escapeHtml(b.value)}</span>
+                                    </span>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            if (memo) {
+                return `
+                    <div class="mb-2.5 flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-2xl bg-slate-500/5 border border-dashed border-indigo-500/25">
+                        <span class="text-[11px] font-semibold ${errorMsg ? 'text-rose-600' : 'theme-text-sub'}">
+                            ${errorMsg ? `⚠️ ${escapeHtml(errorMsg)}` : '✨ 메모 핵심 내용을 AI 요약 배지로 정리할 수 있어요'}
+                        </span>
+                        <button type="button" onclick="generatePlaceAiSummary('${escapeHtml(place.id)}', false)" class="px-2.5 py-1 rounded-full bg-indigo-600 text-white text-[10px] font-extrabold hover:bg-indigo-700 active:scale-95 transition shrink-0">
+                            ✨ AI 요약 생성
+                        </button>
+                    </div>
+                `;
+            }
+
+            return '';
+        }
+
+        async function generatePlaceAiSummary(placeId, silent = true) {
+            const place = places.find(p => p.id === placeId);
+            if (!place) return;
+
+            const memo = (place.memo || '').trim();
+            if (!memo) {
+                if (!silent) showToast('요약할 메모 내용을 먼저 입력해 주세요.');
+                return;
+            }
+            if (aiSummarizingIds.has(placeId)) return;
+
+            aiSummarizingIds.add(placeId);
+            aiSummaryErrors.delete(placeId);
+            renderPlaces();
+            refreshDetailModalIfOpen(placeId);
+
+            try {
+                const category = categories.find(c => c.id === place.categoryId);
+                const response = await fetch('/api/places/summarize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: place.name || '',
+                        categoryName: category ? category.name : '',
+                        memo,
+                        doneItems: place.doneItems || [],
+                        todoItems: place.todoItems || [],
+                        customValues: place.customValues || {}
+                    })
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || !data?.summary) {
+                    throw new Error(data?.error || 'AI 요약을 생성하지 못했습니다.');
+                }
+
+                const latestPlace = places.find(p => p.id === placeId);
+                if (latestPlace) {
+                    latestPlace.aiSummary = {
+                        headline: data.summary.headline || '',
+                        badges: Array.isArray(data.summary.badges) ? data.summary.badges : [],
+                        memoSnapshot: memo,
+                        updatedAt: new Date().toISOString()
+                    };
+                    saveAppState();
+                }
+
+                if (!silent) {
+                    showToast('✨ 메모 AI 요약 배지가 업데이트되었습니다!');
+                }
+            } catch (err) {
+                const msg = err?.message || 'AI 요약을 생성하지 못했습니다.';
+                aiSummaryErrors.set(placeId, msg);
+                showToast(`⚠️ ${msg}`);
+            } finally {
+                aiSummarizingIds.delete(placeId);
+                renderPlaces();
+                refreshDetailModalIfOpen(placeId);
+            }
+        }
+
+        function refreshDetailModalIfOpen(placeId) {
+            const modal = document.getElementById('placeDetailModal');
+            if (!modal || modal.classList.contains('hidden') || activeDetailPlaceId !== placeId) return;
+            const place = places.find(p => p.id === placeId);
+            if (!place) return;
+            const category = categories.find(c => c.id === place.categoryId) || categories[0];
+            document.getElementById('placeDetailContent').innerHTML = buildDetailCardHTML(place, category, place.status === 'visited');
         }
 
         // ==========================================
@@ -1483,14 +2097,138 @@
         function openPlaceDetail(placeId) {
             const place = places.find(p => p.id === placeId);
             if (!place) return;
+            activeDetailPlaceId = placeId;
             const category = categories.find(c => c.id === place.categoryId) || categories[0];
             document.getElementById('placeDetailContent').innerHTML = buildDetailCardHTML(place, category, place.status === 'visited');
             document.getElementById('placeDetailModal').classList.remove('hidden');
         }
 
         function closePlaceDetailModal() {
+            activeDetailPlaceId = null;
             document.getElementById('placeDetailModal').classList.add('hidden');
             renderPlaces();
+        }
+
+        // ==========================================
+        // 5-1. 장소 카카오톡 / 문자 공유 및 링크 복사
+        // ==========================================
+        let currentSharePayload = null;
+
+        function buildPlaceSharePayload(place) {
+            const rawQuery = [place.address, place.name].filter(Boolean).join(' ').trim() || place.name || '';
+            const encodedQuery = encodeURIComponent(rawQuery);
+            const naverMapUrl = `https://map.naver.com/v5/search/${encodedQuery}`;
+            const kakaoMapUrl = `https://map.kakao.com/link/search/${encodedQuery}`;
+
+            const lines = [`📍 ${place.name}`];
+            if (place.address) lines.push(`주소: ${place.address}`);
+            if (place.hours) lines.push(`영업시간: ${place.hours}`);
+            lines.push('');
+            lines.push(`🗺️ 네이버 지도: ${naverMapUrl}`);
+            lines.push(`🗺️ 카카오맵: ${kakaoMapUrl}`);
+
+            return {
+                title: place.name || '장소 공유',
+                text: lines.join('\n'),
+                naverMapUrl,
+                kakaoMapUrl
+            };
+        }
+
+        async function copyTextToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } catch {
+                    // fallback below
+                }
+            }
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            let copied = false;
+            try {
+                copied = document.execCommand('copy');
+            } catch {
+                copied = false;
+            }
+            document.body.removeChild(textarea);
+            return copied;
+        }
+
+        function openPlaceShareModal(placeId) {
+            const place = places.find(p => p.id === placeId);
+            if (!place) return;
+
+            currentSharePayload = buildPlaceSharePayload(place);
+
+            const subtitleEl = document.getElementById('sharePlaceSubtitle');
+            const previewEl = document.getElementById('sharePreviewText');
+            const smsAnchor = document.getElementById('shareSmsAnchor');
+            const nativeBtn = document.getElementById('nativeShareBtn');
+
+            if (subtitleEl) subtitleEl.innerText = place.name || '';
+            if (previewEl) previewEl.value = currentSharePayload.text;
+            if (smsAnchor) {
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                const sep = isIOS ? '&' : '?';
+                smsAnchor.href = `sms:${sep}body=${encodeURIComponent(currentSharePayload.text)}`;
+            }
+            if (nativeBtn) {
+                nativeBtn.classList.toggle('hidden', typeof navigator.share !== 'function');
+            }
+
+            document.getElementById('placeShareModal').classList.remove('hidden');
+        }
+
+        function closePlaceShareModal() {
+            document.getElementById('placeShareModal').classList.add('hidden');
+        }
+
+        async function copyFullShareText() {
+            if (!currentSharePayload) return;
+            const previewEl = document.getElementById('sharePreviewText');
+            const textToCopy = (previewEl && previewEl.value) ? previewEl.value : currentSharePayload.text;
+            const ok = await copyTextToClipboard(textToCopy);
+            if (ok) {
+                showToast('📋 장소 이름과 지도 링크가 복사되었습니다! 카카오톡에 붙여넣기 하세요.');
+            } else {
+                showToast('⚠️ 복사에 실패했습니다. 미리보기 창에서 직접 복사해 주세요.');
+            }
+        }
+
+        async function copyShareLinkOnly(provider) {
+            if (!currentSharePayload) return;
+            const url = provider === 'kakao' ? currentSharePayload.kakaoMapUrl : currentSharePayload.naverMapUrl;
+            const label = provider === 'kakao' ? '카카오맵' : '네이버 지도';
+            const ok = await copyTextToClipboard(`${currentSharePayload.title}\n${url}`);
+            if (ok) {
+                showToast(`📋 '${currentSharePayload.title}' ${label} 링크가 복사되었습니다!`);
+            } else {
+                showToast('⚠️ 링크 복사에 실패했습니다.');
+            }
+        }
+
+        async function triggerNativePlaceShare() {
+            if (!currentSharePayload) return;
+            if (typeof navigator.share === 'function') {
+                try {
+                    await navigator.share({
+                        title: currentSharePayload.title,
+                        text: currentSharePayload.text
+                    });
+                    closePlaceShareModal();
+                    return;
+                } catch (err) {
+                    if (err && err.name === 'AbortError') return;
+                }
+            }
+            await copyFullShareText();
         }
 
         // ==========================================
@@ -1619,6 +2357,7 @@
 
         // 장소 추가 모달
         function openPlaceModal() {
+            stopMemoVoiceInput(true);
             document.getElementById('editingPlaceId').value = '';
             document.getElementById('placeModalTitle').innerText = '새 공간 & 경험 기록';
             document.getElementById('placeModalSubmitBtn').innerText = '저장하기';
@@ -1631,6 +2370,7 @@
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
+            renderMemoHashtagPreview();
             tempDraftMedia = [];
             renderDraftMediaPreview();
             hideEmbeddedMapPreview();
@@ -1642,6 +2382,7 @@
 
         // 기존 장소 수정 및 사진/동영상 추가 모달 열기
         function openEditPlaceModal(placeId) {
+            stopMemoVoiceInput(true);
             const place = places.find(p => p.id === placeId);
             if (!place) return;
 
@@ -1662,6 +2403,7 @@
             document.getElementById('placeDoneItems').value = (place.doneItems || []).join(', ');
             document.getElementById('placeTodoItems').value = (place.todoItems || []).join(', ');
             document.getElementById('placeMemo').value = place.memo || '';
+            renderMemoHashtagPreview();
 
             const allMedia = Array.isArray(place.media) ? [...place.media] : [];
             const externalVideo = allMedia.find(m => m.type === 'video_url');
@@ -1874,7 +2616,220 @@
         }
 
         function closePlaceModal() {
+            stopMemoVoiceInput(true);
             document.getElementById('placeModal').classList.add('hidden');
+        }
+
+        // ==========================================
+        // 6-1B. Web Speech API 메모 음성 이어쓰기 (interimResults + continuous)
+        // ==========================================
+        let memoRecognition = null;
+        let isMemoVoiceListening = false;
+        let shouldKeepVoiceSession = false;
+        let memoVoiceBaseText = '';
+        let memoVoiceFinalizedText = '';
+        let memoVoiceInterimText = '';
+
+        function joinMemoVoiceSegments(baseText, finalizedText, interimText) {
+            const combinedSpeech = [finalizedText, interimText]
+                .map(s => (s || '').trim())
+                .filter(Boolean)
+                .join(' ');
+            if (!combinedSpeech) return baseText;
+            if (!baseText) return combinedSpeech;
+            const needsSpace = !/[\s\n]$/.test(baseText);
+            return baseText + (needsSpace ? ' ' : '') + combinedSpeech;
+        }
+
+        function setMemoVoiceUI(listening, interimPreview = '') {
+            const btn = document.getElementById('btnMemoVoice');
+            const btnIcon = document.getElementById('memoVoiceBtnIcon');
+            const btnText = document.getElementById('memoVoiceBtnText');
+            const statusBar = document.getElementById('memoVoiceStatus');
+            const statusText = document.getElementById('memoVoiceStatusText');
+            const memoEl = document.getElementById('placeMemo');
+
+            if (btn && btnIcon && btnText) {
+                if (listening) {
+                    btn.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-600 text-white text-[11px] font-extrabold shadow-sm transition active:scale-95';
+                    btnIcon.innerHTML = `<span class="relative flex h-2 w-2"><span class="voice-rec-ring absolute inline-flex h-full w-full rounded-full bg-white"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>`;
+                    btnText.innerText = '녹음 중 · 중지';
+                } else {
+                    btn.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-500/10 hover:bg-slate-500/20 theme-text-main text-[11px] font-extrabold transition active:scale-95';
+                    btnIcon.innerText = '🎙️';
+                    btnText.innerText = '음성 입력';
+                }
+            }
+
+            if (statusBar) {
+                statusBar.classList.toggle('hidden', !listening);
+            }
+            if (statusText && listening) {
+                statusText.innerText = interimPreview
+                    ? `인식 중: "${interimPreview}"`
+                    : '녹음 중 · 기존 메모 뒤에 이어서 입력됩니다';
+            }
+            if (memoEl) {
+                memoEl.classList.toggle('ring-2', listening);
+                memoEl.classList.toggle('ring-rose-500/60', listening);
+            }
+        }
+
+        function handleMemoManualInput() {
+            const memoEl = document.getElementById('placeMemo');
+            if (isMemoVoiceListening && memoEl) {
+                memoVoiceBaseText = memoEl.value;
+                memoVoiceFinalizedText = '';
+                memoVoiceInterimText = '';
+            }
+            renderMemoHashtagPreview();
+        }
+
+        function startMemoSpeechSession() {
+            const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognitionCtor) {
+                showToast('⚠️ 현재 브라우저는 음성 인식을 지원하지 않습니다. (Chrome/Safari/Edge 권장)');
+                return;
+            }
+
+            const memoEl = document.getElementById('placeMemo');
+            if (!memoEl) return;
+
+            memoVoiceBaseText = memoEl.value;
+            memoVoiceFinalizedText = '';
+            memoVoiceInterimText = '';
+            shouldKeepVoiceSession = true;
+
+            const recognition = new SpeechRecognitionCtor();
+            recognition.lang = 'ko-KR';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                isMemoVoiceListening = true;
+                setMemoVoiceUI(true);
+            };
+
+            recognition.onresult = (event) => {
+                let sessionFinal = '';
+                let sessionInterim = '';
+
+                for (let i = 0; i < event.results.length; i++) {
+                    const res = event.results[i];
+                    const transcript = res[0]?.transcript || '';
+                    if (res.isFinal) {
+                        sessionFinal += transcript;
+                    } else {
+                        sessionInterim += transcript;
+                    }
+                }
+
+                memoVoiceFinalizedText = sessionFinal.trim();
+                memoVoiceInterimText = sessionInterim.trim();
+
+                const currentMemoEl = document.getElementById('placeMemo');
+                if (currentMemoEl) {
+                    currentMemoEl.value = joinMemoVoiceSegments(
+                        memoVoiceBaseText,
+                        memoVoiceFinalizedText,
+                        memoVoiceInterimText
+                    );
+                    currentMemoEl.scrollTop = currentMemoEl.scrollHeight;
+                    renderMemoHashtagPreview();
+                }
+
+                setMemoVoiceUI(true, memoVoiceInterimText);
+            };
+
+            recognition.onerror = (event) => {
+                const errCode = event?.error;
+                if (errCode === 'aborted') return;
+                if (errCode === 'not-allowed' || errCode === 'service-not-allowed') {
+                    shouldKeepVoiceSession = false;
+                    showToast('🎙️ 마이크 접근 권한이 필요합니다. 브라우저 설정에서 허용해 주세요.');
+                } else if (errCode === 'no-speech') {
+                    // continuous 세션 유지 시 조용히 재대기
+                    return;
+                } else if (errCode === 'network') {
+                    shouldKeepVoiceSession = false;
+                    showToast('⚠️ 네트워크 연결을 확인 후 다시 음성 입력을 시도해 주세요.');
+                } else {
+                    shouldKeepVoiceSession = false;
+                    showToast('⚠️ 음성 인식 중 오류가 발생했습니다.');
+                }
+            };
+
+            recognition.onend = () => {
+                // 확정된 문장은 기존 메모 베이스에 영구 반영 (연속 이어쓰기 보장)
+                const currentMemoEl = document.getElementById('placeMemo');
+                const commitText = memoVoiceFinalizedText || (!shouldKeepVoiceSession ? memoVoiceInterimText : '');
+                if (commitText) {
+                    memoVoiceBaseText = joinMemoVoiceSegments(memoVoiceBaseText, commitText, '');
+                }
+                memoVoiceFinalizedText = '';
+                memoVoiceInterimText = '';
+                if (currentMemoEl) {
+                    currentMemoEl.value = memoVoiceBaseText;
+                    renderMemoHashtagPreview();
+                }
+
+                const placeModalOpen = !document.getElementById('placeModal')?.classList.contains('hidden');
+                if (shouldKeepVoiceSession && placeModalOpen) {
+                    try {
+                        startMemoSpeechSession();
+                        return;
+                    } catch {
+                        shouldKeepVoiceSession = false;
+                    }
+                }
+
+                isMemoVoiceListening = false;
+                memoRecognition = null;
+                setMemoVoiceUI(false);
+            };
+
+            memoRecognition = recognition;
+            try {
+                recognition.start();
+            } catch {
+                shouldKeepVoiceSession = false;
+                isMemoVoiceListening = false;
+                memoRecognition = null;
+                setMemoVoiceUI(false);
+                showToast('⚠️ 음성 인식을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+            }
+        }
+
+        function stopMemoVoiceInput(silent = false) {
+            shouldKeepVoiceSession = false;
+            if (memoRecognition) {
+                try {
+                    memoRecognition.stop();
+                } catch {
+                    try {
+                        memoRecognition.abort();
+                    } catch {
+                        // ignore
+                    }
+                }
+            }
+            if (isMemoVoiceListening && !silent) {
+                showToast('🎙️ 음성 메모 입력이 종료되었습니다.');
+            }
+            isMemoVoiceListening = false;
+            setMemoVoiceUI(false);
+        }
+
+        function toggleMemoVoiceInput() {
+            if (isMemoVoiceListening) {
+                stopMemoVoiceInput(false);
+            } else {
+                startMemoSpeechSession();
+                if (shouldKeepVoiceSession) {
+                    showToast('🎙️ 말씀하시면 기존 메모 뒤에 이어서 입력됩니다.');
+                }
+            }
         }
 
         // ==========================================
@@ -1969,6 +2924,10 @@
             `).join('');
         }
 
+        let lightboxPlaceTitleText = '';
+        let lightboxSlideshowTimer = null;
+        let lightboxTouchStartX = null;
+
         function openMediaLightbox(placeId, startIndex) {
             const place = places.find(p => p.id === placeId);
             if (!place || !place.media) return;
@@ -1978,35 +2937,199 @@
             const targetItem = place.media[startIndex];
             const foundIdx = lightboxMediaList.indexOf(targetItem);
             lightboxCurrentIndex = foundIdx >= 0 ? foundIdx : 0;
+            lightboxPlaceTitleText = place.name || '';
 
-            renderLightboxStage();
+            stopLightboxSlideshow();
+            buildLightboxSlides();
+            updateLightboxSlidePosition();
             document.getElementById('mediaLightboxModal').classList.remove('hidden');
         }
 
         function closeMediaLightbox() {
+            stopLightboxSlideshow();
             document.getElementById('mediaLightboxModal').classList.add('hidden');
-            document.getElementById('lightboxStage').innerHTML = '';
+            const track = document.getElementById('lightboxTrack');
+            if (track) track.innerHTML = '';
+            const thumbs = document.getElementById('lightboxThumbs');
+            if (thumbs) thumbs.innerHTML = '';
+            const dots = document.getElementById('lightboxDots');
+            if (dots) dots.innerHTML = '';
+        }
+
+        function goToLightboxSlide(index) {
+            if (lightboxMediaList.length === 0) return;
+            lightboxCurrentIndex = ((index % lightboxMediaList.length) + lightboxMediaList.length) % lightboxMediaList.length;
+            updateLightboxSlidePosition();
         }
 
         function navigateLightbox(step) {
             if (lightboxMediaList.length <= 1) return;
-            lightboxCurrentIndex = (lightboxCurrentIndex + step + lightboxMediaList.length) % lightboxMediaList.length;
-            renderLightboxStage();
+            goToLightboxSlide(lightboxCurrentIndex + step);
         }
 
-        function renderLightboxStage() {
-            const item = lightboxMediaList[lightboxCurrentIndex];
-            const counter = document.getElementById('lightboxCounter');
-            const stage = document.getElementById('lightboxStage');
-            if (!item || !stage) return;
+        function buildLightboxSlides() {
+            const titleEl = document.getElementById('lightboxPlaceTitle');
+            const track = document.getElementById('lightboxTrack');
+            const thumbs = document.getElementById('lightboxThumbs');
+            const dots = document.getElementById('lightboxDots');
+            const prevBtn = document.getElementById('lightboxPrevBtn');
+            const nextBtn = document.getElementById('lightboxNextBtn');
+            const slideBtn = document.getElementById('lightboxSlideshowBtn');
 
-            counter.innerText = `${lightboxCurrentIndex + 1} / ${lightboxMediaList.length}`;
-            if (item.type === 'image') {
-                stage.innerHTML = `<img src="${escapeHtml(item.url)}" alt="전체화면 사진" class="max-h-[75dvh] max-w-full rounded-2xl object-contain shadow-2xl">`;
-            } else {
-                stage.innerHTML = `<video src="${escapeHtml(item.url)}" controls autoplay playsinline class="max-h-[75dvh] max-w-full rounded-2xl shadow-2xl"></video>`;
+            if (titleEl) titleEl.innerText = lightboxPlaceTitleText;
+
+            const hasMultiple = lightboxMediaList.length > 1;
+            if (prevBtn) prevBtn.classList.toggle('hidden', !hasMultiple);
+            if (nextBtn) nextBtn.classList.toggle('hidden', !hasMultiple);
+            if (slideBtn) slideBtn.classList.toggle('hidden', !hasMultiple);
+
+            if (track) {
+                track.innerHTML = lightboxMediaList.map((item, idx) => `
+                    <div class="lightbox-slide" data-slide-index="${idx}">
+                        ${item.type === 'image'
+                            ? `<img src="${escapeHtml(item.url)}" alt="${escapeHtml(lightboxPlaceTitleText)} 사진 ${idx + 1}" class="max-h-[68dvh] max-w-full rounded-2xl object-contain shadow-2xl pointer-events-none">`
+                            : `<video src="${escapeHtml(item.url)}" controls playsinline class="lightbox-video max-h-[68dvh] max-w-full rounded-2xl shadow-2xl bg-black"></video>`
+                        }
+                    </div>
+                `).join('');
+            }
+
+            if (dots) {
+                dots.innerHTML = hasMultiple
+                    ? lightboxMediaList.map((_, idx) => `
+                        <button type="button" onclick="goToLightboxSlide(${idx})" aria-label="${idx + 1}번 미디어로 이동" class="lightbox-dot h-2 rounded-full transition-all"></button>
+                    `).join('')
+                    : '';
+            }
+
+            if (thumbs) {
+                thumbs.innerHTML = hasMultiple
+                    ? lightboxMediaList.map((item, idx) => `
+                        <button type="button" onclick="goToLightboxSlide(${idx})" class="lightbox-thumb relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition">
+                            ${item.type === 'image'
+                                ? `<img src="${escapeHtml(item.url)}" alt="썸네일 ${idx + 1}" class="w-full h-full object-cover">`
+                                : `<video src="${escapeHtml(item.url)}" class="w-full h-full object-cover opacity-80" muted playsinline></video>
+                                   <span class="absolute inset-0 flex items-center justify-center text-[11px] text-white bg-black/35">▶</span>`
+                            }
+                        </button>
+                    `).join('')
+                    : '';
             }
         }
+
+        function updateLightboxSlidePosition() {
+            const track = document.getElementById('lightboxTrack');
+            const counter = document.getElementById('lightboxCounter');
+            if (!track) return;
+
+            track.style.transform = `translateX(-${lightboxCurrentIndex * 100}%)`;
+            if (counter) {
+                counter.innerText = `${lightboxCurrentIndex + 1} / ${lightboxMediaList.length}`;
+            }
+
+            // 다른 슬라이드의 동영상은 일시정지, 현재 슬라이드가 동영상이면 재생 유지
+            track.querySelectorAll('.lightbox-slide').forEach((slideEl, idx) => {
+                const video = slideEl.querySelector('video');
+                if (!video) return;
+                if (idx !== lightboxCurrentIndex) {
+                    video.pause();
+                }
+            });
+
+            // 인디케이터 도트 활성화
+            document.querySelectorAll('#lightboxDots .lightbox-dot').forEach((dot, idx) => {
+                if (idx === lightboxCurrentIndex) {
+                    dot.className = 'lightbox-dot h-2 w-6 rounded-full bg-white transition-all';
+                } else {
+                    dot.className = 'lightbox-dot h-2 w-2 rounded-full bg-white/35 hover:bg-white/60 transition-all';
+                }
+            });
+
+            // 썸네일 스트립 활성화 & 스크롤 중앙 정렬
+            document.querySelectorAll('#lightboxThumbs .lightbox-thumb').forEach((thumb, idx) => {
+                if (idx === lightboxCurrentIndex) {
+                    thumb.className = 'lightbox-thumb relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 border-white scale-105 opacity-100 transition';
+                    thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                    thumb.className = 'lightbox-thumb relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 border-transparent opacity-55 hover:opacity-85 transition';
+                }
+            });
+        }
+
+        function updateSlideshowButtonUI(isPlaying) {
+            const btn = document.getElementById('lightboxSlideshowBtn');
+            if (!btn) return;
+            if (isPlaying) {
+                btn.className = 'px-3 py-1.5 rounded-full bg-amber-500 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-md transition';
+                btn.innerHTML = '<span>⏸</span><span>일시정지</span>';
+            } else {
+                btn.className = 'px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-extrabold flex items-center gap-1.5 transition';
+                btn.innerHTML = '<span>▶</span><span>슬라이드 쇼</span>';
+            }
+        }
+
+        function stopLightboxSlideshow() {
+            if (lightboxSlideshowTimer) {
+                clearInterval(lightboxSlideshowTimer);
+                lightboxSlideshowTimer = null;
+            }
+            updateSlideshowButtonUI(false);
+        }
+
+        function toggleLightboxSlideshow() {
+            if (lightboxMediaList.length <= 1) return;
+            if (lightboxSlideshowTimer) {
+                stopLightboxSlideshow();
+                return;
+            }
+            updateSlideshowButtonUI(true);
+            lightboxSlideshowTimer = setInterval(() => {
+                const currentItem = lightboxMediaList[lightboxCurrentIndex];
+                if (currentItem && currentItem.type === 'video') {
+                    const activeVideo = document.querySelector(`.lightbox-slide[data-slide-index="${lightboxCurrentIndex}"] video`);
+                    if (activeVideo && !activeVideo.paused && !activeVideo.ended) {
+                        return;
+                    }
+                }
+                navigateLightbox(1);
+            }, 3000);
+        }
+
+        // 슬라이더 터치 스와이프 및 키보드 방향키 지원
+        (function setupLightboxInteractions() {
+            const viewport = document.getElementById('lightboxViewport');
+            if (viewport) {
+                viewport.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 1) {
+                        lightboxTouchStartX = e.touches[0].clientX;
+                    }
+                }, { passive: true });
+
+                viewport.addEventListener('touchend', (e) => {
+                    if (lightboxTouchStartX === null || e.changedTouches.length === 0) return;
+                    const diffX = e.changedTouches[0].clientX - lightboxTouchStartX;
+                    lightboxTouchStartX = null;
+                    if (Math.abs(diffX) > 40) {
+                        navigateLightbox(diffX < 0 ? 1 : -1);
+                    }
+                }, { passive: true });
+            }
+
+            document.addEventListener('keydown', (e) => {
+                const modal = document.getElementById('mediaLightboxModal');
+                if (!modal || modal.classList.contains('hidden')) return;
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    navigateLightbox(-1);
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    navigateLightbox(1);
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeMediaLightbox();
+                }
+            });
+        })();
 
         function updateCustomFieldsInput() {
             const catId = document.getElementById('placeCategory').value;
@@ -2032,6 +3155,7 @@
         }
 
         function saveNewPlace() {
+            stopMemoVoiceInput(true);
             const name = document.getElementById('placeName').value.trim();
             if (!name) return showToast('장소 이름을 입력해주세요!');
 
@@ -2054,8 +3178,11 @@
                 finalMedia.push({ type: 'video_url', url: videoUrlVal });
             }
 
+            const memoVal = document.getElementById('placeMemo').value.trim();
+
             if (editingId) {
                 const target = places.find(p => p.id === editingId);
+                let shouldSummarize = false;
                 if (target) {
                     target.categoryId = document.getElementById('placeCategory').value;
                     target.status = document.getElementById('placeStatus').value;
@@ -2067,16 +3194,27 @@
                     target.customValues = customValues;
                     target.doneItems = splitItems('placeDoneItems');
                     target.todoItems = splitItems('placeTodoItems');
-                    target.memo = document.getElementById('placeMemo').value.trim();
+                    target.memo = memoVal;
+
+                    if (!memoVal) {
+                        delete target.aiSummary;
+                        aiSummaryErrors.delete(target.id);
+                    } else if (!target.aiSummary || target.aiSummary.memoSnapshot !== memoVal) {
+                        delete target.aiSummary;
+                        shouldSummarize = true;
+                    }
                 }
                 saveAppState();
                 closePlaceModal();
                 renderPlaces();
                 showToast(`✏️ '${name}' 수정 및 사진/영상이 반영되었습니다!`);
+                if (shouldSummarize && target) {
+                    generatePlaceAiSummary(target.id, true);
+                }
                 return;
             }
 
-            places.unshift({
+            const newPlace = {
                 id: 'p_' + Date.now(),
                 categoryId: document.getElementById('placeCategory').value,
                 status: document.getElementById('placeStatus').value,
@@ -2089,14 +3227,19 @@
                 customValues,
                 doneItems: splitItems('placeDoneItems'),
                 todoItems: splitItems('placeTodoItems'),
-                memo: document.getElementById('placeMemo').value.trim()
-            });
+                memo: memoVal
+            };
+
+            places.unshift(newPlace);
 
             saveAppState();
             closePlaceModal();
             switchBottomTab('home');
             renderPlaces();
             showToast(`'${name}' 기록이 저장되었습니다!`);
+            if (memoVal) {
+                generatePlaceAiSummary(newPlace.id, true);
+            }
         }
 
         // 입력 중인 주소+상호명이 정확한 지점인지 모달 내 지도로 바로 확인
@@ -2114,6 +3257,29 @@
         // ==========================================
         // 7. 데이터 백업 / 복원 / 일괄 비우기
         // ==========================================
+        function openStorageGuideModal() {
+            const modal = document.getElementById('storageGuideModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeStorageGuideModal() {
+            const modal = document.getElementById('storageGuideModal');
+            if (modal) modal.classList.add('hidden');
+            try {
+                localStorage.setItem(STORAGE_KEYS.STORAGE_GUIDE_SEEN, '1');
+            } catch (e) {
+                // ignore storage write error
+            }
+        }
+
+        function goToBackupSection() {
+            closeStorageGuideModal();
+            switchBottomTab('studio');
+            setTimeout(() => {
+                document.getElementById('view-studio')?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 80);
+        }
+
         function openClearSampleModal() {
             document.getElementById('clearSampleModal').classList.remove('hidden');
         }
@@ -2137,7 +3303,7 @@
                 exportedAt: new Date().toISOString(),
                 categories,
                 places,
-                settings: { currentMoodId, currentLayout, currentRadius }
+                settings: { currentMoodId, currentLayout, currentRadius, currentSort }
             };
             const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -2163,6 +3329,7 @@
                         if (data.settings.currentMoodId) applyMoodTheme(data.settings.currentMoodId, false);
                         if (data.settings.currentLayout) setLayoutMode(data.settings.currentLayout, false);
                         if (data.settings.currentRadius) setCardRadius(data.settings.currentRadius, data.settings.currentRadius, false);
+                        if (data.settings.currentSort) setSortMode(data.settings.currentSort, false);
                     }
                     saveAppState();
                     renderCategories();
