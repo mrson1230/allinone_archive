@@ -1,0 +1,288 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Private user account profile and synced theme/layout preferences.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owner.",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Verified Google account email.",
+          "maxLength": 254
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name shown in the sync panel.",
+          "maxLength": 100
+        },
+        "currentMoodId": {
+          "type": "string",
+          "description": "Selected color mood preset ID.",
+          "maxLength": 40,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "currentLayout": {
+          "type": "string",
+          "description": "Selected feed layout mode.",
+          "enum": ["card", "compact", "grid"]
+        },
+        "seededDefaults": {
+          "type": "boolean",
+          "description": "Whether initial starter/local records have been synced."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when user profile was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when user profile was updated."
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "displayName",
+        "currentMoodId",
+        "currentLayout",
+        "seededDefaults",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Custom place category created by the user.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "icon": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16
+        },
+        "fields": {
+          "type": "array",
+          "description": "Up to 30 custom field names for this category."
+        },
+        "sortOrder": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "id",
+        "name",
+        "icon",
+        "fields",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Place": {
+      "title": "Place",
+      "description": "Saved place record with custom category fields, lists, and notes.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "categoryId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["visited", "wishlist"]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "address": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "hours": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "link": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "lastSynced": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "videoUrl": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "customValues": {
+          "type": "object"
+        },
+        "doneItems": {
+          "type": "array"
+        },
+        "todoItems": {
+          "type": "array"
+        },
+        "memo": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "estimatedCost": {
+          "type": "number",
+          "description": "Estimated cost in KRW (>= 0, <= 1000000000)."
+        },
+        "actualCost": {
+          "type": "number",
+          "description": "Actual spending in KRW (>= 0, <= 1000000000)."
+        },
+        "spentDate": {
+          "type": "string",
+          "maxLength": 10,
+          "pattern": "^(|[0-9]{4}-[0-9]{2}-[0-9]{2})$",
+          "description": "Expense or visit date in YYYY-MM-DD format (or empty string)."
+        },
+        "sortTimestamp": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "id",
+        "categoryId",
+        "status",
+        "name",
+        "address",
+        "hours",
+        "link",
+        "lastSynced",
+        "videoUrl",
+        "customValues",
+        "doneItems",
+        "todoItems",
+        "memo",
+        "sortTimestamp",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PlaceMedia": {
+      "title": "PlaceMedia",
+      "description": "Individual compressed photo, short clip, or external video link attached to a place.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "placeId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["image", "video", "video_url"]
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 750000
+        },
+        "sortOrder": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "id",
+        "placeId",
+        "type",
+        "url",
+        "sortOrder",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Owner-only user profile and synced mood/layout settings."
+    },
+    "/users/{userId}/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Owner-only custom place categories."
+    },
+    "/users/{userId}/places/{placeId}": {
+      "schema": { "$ref": "#/entities/Place" },
+      "description": "Owner-only saved places and notes."
+    },
+    "/users/{userId}/media/{mediaId}": {
+      "schema": { "$ref": "#/entities/PlaceMedia" },
+      "description": "Owner-only attached photos, short clips, and video links stored individually to stay well within Firestore document size limits."
+    }
+  }
+}

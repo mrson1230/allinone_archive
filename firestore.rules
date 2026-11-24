@@ -1,0 +1,285 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default-Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Reusable Hardened Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() {
+      return request.resource.data;
+    }
+    function existing() {
+      return resource.data;
+    }
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isVerifiedOwner(userId) {
+      return isSignedIn()
+        && request.auth.uid == userId
+        && request.auth.token.email_verified == true;
+    }
+
+    // 3. Entity Validation Blueprints
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll([
+          'uid', 'email', 'displayName', 'currentMoodId',
+          'currentLayout', 'seededDefaults', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'currentMoodId',
+          'currentLayout', 'seededDefaults', 'createdAt', 'updatedAt'
+        ])
+        && data.uid == request.auth.uid
+        && data.uid == userId
+        && isValidId(data.uid)
+        && data.email is string
+        && data.email.size() >= 3
+        && data.email.size() <= 254
+        && data.displayName is string
+        && data.displayName.size() <= 100
+        && data.currentMoodId is string
+        && data.currentMoodId.size() >= 1
+        && data.currentMoodId.size() <= 40
+        && data.currentMoodId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.currentLayout in ['card', 'compact', 'grid']
+        && data.seededDefaults is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidCategory(data, userId, categoryId) {
+      return data.keys().hasAll([
+          'uid', 'id', 'name', 'icon', 'fields', 'sortOrder', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'id', 'name', 'icon', 'fields', 'sortOrder', 'createdAt', 'updatedAt'
+        ])
+        && data.uid == request.auth.uid
+        && data.uid == userId
+        && data.id == categoryId
+        && isValidId(data.id)
+        && data.name is string
+        && data.name.size() >= 1
+        && data.name.size() <= 60
+        && data.icon is string
+        && data.icon.size() >= 1
+        && data.icon.size() <= 16
+        && data.fields is list
+        && data.fields.size() <= 30
+        && (data.fields.size() == 0 || data.fields[0] is string)
+        && data.sortOrder is number
+        && data.sortOrder >= 0
+        && data.sortOrder <= 1000000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPlace(data, userId, placeId) {
+      return data.keys().hasAll([
+          'uid', 'id', 'categoryId', 'status', 'name', 'address', 'hours',
+          'link', 'lastSynced', 'videoUrl', 'customValues',
+          'doneItems', 'todoItems', 'memo', 'sortTimestamp', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'id', 'categoryId', 'status', 'name', 'address', 'hours',
+          'link', 'lastSynced', 'videoUrl', 'customValues',
+          'doneItems', 'todoItems', 'memo', 'estimatedCost', 'actualCost',
+          'spentDate', 'sortTimestamp', 'createdAt', 'updatedAt'
+        ])
+        && data.uid == request.auth.uid
+        && data.uid == userId
+        && data.id == placeId
+        && isValidId(data.id)
+        && isValidId(data.categoryId)
+        && data.status in ['visited', 'wishlist']
+        && data.name is string
+        && data.name.size() >= 1
+        && data.name.size() <= 150
+        && data.address is string
+        && data.address.size() <= 300
+        && data.hours is string
+        && data.hours.size() <= 200
+        && data.link is string
+        && data.link.size() <= 1000
+        && data.lastSynced is string
+        && data.lastSynced.size() <= 100
+        && data.videoUrl is string
+        && data.videoUrl.size() <= 1000
+        && data.customValues is map
+        && data.customValues.keys().size() <= 30
+        && data.doneItems is list
+        && data.doneItems.size() <= 50
+        && (data.doneItems.size() == 0 || data.doneItems[0] is string)
+        && data.todoItems is list
+        && data.todoItems.size() <= 50
+        && (data.todoItems.size() == 0 || data.todoItems[0] is string)
+        && data.memo is string
+        && data.memo.size() <= 2000
+        && (!('estimatedCost' in data) || (data.estimatedCost is number && data.estimatedCost >= 0 && data.estimatedCost <= 1000000000))
+        && (!('actualCost' in data) || (data.actualCost is number && data.actualCost >= 0 && data.actualCost <= 1000000000))
+        && (!('spentDate' in data) || (data.spentDate is string && data.spentDate.size() <= 10 && (data.spentDate == '' || data.spentDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))))
+        && data.sortTimestamp is number
+        && data.sortTimestamp >= 0
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPlaceMedia(data, userId, mediaId) {
+      return data.keys().hasAll([
+          'uid', 'id', 'placeId', 'type', 'url', 'sortOrder', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'id', 'placeId', 'type', 'url', 'sortOrder', 'createdAt'
+        ])
+        && data.uid == request.auth.uid
+        && data.uid == userId
+        && data.id == mediaId
+        && isValidId(data.id)
+        && isValidId(data.placeId)
+        && data.type in ['image', 'video', 'video_url']
+        && data.url is string
+        && data.url.size() >= 1
+        && data.url.size() <= 750000
+        && data.sortOrder is number
+        && data.sortOrder >= 0
+        && data.sortOrder <= 10000
+        && data.createdAt is timestamp;
+    }
+
+    // 4. Match Rules
+    match /users/{userId} {
+      allow get: if isVerifiedOwner(userId) && isValidId(userId);
+      allow list: if false;
+      allow create: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Action: Update theme, layout, or initial seed flag
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'displayName', 'currentMoodId', 'currentLayout', 'seededDefaults', 'updatedAt'
+          ])
+        );
+      allow delete: if false;
+
+      match /categories/{categoryId} {
+        allow get: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(categoryId)
+          && existing().uid == request.auth.uid;
+        allow list: if isVerifiedOwner(userId)
+          && resource.data.uid == request.auth.uid;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(categoryId)
+          && isValidCategory(incoming(), userId, categoryId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(userId));
+        allow update: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(categoryId)
+          && isValidCategory(incoming(), userId, categoryId)
+          && incoming().uid == existing().uid
+          && incoming().id == existing().id
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && (
+            // Action: Edit category settings
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'name', 'icon', 'fields', 'sortOrder', 'updatedAt'
+            ])
+          );
+        allow delete: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(categoryId)
+          && existing().uid == request.auth.uid
+          && exists(/databases/$(database)/documents/users/$(userId));
+      }
+
+      match /places/{placeId} {
+        allow get: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(placeId)
+          && existing().uid == request.auth.uid;
+        allow list: if isVerifiedOwner(userId)
+          && resource.data.uid == request.auth.uid;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(placeId)
+          && isValidPlace(incoming(), userId, placeId)
+          && incoming().keys().hasAll(['estimatedCost', 'actualCost', 'spentDate'])
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(userId));
+        allow update: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(placeId)
+          && isValidPlace(incoming(), userId, placeId)
+          && incoming().uid == existing().uid
+          && incoming().id == existing().id
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && (
+            // Action: Quick status toggle or complete todo item
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'status', 'doneItems', 'todoItems', 'updatedAt'
+            ])
+            // Action: Sync place link & live info
+            || incoming().diff(existing()).affectedKeys().hasOnly([
+              'link', 'address', 'hours', 'memo', 'lastSynced', 'updatedAt'
+            ])
+            // Action: Full edit place details (including expenses)
+            || incoming().diff(existing()).affectedKeys().hasOnly([
+              'categoryId', 'status', 'name', 'address', 'hours', 'link',
+              'lastSynced', 'videoUrl', 'customValues', 'doneItems', 'todoItems',
+              'memo', 'estimatedCost', 'actualCost', 'spentDate', 'sortTimestamp', 'updatedAt'
+            ])
+          );
+        allow delete: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(placeId)
+          && existing().uid == request.auth.uid
+          && exists(/databases/$(database)/documents/users/$(userId));
+      }
+
+      match /media/{mediaId} {
+        allow get: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(mediaId)
+          && existing().uid == request.auth.uid;
+        allow list: if isVerifiedOwner(userId)
+          && resource.data.uid == request.auth.uid;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(mediaId)
+          && isValidPlaceMedia(incoming(), userId, mediaId)
+          && incoming().createdAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(userId))
+          && existsAfter(/databases/$(database)/documents/users/$(userId)/places/$(incoming().placeId));
+        allow update: if false;
+        allow delete: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(mediaId)
+          && existing().uid == request.auth.uid
+          && exists(/databases/$(database)/documents/users/$(userId));
+      }
+    }
+  }
+}

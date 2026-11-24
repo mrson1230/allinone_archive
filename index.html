@@ -140,20 +140,26 @@
                             <p class="text-lg font-black theme-text-main mt-0.5"><span id="pcWishlistCount">0</span><span class="text-xs font-bold ml-0.5">곳</span></p>
                         </div>
                     </div>
+                    <div class="theme-card border rounded-xl px-3 py-2 flex items-center justify-between gap-2">
+                        <span class="text-[12px] font-bold theme-text-sub">이번 달 실제 지출</span>
+                        <span id="pcMonthlySpent" class="text-xs font-black theme-text-main">0원</span>
+                    </div>
                 </div>
             </div>
 
             <!-- PC 하단 현재 기분 무드 뱃지 -->
-            <button onclick="switchBottomTab('studio')" class="w-full p-3.5 rounded-2xl border border-slate-500/15 bg-slate-500/5 hover:bg-slate-500/10 flex items-center justify-between transition text-left">
-                <div class="flex items-center gap-2.5 min-w-0">
-                    <span id="pcCurrentMoodEmoji" class="text-xl shrink-0">✨</span>
-                    <div class="min-w-0">
-                        <p class="text-[12px] font-bold theme-text-muted">현재 기분 테마</p>
-                        <p id="pcCurrentMoodLabel" class="text-xs font-extrabold theme-text-main truncate">설레는 기본</p>
+            <div class="space-y-2.5">
+                <button onclick="switchBottomTab('studio')" class="w-full p-3.5 rounded-2xl border border-slate-500/15 bg-slate-500/5 hover:bg-slate-500/10 flex items-center justify-between transition text-left">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <span id="pcCurrentMoodEmoji" class="text-xl shrink-0">✨</span>
+                        <div class="min-w-0">
+                            <p class="text-[12px] font-bold theme-text-muted">현재 기분 테마</p>
+                            <p id="pcCurrentMoodLabel" class="text-xs font-extrabold theme-text-main truncate">설레는 기본</p>
+                        </div>
                     </div>
-                </div>
-                <span class="text-xs opacity-70">⚙️</span>
-            </button>
+                    <span class="text-xs opacity-70">⚙️</span>
+                </button>
+            </div>
         </aside>
 
         <!-- 메인 콘텐츠 영역 (모바일 & PC 공용) -->
@@ -168,32 +174,34 @@
             <div class="absolute bottom-0 left-5 w-24 h-24 bg-black/10 rounded-full blur-xl pointer-events-none"></div>
 
             <!-- 상단 타이틀 & 현재 기분 상태 뱃지 (모바일/태블릿에서는 브랜드 표시, PC에서는 환영 배너) -->
-            <div class="relative z-10 flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner lg:hidden">
+            <div class="relative z-10 flex items-center justify-between gap-2 mb-4">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner lg:hidden shrink-0">
                         <span class="text-lg">🗂️</span>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <div class="flex items-center gap-1.5">
-                            <span class="text-[12px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full">ALL-IN-ONE ARCHIVE</span>
+                            <span class="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full whitespace-nowrap">ALL-IN-ONE ARCHIVE</span>
                         </div>
-                        <h1 class="text-xl lg:text-2xl font-black tracking-tight leading-tight mt-0.5">올인원 단골노트</h1>
+                        <h1 class="text-lg sm:text-xl lg:text-2xl font-black tracking-tight leading-tight mt-0.5 truncate">올인원 단골노트</h1>
                     </div>
                 </div>
 
                 <!-- 기분/테마 스튜디오 바로가기 버튼 -->
-                <button onclick="switchBottomTab('studio')" class="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 px-3 py-2 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm">
-                    <span id="currentMoodEmoji">✨</span>
-                    <span id="currentMoodLabel">설레는 기본</span>
-                    <span class="text-[12px] opacity-80 ml-0.5">⚙️</span>
-                </button>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button onclick="switchBottomTab('studio')" class="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 px-2.5 sm:px-3 py-2 rounded-2xl text-xs font-bold flex items-center gap-1 transition active:scale-95 shadow-sm shrink-0 whitespace-nowrap">
+                        <span id="currentMoodEmoji">✨</span>
+                        <span id="currentMoodLabel" class="hidden sm:inline">설레는 기본</span>
+                        <span class="text-[12px] opacity-80">⚙️</span>
+                    </button>
+                </div>
             </div>
 
             <!-- 오늘의 기분 인사말 & 요약 대시보드 카드 -->
             <div class="relative z-10 bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-3.5 lg:p-4 flex items-center justify-between">
                 <div>
                     <p id="moodGreeting" class="text-xs lg:text-sm font-medium text-white/90">오늘도 나만의 특별한 공간을 채워보세요!</p>
-                    <div class="flex items-center gap-3 mt-1.5">
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
                         <div class="text-xs">
                             <span class="opacity-75">단골/방문</span>
                             <strong id="headerVisitedCount" class="text-sm font-extrabold ml-1">0</strong>곳
@@ -202,6 +210,11 @@
                         <div class="text-xs">
                             <span class="opacity-75">가볼 곳</span>
                             <strong id="headerWishlistCount" class="text-sm font-extrabold ml-1">0</strong>곳
+                        </div>
+                        <span class="w-1 h-1 rounded-full bg-white/40"></span>
+                        <div class="text-xs">
+                            <span class="opacity-75">이번 달 지출</span>
+                            <strong id="headerMonthlySpent" class="text-sm font-extrabold ml-1">0원</strong>
                         </div>
                     </div>
                 </div>
@@ -220,6 +233,79 @@
             <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-2 pb-2" id="categoryContainer">
                 <!-- JS로 동적 렌더링 -->
             </div>
+
+            <!-- 월별 총 지출 요약 대시보드 & 차트 -->
+            <section id="monthlyExpenseDashboard" class="mt-2.5 lg:mt-4 theme-card border rounded-3xl p-4 lg:p-5 shadow-xs space-y-3.5">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-8 h-8 rounded-xl theme-accent-soft flex items-center justify-center text-base shrink-0">📊</span>
+                        <div class="min-w-0">
+                            <h2 class="text-sm font-black theme-text-main leading-tight truncate">월별 총 지출 요약 대시보드</h2>
+                            <p class="text-[12px] theme-text-sub truncate">예상 비용 vs 실제 지출 · 최근 6개월 추이</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button type="button" id="expenseChartModeBtn" onclick="toggleExpenseChartMode()" class="px-2.5 py-1.5 rounded-xl text-[12px] font-bold theme-accent-soft transition active:scale-95 whitespace-nowrap">
+                            예상·실제 비교
+                        </button>
+                        <button type="button" id="expenseDashToggleBtn" onclick="toggleExpenseDashboard()" aria-expanded="false" class="px-2.5 py-1.5 rounded-xl text-[12px] font-bold bg-slate-500/10 theme-text-sub transition active:scale-95 whitespace-nowrap">
+                            펼치기 ▼
+                        </button>
+                    </div>
+                </div>
+
+                <div id="monthlyExpenseBody" class="hidden space-y-3.5">
+                    <!-- 핵심 지출 KPI 3종 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <div class="p-3 rounded-2xl bg-slate-500/5 border border-slate-500/10">
+                            <div class="flex items-center justify-between gap-1">
+                                <span id="dashSelectedMonthLabel" class="text-[12px] font-bold theme-text-sub">이번 달 실제 지출</span>
+                                <span class="text-[11px] font-bold px-1.5 py-0.5 rounded-md theme-accent-soft">실제</span>
+                            </div>
+                            <p id="dashSelectedActual" class="text-base lg:text-lg font-black theme-text-main mt-1">0원</p>
+                        </div>
+                        <div class="p-3 rounded-2xl bg-slate-500/5 border border-slate-500/10">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-[12px] font-bold theme-text-sub">선택 월 예상 비용</span>
+                                <span id="dashSelectedDiff" class="text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-slate-500/15 theme-text-sub">대비 0원</span>
+                            </div>
+                            <p id="dashSelectedEstimated" class="text-base lg:text-lg font-black theme-text-main mt-1">0원</p>
+                        </div>
+                        <div class="p-3 rounded-2xl bg-slate-500/5 border border-slate-500/10">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-[12px] font-bold theme-text-sub">최근 6개월 총 지출</span>
+                                <span id="dashExpensePlaceCount" class="text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600">0건</span>
+                            </div>
+                            <p id="dashTotalSixMonths" class="text-base lg:text-lg font-black theme-text-main mt-1">0원</p>
+                        </div>
+                    </div>
+
+                    <!-- 범례 -->
+                    <div class="flex items-center justify-between gap-2 text-[12px] theme-text-sub px-1">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center gap-1.5 font-bold">
+                                <span class="w-2.5 h-2.5 rounded-xs theme-accent-bg inline-block"></span>
+                                실제 지출
+                            </span>
+                            <span id="legendEstimatedItem" class="inline-flex items-center gap-1.5 font-semibold">
+                                <span class="w-2.5 h-2.5 rounded-xs bg-slate-400/45 border border-slate-400/70 inline-block"></span>
+                                예상 비용
+                            </span>
+                        </div>
+                        <span class="text-[11px] theme-text-muted">막대 터치 시 월별 상세 보기</span>
+                    </div>
+
+                    <!-- 월별 막대 차트 -->
+                    <div id="monthlyExpenseChartContainer" class="relative rounded-2xl bg-slate-500/5 border border-slate-500/10 p-3 pt-4">
+                        <!-- JS로 렌더링 -->
+                    </div>
+
+                    <!-- 선택된 월의 지출 장소 요약 -->
+                    <div id="monthlyBreakdownBox" class="rounded-2xl bg-slate-500/5 border border-slate-500/10 p-3">
+                        <!-- JS로 렌더링 -->
+                    </div>
+                </div>
+            </section>
 
             <!-- 검색창 & 상태 필터 세그먼트 (PC에서는 가로 1줄 배치로 공간 효율 극대화) -->
             <div class="mt-2 lg:mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -329,13 +415,13 @@
                         </div>
                     </div>
 
-                    <!-- 4. 데이터 영구 보존 & 외부 호스팅(Vercel) 설정 -->
+                    <!-- 4. 데이터 영구 보존 & 백업 -->
                     <div class="theme-card border rounded-3xl p-4 lg:p-5 shadow-xs space-y-3.5">
                         <div>
                             <h3 class="text-sm font-bold theme-text-main flex items-center gap-2">
-                                <span>💾</span> 4. 데이터 영구 저장 & 백업 관리
+                                <span>💾</span> 4. 데이터 백업 & 복원
                             </h3>
-                            <p class="text-[13px] theme-text-sub mt-1">모든 기록과 테마는 기기에 자동 저장됩니다. 기기를 바꾸거나 데이터를 안전하게 보관하려면 파일로 백업하세요.</p>
+                            <p class="text-[13px] theme-text-sub mt-1">기록·사진·테마는 현재 브라우저에 자동 저장됩니다. 필요할 때 언제든 백업(.json) 파일로 내보내거나 다른 기기에서 복원할 수 있습니다.</p>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2">
@@ -348,10 +434,10 @@
                             </label>
                         </div>
 
-                        <!-- 샘플 및 전체 기록 일괄 비우기 버튼 -->
+                        <!-- 전체 기록 일괄 비우기 버튼 -->
                         <div id="clearAllContainer" class="pt-1">
                             <button onclick="requestClearAllPlaces()" class="w-full py-2.5 px-3 rounded-xl text-xs font-bold bg-rose-500/10 text-rose-600 hover:bg-rose-500/15 flex items-center justify-center gap-1.5 active:scale-95 transition">
-                                <span>🧹</span> 샘플/장소 기록 전체 비우기 (새로 시작)
+                                <span>🧹</span> 장소 기록 전체 비우기 (새로 시작)
                             </button>
                             <div id="clearConfirmBox" class="hidden mt-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 space-y-2">
                                 <p class="text-[13px] font-bold text-rose-700 text-center">저장된 모든 장소 기록이 삭제됩니다. 정말 비울까요?</p>
@@ -443,17 +529,32 @@
             <div class="overflow-y-auto space-y-3.5 py-4 pr-1 no-scrollbar flex-1">
                 <!-- 스마트 링크 자동 불러오기 영역 -->
                 <div class="p-3 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 space-y-2">
-                    <label class="flex items-center justify-between text-xs font-extrabold text-indigo-600">
+                    <label class="flex items-center justify-between gap-2 text-xs font-extrabold text-indigo-600">
                         <span class="flex items-center gap-1.5"><span>🔗</span> 장소 링크 또는 가게명·지역</span>
-                        <span class="text-[12px] font-semibold opacity-80">실제 웹 검색 자동 채우기</span>
+                        <span class="text-[12px] font-semibold opacity-80 shrink-0">Google 지도 실시간 확인</span>
                     </label>
                     <div class="flex gap-1.5">
                         <input type="text" id="placeLink" placeholder="예: 성심당 대전 본점 또는 지도 URL..." class="theme-card flex-1 min-w-0 px-3 py-2 border rounded-xl text-xs focus:outline-none">
                         <button type="button" onclick="autoFillFromLink()" id="btnAutoFill" class="theme-accent-bg px-3 py-2 rounded-xl text-xs font-extrabold shrink-0 whitespace-nowrap flex items-center gap-1 shadow-xs active:scale-95 transition">
                             ⚡ 불러오기
                         </button>
+                        <button type="button" onclick="previewEmbeddedMapFromInputs()" title="현재 입력된 상호/주소로 지도 확인" class="px-2.5 py-2 rounded-xl text-xs font-extrabold bg-white/80 text-indigo-600 border border-indigo-500/25 shrink-0 whitespace-nowrap active:scale-95 transition">
+                            🗺️ 지도
+                        </button>
                     </div>
-                    <p id="autoFillStatus" class="hidden text-[13px] font-semibold text-indigo-600"></p>
+                    <p id="autoFillStatus" class="hidden text-[13px] font-semibold text-indigo-600 break-words leading-snug"></p>
+
+                    <!-- 불러온 장소 정확한 위치 검증용 임베드 지도 & 공식 지도 링크 -->
+                    <div id="placeMapPreviewBox" class="hidden pt-1 space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <span id="placeMapPreviewLabel" class="text-[12px] font-extrabold theme-text-main truncate">📍 지도 위치 확인</span>
+                            <button type="button" onclick="hideEmbeddedMapPreview()" class="text-[11px] font-bold theme-text-muted hover:underline shrink-0">지도 닫기</button>
+                        </div>
+                        <div class="w-full h-44 rounded-xl overflow-hidden border border-indigo-500/25 bg-slate-100">
+                            <iframe id="placeMapPreviewFrame" title="장소 위치 지도 미리보기" class="w-full h-full border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                        </div>
+                        <div id="placeMapLinksRow" class="flex flex-wrap items-center gap-1.5"></div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2.5">
@@ -486,6 +587,30 @@
                     <div>
                         <label class="block text-xs font-bold theme-text-main mb-1">영업시간 / 운영</label>
                         <input type="text" id="placeHours" placeholder="예: 10:00 - 22:00" class="theme-card w-full px-3 py-2 border rounded-xl text-xs focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- 예상 비용 & 실제 지출 기록 -->
+                <div class="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="text-xs font-extrabold theme-text-main flex items-center gap-1.5">
+                            <span>💳</span> 비용 & 지출 기록
+                        </label>
+                        <span id="placeCostDiffHint" class="text-[12px] font-bold theme-text-muted">원(₩) 단위 입력</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[12px] font-bold theme-text-sub mb-1">예상 비용 (원)</label>
+                            <input type="number" id="placeEstimatedCost" min="0" step="100" oninput="updateCostDiffHint()" placeholder="예: 35000" class="theme-card w-full px-3 py-2 border rounded-xl text-xs font-bold focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[12px] font-bold theme-text-sub mb-1">실제 지출 (원)</label>
+                            <input type="number" id="placeActualCost" min="0" step="100" oninput="updateCostDiffHint()" placeholder="예: 38000" class="theme-card w-full px-3 py-2 border rounded-xl text-xs font-bold focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[12px] font-bold theme-text-sub mb-1">지출 / 방문일</label>
+                            <input type="date" id="placeSpentDate" class="theme-card w-full px-3 py-2 border rounded-xl text-xs font-bold focus:outline-none">
+                        </div>
                     </div>
                 </div>
 
@@ -532,8 +657,20 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold theme-text-main mb-1">나만의 팁 / 후기 메모</label>
-                    <textarea id="placeMemo" rows="2" placeholder="주차 팁, 추천 자리, 재방문 의사 등" class="theme-card w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-none"></textarea>
+                    <div class="flex items-center justify-between gap-2 mb-1">
+                        <label for="placeMemo" class="block text-xs font-bold theme-text-main">나만의 팁 / 후기 메모</label>
+                        <span id="memoVoiceStatus" class="hidden text-[11px] font-bold text-rose-600 truncate max-w-[60%]"></span>
+                    </div>
+                    <div class="relative">
+                        <textarea id="placeMemo" rows="3" placeholder="주차 팁, 추천 자리, 재방문 의사 등 (우측 마이크 버튼으로 음성 입력)" class="theme-card w-full pl-3.5 pr-12 py-2.5 border rounded-xl text-xs focus:outline-none"></textarea>
+                        <button type="button" id="memoVoiceBtn" onclick="toggleMemoVoiceInput()" title="음성으로 메모 입력" aria-label="음성으로 메모 입력" aria-pressed="false" class="absolute right-2 top-2 w-8 h-8 rounded-xl bg-slate-500/10 hover:bg-indigo-500/15 theme-text-sub flex items-center justify-center transition active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" x2="12" y1="19" y2="22"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -613,9 +750,9 @@
     </div>
 
     <!-- 토스트 알림 -->
-    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[80] bg-slate-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
-        <span>✅</span>
-        <span id="toastMessage">저장되었습니다.</span>
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[80] w-max max-w-[calc(100vw-2rem)] bg-slate-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
+        <span class="shrink-0">✅</span>
+        <span id="toastMessage" class="break-words leading-snug">저장되었습니다.</span>
     </div>
 
     <script>
@@ -822,11 +959,51 @@
                     '--header-grad-from': '#ea580c',
                     '--header-grad-to': '#f43f5e'
                 }
+            },
+            {
+                id: 'mint',
+                emoji: '🫧',
+                name: '산뜻한 아쿠아민트',
+                desc: '맑고 청량한 민트 & 틸 톤',
+                greeting: '시원한 민트빛 공기처럼 상쾌한 오늘을 기록해보세요!',
+                vars: {
+                    '--bg-main': '#f0fdfa',
+                    '--bg-card': '#ffffff',
+                    '--text-main': '#134e4a',
+                    '--text-sub': '#3b635e',
+                    '--text-muted': '#6b8f8a',
+                    '--accent': '#0d9488',
+                    '--accent-light': '#ccfbf1',
+                    '--accent-text': '#ffffff',
+                    '--border-color': '#bceee5',
+                    '--header-grad-from': '#0f766e',
+                    '--header-grad-to': '#14b8a6'
+                }
+            },
+            {
+                id: 'mocha',
+                emoji: '🕯️',
+                name: '아늑한 다크모카',
+                desc: '따뜻한 에스프레소 & 앰버 다크 모드',
+                greeting: '은은한 조명 아래 나만의 단골 기록을 차분히 채워보세요.',
+                vars: {
+                    '--bg-main': '#171412',
+                    '--bg-card': '#241f1c',
+                    '--text-main': '#faf5ef',
+                    '--text-sub': '#d6ccc2',
+                    '--text-muted': '#94877b',
+                    '--accent': '#f59e0b',
+                    '--accent-light': '#422a13',
+                    '--accent-text': '#1c1917',
+                    '--border-color': '#3b322c',
+                    '--header-grad-from': '#29201a',
+                    '--header-grad-to': '#573b26'
+                }
             }
         ];
 
         // ==========================================
-        // 2. 기본 카테고리 및 샘플 장소 데이터
+        // 2. 기본 카테고리 및 장소 데이터
         // ==========================================
         let categories = [
             { id: 'cat_food', name: '단골 식당', icon: '🍽️', fields: ['대표 메뉴', '브레이크 타임', '웨이팅 팁'] },
@@ -835,64 +1012,7 @@
             { id: 'cat_play', name: '나만의 놀이터', icon: '🎡', fields: ['이용요금', '추천 시간대', '준비물'] }
         ];
 
-        let places = [
-            {
-                id: 'p1',
-                categoryId: 'cat_cafe',
-                status: 'visited',
-                name: '오후의 햇살 로스터리',
-                address: '세종시 나성동 123-4 2층',
-                hours: '09:00 - 22:00',
-                link: 'https://map.naver.com/v5/search/오후의햇살로스터리',
-                lastSynced: '오늘 12:30 동기화됨',
-                customValues: { '커스텀 주문': '아아 산미원두 + 샷추가', '콘센트/작업': '창가 바 테이블 콘센트 완비' },
-                doneItems: ['아이스 아메리카노', '바스크 치즈케이크'],
-                todoItems: ['수제 티라미수', '콜드브루 보틀'],
-                memo: '점심시간 피해서 가면 조용하고 채광이 예술임.'
-            },
-            {
-                id: 'p2',
-                categoryId: 'cat_stay',
-                status: 'visited',
-                name: '별빛 계곡 프라이빗 펜션',
-                address: '충남 공주시 반포면 계곡길 45',
-                hours: '입실 15:00 / 퇴실 11:00',
-                link: 'https://www.yanolja.com',
-                lastSynced: '어제 동기화됨',
-                customValues: { '체크인/아웃': '15:00 / 11:00', '바베큐/시설': '개별 테라스 숯불, 온수 스파', '추천 객실': '203호 (계곡 뷰)' },
-                doneItems: ['개별 바베큐', '야간 별 구경'],
-                todoItems: ['불멍 세트 추가', '근처 계곡 백숙집'],
-                memo: '침구류가 호텔식으로 깨끗해서 재방문 의사 100%.'
-            },
-            {
-                id: 'p3',
-                categoryId: 'cat_play',
-                status: 'wishlist',
-                name: '숲속 어드벤처 & 피크닉 파크',
-                address: '대전 유성구 월드컵대로 인근',
-                hours: '10:00 - 19:00 (월 휴무)',
-                link: 'https://map.kakao.com',
-                lastSynced: '2일 전 동기화됨',
-                customValues: { '이용요금': '성인 15,000원', '추천 시간대': '오후 3시 노을 질 때', '준비물': '돗자리, 편한 운동화' },
-                doneItems: [],
-                todoItems: ['집라인 체험', '잔디광장 피크닉', '전망대 포토존'],
-                memo: '주말엔 주차장이 빨리 차므로 오전 방문 추천.'
-            },
-            {
-                id: 'p4',
-                categoryId: 'cat_food',
-                status: 'visited',
-                name: '할머니 손칼국수 & 보쌈',
-                address: '세종시 조치원읍 전통시장길 18',
-                hours: '11:00 - 20:30',
-                link: '',
-                lastSynced: '',
-                customValues: { '대표 메뉴': '들깨 손칼국수, 마늘 보쌈', '브레이크 타임': '15:00 - 17:00', '웨이팅 팁': '11시 30분 전 도착' },
-                doneItems: ['들깨 손칼국수', '겉절이 김치'],
-                todoItems: ['마늘 보쌈 중자', '해물파전 + 막걸리'],
-                memo: '비 오는 날마다 생각나는 찐 단골집.'
-            }
-        ];
+        let places = [];
 
         // 앱 상태 변수
         const STORAGE_KEY = 'all_in_one_dangol_note_v1';
@@ -905,6 +1025,9 @@
         let activeDetailPlaceId = null;
         let editingPlaceId = null;
         let tempDraftMedia = []; // 모달에서 새로 첨부 중인 사진/영상 임시 목록
+        let isExpenseDashboardCollapsed = true;
+        let expenseChartMode = 'compare'; // 'compare' | 'actual'
+        let selectedChartMonth = null; // 'YYYY-MM' (기본값은 현재 월)
 
         const availableIcons = [
             '🍽️', '☕', '🏡', '🎡', '⛺', '🍺',
@@ -933,13 +1056,26 @@
             }
         }
 
+        const BUILTIN_SAMPLE_PLACE_SIGNATURES = {
+            p1: '오후의 햇살 로스터리',
+            p2: '별빛 계곡 프라이빗 펜션',
+            p3: '숲속 어드벤처 & 피크닉 파크',
+            p4: '할머니 손칼국수 & 보쌈'
+        };
+
         function loadAppState() {
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (!raw) return;
                 const saved = JSON.parse(raw);
                 if (Array.isArray(saved.categories) && saved.categories.length > 0) categories = saved.categories;
-                if (Array.isArray(saved.places)) places = saved.places;
+                if (Array.isArray(saved.places)) {
+                    const filtered = saved.places.filter(p => !(p && BUILTIN_SAMPLE_PLACE_SIGNATURES[p.id] === p.name));
+                    places = filtered;
+                    if (filtered.length !== saved.places.length) {
+                        saveAppState();
+                    }
+                }
                 if (saved.currentMoodId) currentMoodId = saved.currentMoodId;
                 if (saved.currentLayout) currentLayout = saved.currentLayout;
             } catch (e) {
@@ -1006,7 +1142,7 @@
             cancelClearAllPlaces();
             renderPlaces();
             switchBottomTab('home');
-            showToast('🧹 모든 샘플 및 장소 기록이 깨끗하게 비워졌습니다!');
+            showToast('🧹 모든 장소 기록이 깨끗하게 비워졌습니다!');
         }
 
         window.onload = function() {
@@ -1184,6 +1320,9 @@
                         ${place.lastSynced ? `<span class="text-[12px] theme-text-muted shrink-0">✔️ ${place.lastSynced}</span>` : ''}
                     </div>
 
+                    <!-- 예상 비용 & 실제 지출 요약 -->
+                    ${renderPlaceExpenseBadge(place)}
+
                     <!-- 방문 사진 & 영상 갤러리 스트립 -->
                     ${renderPlaceMediaSection(place)}
 
@@ -1258,6 +1397,7 @@
             document.getElementById('count-all').innerText = places.length;
             document.getElementById('count-visited').innerText = visitedCount;
             document.getElementById('count-wishlist').innerText = wishlistCount;
+            renderMonthlyExpenseDashboard();
 
             const filtered = places.filter(place => {
                 const matchCat = selectedCategory === 'all' || place.categoryId === selectedCategory;
@@ -1290,6 +1430,11 @@
                     grid.innerHTML = filtered.map(place => {
                         const cat = categories.find(c => c.id === place.categoryId) || { name: '기타', icon: '📍' };
                         const isVisited = place.status === 'visited';
+                        const est = normalizeCost(place.estimatedCost);
+                        const act = normalizeCost(place.actualCost);
+                        const costPill = act > 0
+                            ? `<span class="text-[11px] font-extrabold theme-accent-soft px-1.5 py-0.5 rounded-md shrink-0">💸 ${formatCurrency(act)}</span>`
+                            : (est > 0 ? `<span class="text-[11px] font-bold bg-slate-500/10 theme-text-sub px-1.5 py-0.5 rounded-md shrink-0">예상 ${formatCurrency(est)}</span>` : '');
                         return `
                             <div onclick="openPlaceDetailModal('${place.id}')" class="theme-card border rounded-2xl p-3 shadow-2xs flex items-center justify-between gap-2.5 cursor-pointer">
                                 <div class="flex items-center gap-2.5 min-w-0">
@@ -1297,11 +1442,12 @@
                                         ${cat.icon}
                                     </div>
                                     <div class="min-w-0">
-                                        <div class="flex items-center gap-1.5">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
                                             <h4 class="text-sm font-extrabold theme-text-main truncate">${place.name}</h4>
                                             <span class="text-[12px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${isVisited ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}">
                                                 ${isVisited ? '⭐ 단골' : '📌 위시'}
                                             </span>
+                                            ${costPill}
                                         </div>
                                         <p class="text-[13px] theme-text-sub truncate mt-0.5">${place.address || place.memo || cat.name}</p>
                                     </div>
@@ -1316,6 +1462,11 @@
                         const cat = categories.find(c => c.id === place.categoryId) || { name: '기타', icon: '📍' };
                         const isVisited = place.status === 'visited';
                         const firstImg = (place.media || []).find(m => m.type === 'image');
+                        const est = normalizeCost(place.estimatedCost);
+                        const act = normalizeCost(place.actualCost);
+                        const gridCostLine = act > 0
+                            ? `<p class="text-[11px] font-extrabold theme-accent-soft px-1.5 py-0.5 rounded-md inline-block mt-1">💸 ${formatCurrency(act)}</p>`
+                            : (est > 0 ? `<p class="text-[11px] font-bold bg-slate-500/10 theme-text-sub px-1.5 py-0.5 rounded-md inline-block mt-1">예상 ${formatCurrency(est)}</p>` : '');
                         return `
                             <div onclick="openPlaceDetailModal('${place.id}')" class="theme-card border rounded-2xl p-3 shadow-2xs flex flex-col justify-between cursor-pointer">
                                 <div>
@@ -1336,6 +1487,7 @@
                                     </div>
                                     <h4 class="text-xs font-extrabold theme-text-main line-clamp-1">${place.name}</h4>
                                     <p class="text-[12px] theme-text-sub line-clamp-1 mt-0.5">${place.address || place.memo || ''}</p>
+                                    ${gridCostLine}
                                 </div>
                             </div>
                         `;
@@ -1387,7 +1539,9 @@
                 }
             });
 
-            if (persist) saveAppState();
+            if (persist) {
+                saveAppState();
+            }
             renderPlaces();
         }
 
@@ -1628,6 +1782,7 @@
 
         // 장소 추가 및 수정 모달
         function openPlaceModal() {
+            stopMemoVoiceInput(true);
             editingPlaceId = null;
             document.getElementById('placeModalTitle').innerText = '새 공간 & 경험 기록';
             document.getElementById('btnSavePlace').innerText = '저장하기';
@@ -1636,12 +1791,16 @@
             select.innerHTML = categories.map(c => `<option value="${c.id}" ${c.id === selectedCategory ? 'selected' : ''}>${c.name}</option>`).join('');
             document.getElementById('placeStatus').value = 'visited';
             
-            ['placeLink', 'placeName', 'placeAddress', 'placeHours', 'placeDoneItems', 'placeTodoItems', 'placeMemo', 'placeVideoUrl'].forEach(id => {
+            ['placeLink', 'placeName', 'placeAddress', 'placeHours', 'placeEstimatedCost', 'placeActualCost', 'placeDoneItems', 'placeTodoItems', 'placeMemo', 'placeVideoUrl'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
+            const dateEl = document.getElementById('placeSpentDate');
+            if (dateEl) dateEl.value = getLocalDateString();
+            updateCostDiffHint();
             tempDraftMedia = [];
             renderDraftMediaPreview();
+            hideEmbeddedMapPreview();
             document.getElementById('autoFillStatus').classList.add('hidden');
             updateCustomFieldsInput();
             document.getElementById('placeModal').classList.remove('hidden');
@@ -1650,6 +1809,7 @@
         function openEditPlaceModal(placeId) {
             const place = places.find(p => p.id === placeId);
             if (!place) return;
+            stopMemoVoiceInput(true);
 
             editingPlaceId = place.id;
             document.getElementById('placeModalTitle').innerText = '공간 & 경험 기록 수정';
@@ -1664,6 +1824,12 @@
             document.getElementById('placeName').value = place.name || '';
             document.getElementById('placeAddress').value = place.address || '';
             document.getElementById('placeHours').value = place.hours || '';
+            const estVal = normalizeCost(place.estimatedCost);
+            const actVal = normalizeCost(place.actualCost);
+            document.getElementById('placeEstimatedCost').value = estVal > 0 ? String(estVal) : '';
+            document.getElementById('placeActualCost').value = actVal > 0 ? String(actVal) : '';
+            document.getElementById('placeSpentDate').value = place.spentDate || getLocalDateString(place.sortTimestamp || Date.now());
+            updateCostDiffHint();
             document.getElementById('placeDoneItems').value = Array.isArray(place.doneItems) ? place.doneItems.join(', ') : '';
             document.getElementById('placeTodoItems').value = Array.isArray(place.todoItems) ? place.todoItems.join(', ') : '';
             document.getElementById('placeMemo').value = place.memo || '';
@@ -1694,6 +1860,12 @@
 
             renderDraftMediaPreview();
             document.getElementById('autoFillStatus').classList.add('hidden');
+            const initialMapQuery = [place.address, place.name].filter(Boolean).join(' ').trim();
+            if (initialMapQuery) {
+                renderEmbeddedMapPreview(initialMapQuery, [], place.link || '', place.name || initialMapQuery);
+            } else {
+                hideEmbeddedMapPreview();
+            }
             document.getElementById('placeModal').classList.remove('hidden');
         }
 
@@ -1707,16 +1879,19 @@
             if (!Array.isArray(place.media)) place.media = [];
 
             showToast('🖼️ 추가 사진을 가볍게 최적화하는 중...');
-            let addedCount = 0;
+            const startOrder = place.media.length;
+            const addedItems = [];
             for (const file of files.slice(0, 6)) {
                 try {
                     const compressedDataUrl = await compressImageFile(file);
-                    place.media.push({ type: 'image', url: compressedDataUrl });
-                    addedCount++;
+                    const item = { id: `m_${place.id}_${Date.now()}_${addedItems.length}`, type: 'image', url: compressedDataUrl };
+                    place.media.push(item);
+                    addedItems.push(item);
                 } catch (err) {
                     console.warn('이미지 압축 실패:', err);
                 }
             }
+            const addedCount = addedItems.length;
             event.target.value = '';
 
             if (addedCount === 0) return showToast('⚠️ 사진을 불러오지 못했습니다.');
@@ -1742,7 +1917,9 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 if (!Array.isArray(place.media)) place.media = [];
-                place.media.push({ type: 'video', url: e.target.result });
+                const startOrder = place.media.length;
+                const videoItem = { id: `m_${place.id}_${Date.now()}`, type: 'video', url: e.target.result };
+                place.media.push(videoItem);
                 if (!saveAppState()) {
                     place.media.pop();
                     return showToast('⚠️ 브라우저 저장 공간이 부족합니다. 영상 크기를 줄이거나 외부 영상 링크를 이용해 주세요.');
@@ -1754,7 +1931,7 @@
             event.target.value = '';
         }
 
-        // 스마트폰 이미지 자동 리사이징 압축 (localStorage 용량 최적화)
+        // 스마트폰 이미지 자동 리사이징 압축 (localStorage 및 Firestore 용량 최적화)
         function compressImageFile(file, maxWidth = 720, quality = 0.72) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1772,7 +1949,11 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
+                        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        if (dataUrl.length > 700000) {
+                            dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                        }
+                        resolve(dataUrl);
                     };
                     img.onerror = reject;
                     img.src = e.target.result;
@@ -1841,7 +2022,163 @@
             `).join('');
         }
 
+        let memoSpeechRecognition = null;
+        let isMemoVoiceListening = false;
+        let memoVoiceBaseText = '';
+        let memoVoiceFinalText = '';
+        let memoVoiceAbortSilent = false;
+
+        function updateMemoVoiceUI(listening, statusMessage = '', isError = false) {
+            const btn = document.getElementById('memoVoiceBtn');
+            const statusEl = document.getElementById('memoVoiceStatus');
+            if (btn) {
+                btn.setAttribute('aria-pressed', listening ? 'true' : 'false');
+                btn.title = listening ? '음성 인식 중지 (클릭하여 종료)' : '음성으로 메모 입력';
+                btn.className = listening
+                    ? 'absolute right-2 top-2 w-8 h-8 rounded-xl bg-rose-600 text-white shadow-sm ring-4 ring-rose-500/25 animate-pulse flex items-center justify-center transition active:scale-95'
+                    : 'absolute right-2 top-2 w-8 h-8 rounded-xl bg-slate-500/10 hover:bg-indigo-500/15 theme-text-sub flex items-center justify-center transition active:scale-95';
+            }
+            if (statusEl) {
+                if (statusMessage) {
+                    statusEl.textContent = statusMessage;
+                    statusEl.className = `text-[11px] font-bold truncate max-w-[65%] ${listening || isError ? 'text-rose-600' : 'text-emerald-600'}`;
+                    statusEl.classList.remove('hidden');
+                } else {
+                    statusEl.textContent = '';
+                    statusEl.classList.add('hidden');
+                }
+            }
+        }
+
+        function stopMemoVoiceInput(silent = false) {
+            if (!memoSpeechRecognition) {
+                isMemoVoiceListening = false;
+                if (silent) updateMemoVoiceUI(false, '');
+                return;
+            }
+            memoVoiceAbortSilent = silent;
+            try {
+                if (silent && typeof memoSpeechRecognition.abort === 'function') {
+                    memoSpeechRecognition.abort();
+                } else {
+                    memoSpeechRecognition.stop();
+                }
+            } catch {
+                // ignore
+            }
+            isMemoVoiceListening = false;
+            if (silent) {
+                memoSpeechRecognition = null;
+                updateMemoVoiceUI(false, '');
+            }
+        }
+
+        function toggleMemoVoiceInput() {
+            if (isMemoVoiceListening) {
+                stopMemoVoiceInput(false);
+                showToast('음성 메모 입력을 종료했습니다.');
+                return;
+            }
+
+            const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognitionCtor) {
+                updateMemoVoiceUI(false, '⚠️ 음성 인식 미지원 브라우저', true);
+                return showToast('이 브라우저는 Web Speech API 음성 인식을 지원하지 않습니다. Chrome 또는 Safari를 이용해 주세요.');
+            }
+
+            const memoEl = document.getElementById('placeMemo');
+            if (!memoEl) return;
+
+            memoVoiceBaseText = memoEl.value || '';
+            memoVoiceFinalText = '';
+            memoVoiceAbortSilent = false;
+
+            const recognition = new SpeechRecognitionCtor();
+            recognition.lang = 'ko-KR';
+            recognition.interimResults = true;
+            recognition.continuous = true;
+            recognition.maxAlternatives = 1;
+            memoSpeechRecognition = recognition;
+
+            recognition.onstart = () => {
+                isMemoVoiceListening = true;
+                updateMemoVoiceUI(true, '🎙️ 듣는 중... 말씀하시면 입력됩니다');
+                showToast('🎙️ 음성 메모 입력 시작! 말씀해 주세요.');
+            };
+
+            recognition.onresult = (event) => {
+                let sessionFinal = '';
+                let sessionInterim = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    const res = event.results[i];
+                    const transcript = (res && res[0] && res[0].transcript) ? res[0].transcript.trim() : '';
+                    if (!transcript) continue;
+                    if (res.isFinal) {
+                        sessionFinal += (sessionFinal ? ' ' : '') + transcript;
+                    } else {
+                        sessionInterim += (sessionInterim ? ' ' : '') + transcript;
+                    }
+                }
+                memoVoiceFinalText = sessionFinal;
+                const combinedSpoken = [sessionFinal, sessionInterim].filter(Boolean).join(' ');
+                if (combinedSpoken) {
+                    const needsSpace = memoVoiceBaseText && !/[\s\n]$/.test(memoVoiceBaseText);
+                    memoEl.value = memoVoiceBaseText + (needsSpace ? ' ' : '') + combinedSpoken;
+                    memoEl.scrollTop = memoEl.scrollHeight;
+                }
+                if (sessionInterim) {
+                    updateMemoVoiceUI(true, `🎙️ 인식 중: "${sessionInterim}"`);
+                } else {
+                    updateMemoVoiceUI(true, '🎙️ 듣는 중... (다시 누르면 종료)');
+                }
+            };
+
+            recognition.onerror = (event) => {
+                const errCode = event?.error || '';
+                if (errCode === 'aborted' && memoVoiceAbortSilent) return;
+                isMemoVoiceListening = false;
+                let msg = '음성 인식 중 오류가 발생했습니다.';
+                if (errCode === 'not-allowed' || errCode === 'service-not-allowed') {
+                    msg = '마이크 권한이 거부되었습니다. 브라우저 설정에서 허용해 주세요.';
+                } else if (errCode === 'no-speech') {
+                    msg = '음성이 감지되지 않았습니다. 마이크 가까이에서 다시 말씀해 주세요.';
+                } else if (errCode === 'audio-capture') {
+                    msg = '사용 가능한 마이크 장치를 찾을 수 없습니다.';
+                } else if (errCode === 'network') {
+                    msg = '음성 인식 네트워크 연결이 불안정합니다.';
+                }
+                updateMemoVoiceUI(false, `⚠️ ${msg}`, true);
+                showToast(msg);
+            };
+
+            recognition.onend = () => {
+                const wasSilentAbort = memoVoiceAbortSilent;
+                isMemoVoiceListening = false;
+                memoSpeechRecognition = null;
+                memoVoiceAbortSilent = false;
+                if (wasSilentAbort) {
+                    updateMemoVoiceUI(false, '');
+                    return;
+                }
+                if (memoVoiceFinalText) {
+                    updateMemoVoiceUI(false, '✅ 음성 메모 입력 완료', false);
+                } else {
+                    updateMemoVoiceUI(false, '');
+                }
+            };
+
+            try {
+                recognition.start();
+            } catch (err) {
+                isMemoVoiceListening = false;
+                memoSpeechRecognition = null;
+                updateMemoVoiceUI(false, '⚠️ 음성 인식을 시작할 수 없습니다.', true);
+                showToast('음성 인식을 시작할 수 없습니다. 잠시 후 다시 시도해 주세요.');
+            }
+        }
+
         function closePlaceModal() {
+            stopMemoVoiceInput(true);
             editingPlaceId = null;
             document.getElementById('placeModal').classList.add('hidden');
         }
@@ -1872,6 +2209,7 @@
         }
 
         function saveNewPlace() {
+            stopMemoVoiceInput(false);
             const name = document.getElementById('placeName').value.trim();
             if (!name) return showToast('장소 이름을 입력해주세요!');
 
@@ -1894,6 +2232,16 @@
                 finalMedia.push({ type: 'video_url', url: videoUrlVal });
             }
 
+            const estimatedCostVal = normalizeCost(document.getElementById('placeEstimatedCost')?.value);
+            const actualCostVal = normalizeCost(document.getElementById('placeActualCost')?.value);
+            let spentDateVal = (document.getElementById('placeSpentDate')?.value || '').trim();
+            if (spentDateVal && !/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(spentDateVal)) {
+                spentDateVal = '';
+            }
+            if (!spentDateVal && (estimatedCostVal > 0 || actualCostVal > 0)) {
+                spentDateVal = getLocalDateString();
+            }
+
             const placePayload = {
                 categoryId: document.getElementById('placeCategory').value,
                 status: document.getElementById('placeStatus').value,
@@ -1901,6 +2249,9 @@
                 address: addressVal,
                 hours: document.getElementById('placeHours').value.trim(),
                 link: linkVal,
+                estimatedCost: estimatedCostVal,
+                actualCost: actualCostVal,
+                spentDate: spentDateVal,
                 media: finalMedia,
                 videoUrl: videoUrlVal,
                 customValues,
@@ -1912,22 +2263,27 @@
             const isEditing = Boolean(editingPlaceId);
             let editIdx = -1;
             let prevSnapshot = null;
+            let savedPlace = null;
             if (isEditing) {
                 editIdx = places.findIndex(p => p.id === editingPlaceId);
                 if (editIdx !== -1) {
                     prevSnapshot = places[editIdx];
-                    places[editIdx] = {
+                    savedPlace = {
                         ...prevSnapshot,
                         ...placePayload,
+                        sortTimestamp: prevSnapshot.sortTimestamp || Date.now(),
                         lastSynced: prevSnapshot.lastSynced || (rawInput ? '실시간 검색 동기화됨' : '')
                     };
+                    places[editIdx] = savedPlace;
                 }
             } else {
-                places.unshift({
+                savedPlace = {
                     id: 'p_' + Date.now(),
                     ...placePayload,
+                    sortTimestamp: Date.now(),
                     lastSynced: rawInput ? '실시간 검색 동기화됨' : ''
-                });
+                };
+                places.unshift(savedPlace);
             }
 
             if (!saveAppState()) {
@@ -1938,10 +2294,355 @@
                 }
                 return showToast('⚠️ 브라우저 저장 공간이 부족합니다. 일부 사진/영상을 줄여서 다시 저장해 주세요.');
             }
+            if (spentDateVal && (estimatedCostVal > 0 || actualCostVal > 0)) {
+                selectedChartMonth = spentDateVal.slice(0, 7);
+            }
             closePlaceModal();
             if (!isEditing) switchBottomTab('home');
             renderPlaces();
             showToast(isEditing ? `✏️ '${name}' 기록이 수정되었습니다!` : `'${name}' 기록이 저장되었습니다!`);
+        }
+
+        // ==========================================
+        // 5-1. 비용/지출 포맷팅 & 월별 대시보드 차트 렌더링
+        // ==========================================
+        function normalizeCost(val) {
+            const num = Number(val);
+            if (!Number.isFinite(num) || num <= 0) return 0;
+            return Math.min(1000000000, Math.round(num));
+        }
+
+        function formatCurrency(amount) {
+            return `${normalizeCost(amount).toLocaleString('ko-KR')}원`;
+        }
+
+        function formatCompactWon(amount) {
+            const n = normalizeCost(amount);
+            if (n === 0) return '0';
+            if (n >= 100000000) return `${(n / 100000000).toFixed(1).replace(/\.0$/, '')}억`;
+            if (n >= 10000) return `${(n / 10000).toFixed(1).replace(/\.0$/, '')}만`;
+            return `${n.toLocaleString('ko-KR')}`;
+        }
+
+        function getLocalDateString(ts = Date.now()) {
+            const d = new Date(ts);
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function getPlaceExpenseMonth(place) {
+            if (place.spentDate && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(place.spentDate)) {
+                return place.spentDate.slice(0, 7);
+            }
+            const ts = typeof place.sortTimestamp === 'number' && place.sortTimestamp > 0
+                ? place.sortTimestamp
+                : Date.now();
+            return getLocalDateString(ts).slice(0, 7);
+        }
+
+        function updateCostDiffHint() {
+            const hintEl = document.getElementById('placeCostDiffHint');
+            if (!hintEl) return;
+            const est = normalizeCost(document.getElementById('placeEstimatedCost')?.value);
+            const act = normalizeCost(document.getElementById('placeActualCost')?.value);
+            if (est === 0 && act === 0) {
+                hintEl.className = 'text-[12px] font-bold theme-text-muted';
+                hintEl.innerText = '원(₩) 단위 입력';
+                return;
+            }
+            if (est > 0 && act > 0) {
+                const diff = act - est;
+                if (diff > 0) {
+                    hintEl.className = 'text-[12px] font-extrabold text-rose-600';
+                    hintEl.innerText = `예상보다 +${diff.toLocaleString('ko-KR')}원 초과`;
+                } else if (diff < 0) {
+                    hintEl.className = 'text-[12px] font-extrabold text-emerald-600';
+                    hintEl.innerText = `예상보다 ${Math.abs(diff).toLocaleString('ko-KR')}원 절약`;
+                } else {
+                    hintEl.className = 'text-[12px] font-extrabold text-indigo-600';
+                    hintEl.innerText = '예상 비용과 정확히 일치';
+                }
+                return;
+            }
+            hintEl.className = 'text-[12px] font-bold text-emerald-600';
+            hintEl.innerText = act > 0 ? `실제 ${formatCurrency(act)} 기록` : `예상 ${formatCurrency(est)} 기록`;
+        }
+
+        function renderPlaceExpenseBadge(place) {
+            const est = normalizeCost(place.estimatedCost);
+            const act = normalizeCost(place.actualCost);
+            const spentDate = place.spentDate || '';
+            if (est === 0 && act === 0) return '';
+
+            let diffBadge = '';
+            if (est > 0 && act > 0) {
+                const diff = act - est;
+                if (diff > 0) {
+                    diffBadge = `<span class="text-[11px] font-extrabold px-2 py-0.5 rounded-lg bg-rose-500/15 text-rose-600">+${diff.toLocaleString('ko-KR')}원 초과</span>`;
+                } else if (diff < 0) {
+                    diffBadge = `<span class="text-[11px] font-extrabold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-600">-${Math.abs(diff).toLocaleString('ko-KR')}원 절약</span>`;
+                } else {
+                    diffBadge = `<span class="text-[11px] font-extrabold px-2 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-600">예산 일치</span>`;
+                }
+            }
+
+            return `
+                <div class="mt-2.5 p-2.5 rounded-2xl bg-slate-500/5 border border-slate-500/15 space-y-1.5">
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <span class="text-[12px] font-extrabold theme-text-sub flex items-center gap-1">
+                            <span>💳</span> 지출 내역 ${spentDate ? `<span class="font-semibold theme-text-muted">· ${spentDate}</span>` : ''}
+                        </span>
+                        ${diffBadge}
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="px-2.5 py-1.5 rounded-xl theme-card border flex items-center justify-between gap-1">
+                            <span class="text-[11px] font-bold theme-text-muted">예상</span>
+                            <span class="font-extrabold theme-text-sub">${est > 0 ? formatCurrency(est) : '-'}</span>
+                        </div>
+                        <div class="px-2.5 py-1.5 rounded-xl theme-card border flex items-center justify-between gap-1">
+                            <span class="text-[11px] font-bold theme-text-muted">실제</span>
+                            <span class="font-black theme-text-main">${act > 0 ? formatCurrency(act) : '-'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleExpenseDashboard() {
+            isExpenseDashboardCollapsed = !isExpenseDashboardCollapsed;
+            const body = document.getElementById('monthlyExpenseBody');
+            const btn = document.getElementById('expenseDashToggleBtn');
+            if (body) body.classList.toggle('hidden', isExpenseDashboardCollapsed);
+            if (btn) {
+                btn.innerText = isExpenseDashboardCollapsed ? '펼치기 ▼' : '접기 ▲';
+                btn.setAttribute('aria-expanded', isExpenseDashboardCollapsed ? 'false' : 'true');
+            }
+        }
+
+        function toggleExpenseChartMode() {
+            expenseChartMode = expenseChartMode === 'compare' ? 'actual' : 'compare';
+            const btn = document.getElementById('expenseChartModeBtn');
+            const legend = document.getElementById('legendEstimatedItem');
+            if (btn) btn.innerText = expenseChartMode === 'compare' ? '예상·실제 비교' : '실제 지출만';
+            if (legend) legend.classList.toggle('hidden', expenseChartMode !== 'compare');
+            renderMonthlyExpenseDashboard();
+        }
+
+        function selectExpenseMonth(monthKey) {
+            selectedChartMonth = monthKey;
+            renderMonthlyExpenseDashboard();
+        }
+
+        function escapeText(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderMonthlyExpenseDashboard() {
+            const chartContainer = document.getElementById('monthlyExpenseChartContainer');
+            const breakdownBox = document.getElementById('monthlyBreakdownBox');
+            if (!chartContainer || !breakdownBox) return;
+
+            const now = new Date();
+            const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+            // 최근 6개월 버킷 생성 (과거 5개월 + 이번 달)
+            const monthBuckets = [];
+            const bucketMap = new Map();
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                const bucket = {
+                    key,
+                    year: d.getFullYear(),
+                    month: d.getMonth() + 1,
+                    label: `${d.getMonth() + 1}월`,
+                    fullLabel: `${d.getFullYear()}년 ${d.getMonth() + 1}월`,
+                    estimated: 0,
+                    actual: 0,
+                    items: []
+                };
+                monthBuckets.push(bucket);
+                bucketMap.set(key, bucket);
+            }
+
+            let totalSixMonthActual = 0;
+            let totalSixMonthExpenseCount = 0;
+
+            places.forEach((p) => {
+                const est = normalizeCost(p.estimatedCost);
+                const act = normalizeCost(p.actualCost);
+                if (est === 0 && act === 0) return;
+
+                const monthKey = getPlaceExpenseMonth(p);
+                const bucket = bucketMap.get(monthKey);
+                if (bucket) {
+                    bucket.estimated += est;
+                    bucket.actual += act;
+                    bucket.items.push({
+                        id: p.id,
+                        name: p.name,
+                        estimated: est,
+                        actual: act,
+                        spentDate: p.spentDate || ''
+                    });
+                    totalSixMonthActual += act;
+                    totalSixMonthExpenseCount++;
+                }
+            });
+
+            if (!selectedChartMonth || !bucketMap.has(selectedChartMonth)) {
+                selectedChartMonth = currentMonthKey;
+            }
+
+            const currentBucket = bucketMap.get(currentMonthKey) || monthBuckets[monthBuckets.length - 1];
+            const selectedBucket = bucketMap.get(selectedChartMonth) || currentBucket;
+
+            const headerMonthlyEl = document.getElementById('headerMonthlySpent');
+            const pcMonthlyEl = document.getElementById('pcMonthlySpent');
+            if (headerMonthlyEl) headerMonthlyEl.innerText = formatCurrency(currentBucket.actual);
+            if (pcMonthlyEl) pcMonthlyEl.innerText = formatCurrency(currentBucket.actual);
+
+            const labelEl = document.getElementById('dashSelectedMonthLabel');
+            const actualEl = document.getElementById('dashSelectedActual');
+            const estEl = document.getElementById('dashSelectedEstimated');
+            const diffEl = document.getElementById('dashSelectedDiff');
+            const sixMonthsEl = document.getElementById('dashTotalSixMonths');
+            const countEl = document.getElementById('dashExpensePlaceCount');
+
+            if (labelEl) {
+                labelEl.innerText = selectedBucket.key === currentMonthKey
+                    ? `이번 달(${selectedBucket.label}) 실제 지출`
+                    : `${selectedBucket.fullLabel} 실제 지출`;
+            }
+            if (actualEl) actualEl.innerText = formatCurrency(selectedBucket.actual);
+            if (estEl) estEl.innerText = formatCurrency(selectedBucket.estimated);
+            if (sixMonthsEl) sixMonthsEl.innerText = formatCurrency(totalSixMonthActual);
+            if (countEl) countEl.innerText = `${totalSixMonthExpenseCount}건`;
+
+            if (diffEl) {
+                if (selectedBucket.estimated > 0 && selectedBucket.actual > 0) {
+                    const diff = selectedBucket.actual - selectedBucket.estimated;
+                    if (diff > 0) {
+                        diffEl.className = 'text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-rose-500/15 text-rose-600';
+                        diffEl.innerText = `+${formatCompactWon(diff)} 초과`;
+                    } else if (diff < 0) {
+                        diffEl.className = 'text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600';
+                        diffEl.innerText = `-${formatCompactWon(Math.abs(diff))} 절약`;
+                    } else {
+                        diffEl.className = 'text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-500/15 text-indigo-600';
+                        diffEl.innerText = '예산 일치';
+                    }
+                } else {
+                    diffEl.className = 'text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-slate-500/15 theme-text-sub';
+                    diffEl.innerText = selectedBucket.estimated > 0 ? '지출 전' : '기록 대기';
+                }
+            }
+
+            const maxValue = Math.max(
+                10000,
+                ...monthBuckets.map(b => expenseChartMode === 'compare' ? Math.max(b.actual, b.estimated) : b.actual)
+            );
+            const hasAnyData = monthBuckets.some(b => b.actual > 0 || b.estimated > 0);
+
+            if (!hasAnyData) {
+                chartContainer.innerHTML = `
+                    <div class="py-8 text-center space-y-1.5">
+                        <p class="text-sm font-extrabold theme-text-main">아직 기록된 지출 내역이 없습니다</p>
+                        <p class="text-xs theme-text-sub">장소 기록 또는 수정 시 '예상 비용'과 '실제 지출'을 입력하면 월별 지출 차트가 자동으로 그려집니다.</p>
+                    </div>
+                `;
+                breakdownBox.innerHTML = `
+                    <p class="text-xs theme-text-sub text-center">선택된 ${selectedBucket.fullLabel}의 지출 기록이 없습니다.</p>
+                `;
+                return;
+            }
+
+            const yTopLabel = formatCompactWon(maxValue);
+            const yMidLabel = formatCompactWon(Math.round(maxValue / 2));
+
+            chartContainer.innerHTML = `
+                <div class="flex items-stretch gap-2">
+                    <!-- Y축 눈금 -->
+                    <div class="flex flex-col justify-between text-[11px] font-bold theme-text-muted py-5 pr-1 text-right shrink-0 w-10">
+                        <span>${yTopLabel}</span>
+                        <span>${yMidLabel}</span>
+                        <span>0</span>
+                    </div>
+
+                    <!-- 막대 그래프 영역 -->
+                    <div class="relative flex-1 min-w-0">
+                        <div class="absolute inset-x-0 top-6 bottom-7 flex flex-col justify-between pointer-events-none">
+                            <div class="border-b border-dashed border-slate-400/25 w-full"></div>
+                            <div class="border-b border-dashed border-slate-400/25 w-full"></div>
+                            <div class="border-b border-slate-400/35 w-full"></div>
+                        </div>
+
+                        <div class="relative z-10 grid grid-cols-6 gap-1.5 sm:gap-2.5 pt-1">
+                            ${monthBuckets.map(b => {
+                                const isSelected = b.key === selectedBucket.key;
+                                const actualPct = b.actual > 0 ? Math.max(6, Math.round((b.actual / maxValue) * 100)) : 0;
+                                const estPct = b.estimated > 0 ? Math.max(6, Math.round((b.estimated / maxValue) * 100)) : 0;
+                                const topDisplayVal = b.actual > 0
+                                    ? formatCompactWon(b.actual)
+                                    : (expenseChartMode === 'compare' && b.estimated > 0 ? formatCompactWon(b.estimated) : '');
+                                return `
+                                    <button type="button" onclick="selectExpenseMonth('${b.key}')" class="group flex flex-col items-center rounded-xl py-1 px-0.5 transition ${isSelected ? 'bg-indigo-500/10 ring-1 ring-indigo-500/30' : 'hover:bg-slate-500/5'}">
+                                        <span class="h-4 text-[10px] sm:text-[11px] font-extrabold ${isSelected ? 'theme-text-main' : 'theme-text-sub'} truncate max-w-full">
+                                            ${topDisplayVal}
+                                        </span>
+                                        <div class="h-28 w-full flex items-end justify-center gap-1 px-1 pt-1">
+                                            ${expenseChartMode === 'compare' ? `
+                                                <div title="${b.fullLabel} 예상: ${formatCurrency(b.estimated)}" class="w-2.5 sm:w-3.5 min-h-[3px] rounded-t-md bg-slate-400/40 border border-slate-400/50 transition-all duration-300 ${b.estimated === 0 ? 'opacity-25' : ''}" style="height: ${estPct}%"></div>
+                                            ` : ''}
+                                            <div title="${b.fullLabel} 실제: ${formatCurrency(b.actual)}" class="w-3 sm:w-4 min-h-[3px] rounded-t-md theme-accent-bg shadow-2xs transition-all duration-300 ${b.actual === 0 ? 'opacity-20' : ''}" style="height: ${actualPct}%"></div>
+                                        </div>
+                                        <span class="mt-1.5 text-[11px] sm:text-xs font-extrabold ${isSelected ? 'theme-text-main' : 'theme-text-sub'}">
+                                            ${b.label}
+                                        </span>
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (selectedBucket.items.length === 0) {
+                breakdownBox.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-extrabold theme-text-main">${selectedBucket.fullLabel} 지출 내역</span>
+                        <span class="text-xs theme-text-muted">기록 없음</span>
+                    </div>
+                `;
+            } else {
+                const sortedItems = selectedBucket.items
+                    .slice()
+                    .sort((a, b) => (b.actual || b.estimated) - (a.actual || a.estimated));
+                breakdownBox.innerHTML = `
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <span class="text-xs font-extrabold theme-text-main">${selectedBucket.fullLabel} 지출 내역 (${sortedItems.length}건)</span>
+                        <span class="text-[12px] font-bold theme-text-sub">실제 ${formatCurrency(selectedBucket.actual)}</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                        ${sortedItems.slice(0, 4).map(item => `
+                            <button type="button" onclick="openPlaceDetailModal('${escapeText(item.id)}')" class="theme-card border rounded-xl px-2.5 py-2 flex items-center justify-between gap-2 text-left hover:opacity-90 active:scale-[0.99] transition">
+                                <div class="min-w-0">
+                                    <p class="text-xs font-extrabold theme-text-main truncate">${escapeText(item.name)}</p>
+                                    <p class="text-[11px] theme-text-muted truncate">${escapeText(item.spentDate || selectedBucket.fullLabel)} · 예상 ${formatCurrency(item.estimated)}</p>
+                                </div>
+                                <span class="text-xs font-black theme-text-main shrink-0">${item.actual > 0 ? formatCurrency(item.actual) : '지출 전'}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            }
         }
 
         // 입력 중인 주소+상호명이 정확한 지점인지 지도에서 미리 확인
@@ -1980,8 +2681,104 @@
             window.open(navUrl, '_blank', 'noopener,noreferrer');
         }
 
-        // 서버 API를 통한 실시간 Google 검색 Grounding 연동 장소 정보 조회
+        function isSafeHttpLink(url) {
+            return typeof url === 'string' && /^https?:\/\//i.test(url.trim());
+        }
+
+        function hideEmbeddedMapPreview() {
+            const box = document.getElementById('placeMapPreviewBox');
+            const frame = document.getElementById('placeMapPreviewFrame');
+            const linksRow = document.getElementById('placeMapLinksRow');
+            if (box) box.classList.add('hidden');
+            if (frame) frame.src = 'about:blank';
+            if (linksRow) linksRow.innerHTML = '';
+        }
+
+        function renderEmbeddedMapPreview(mapQuery, mapCandidates = [], primaryMapUrl = '', displayTitle = '') {
+            const box = document.getElementById('placeMapPreviewBox');
+            const label = document.getElementById('placeMapPreviewLabel');
+            const frame = document.getElementById('placeMapPreviewFrame');
+            const linksRow = document.getElementById('placeMapLinksRow');
+            if (!box || !frame || !linksRow || !mapQuery) return;
+
+            const encoded = encodeURIComponent(mapQuery);
+            frame.src = `https://maps.google.com/maps?q=${encoded}&hl=ko&z=16&output=embed`;
+            if (label) {
+                label.innerText = `📍 ${displayTitle || mapQuery} 지도 확인`;
+            }
+
+            const chips = [];
+            if (Array.isArray(mapCandidates)) {
+                mapCandidates.forEach((cand, idx) => {
+                    if (!isSafeHttpLink(cand?.uri)) return;
+                    const title = escapeText(cand.title || `Google 지도 #${idx + 1}`);
+                    chips.push(`
+                        <a href="${escapeText(cand.uri)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-indigo-500/12 text-indigo-700 hover:bg-indigo-500/20 transition">
+                            <span>📍</span>
+                            <span class="truncate max-w-[160px]">${title}</span>
+                        </a>
+                    `);
+                });
+            }
+            if (chips.length === 0 && isSafeHttpLink(primaryMapUrl)) {
+                chips.push(`
+                    <a href="${escapeText(primaryMapUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-indigo-500/12 text-indigo-700 hover:bg-indigo-500/20 transition">
+                        <span>📍</span> Google 지도 열기
+                    </a>
+                `);
+            }
+            chips.push(`
+                <a href="https://map.naver.com/v5/search/${encoded}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-extrabold bg-[#03C75A]/15 text-[#028A3F] hover:bg-[#03C75A]/25 transition">
+                    네이버 지도
+                </a>
+                <a href="https://map.kakao.com/link/search/${encoded}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-extrabold bg-[#FEE500]/50 text-[#191919] hover:bg-[#FEE500]/80 transition">
+                    카카오맵
+                </a>
+            `);
+
+            linksRow.innerHTML = chips.join('');
+            box.classList.remove('hidden');
+        }
+
+        function previewEmbeddedMapFromInputs() {
+            const name = document.getElementById('placeName')?.value.trim() || '';
+            const addr = document.getElementById('placeAddress')?.value.trim() || '';
+            const rawLink = document.getElementById('placeLink')?.value.trim() || '';
+            const query = [addr, name].filter(Boolean).join(' ').trim() || (!isSafeHttpLink(rawLink) ? rawLink : '');
+            if (!query) {
+                return showToast('지도에 표시할 장소 이름이나 주소를 먼저 입력해 주세요!');
+            }
+            const googleSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+            renderEmbeddedMapPreview(query, [], isSafeHttpLink(rawLink) ? rawLink : googleSearchUrl, name || query);
+        }
+
+        async function getPermittedUserLocationQuick() {
+            if (!navigator.geolocation || !navigator.permissions?.query) return undefined;
+            try {
+                const perm = await navigator.permissions.query({ name: 'geolocation' });
+                if (perm.state !== 'granted') return undefined;
+                return await new Promise((resolve) => {
+                    const timer = setTimeout(() => resolve(undefined), 600);
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            clearTimeout(timer);
+                            resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                        },
+                        () => {
+                            clearTimeout(timer);
+                            resolve(undefined);
+                        },
+                        { maximumAge: 300000, timeout: 550 }
+                    );
+                });
+            } catch {
+                return undefined;
+            }
+        }
+
+        // 서버 API를 통한 실시간 Google 지도/검색 Grounding 연동 장소 정보 조회
         async function fetchRealPlaceInfoFromWeb(userQuery) {
+            const userLocation = await getPermittedUserLocationQuick();
             const response = await fetch('/api/places/search', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1991,7 +2788,8 @@
                         id: c.id,
                         name: c.name,
                         fields: c.fields || []
-                    }))
+                    })),
+                    ...(userLocation ? { userLocation } : {})
                 })
             });
 
@@ -2010,7 +2808,7 @@
 
         async function autoFillFromLink() {
             const urlInput = document.getElementById('placeLink').value.trim();
-            if (!urlInput) return showToast('분석할 장소 링크(URL)나 가게 이름을 먼저 입력해주세요!');
+            if (!urlInput) return showToast('분석할 장소 링크(URL)나 가게 이름+지역을 먼저 입력해주세요!');
 
             const btn = document.getElementById('btnAutoFill');
             const statusText = document.getElementById('autoFillStatus');
@@ -2018,7 +2816,7 @@
             btn.disabled = true;
             btn.innerHTML = '⏳ 검색중';
             statusText.classList.remove('hidden');
-            statusText.innerText = '🌐 Google 실시간 검색으로 실제 장소 주소와 영업시간을 조회하는 중...';
+            statusText.innerText = '🗺️ Google 지도에서 실제 공식 주소와 위치 정보를 조회하는 중...';
 
             try {
                 const info = await fetchRealPlaceInfoFromWeb(urlInput);
@@ -2043,11 +2841,20 @@
                     });
                 }
 
-                statusText.innerText = `✅ '${info.name || '장소'}' 실제 정보가 자동으로 입력되었습니다!`;
-                showToast(`'${info.name || '장소'}' 실제 정보를 불러왔습니다!`);
+                // 텍스트로 검색한 경우 확인된 공식 Google 지도 링크를 연결
+                if (!isSafeHttpLink(urlInput) && isSafeHttpLink(info.mapUrl)) {
+                    document.getElementById('placeLink').value = info.mapUrl;
+                }
+
+                const mapQuery = [info.address, info.name].filter(Boolean).join(' ').trim() || urlInput;
+                renderEmbeddedMapPreview(mapQuery, info.mapCandidates || [], info.mapUrl || '', info.name || mapQuery);
+
+                const sourceLabel = info.sourceType === 'google_maps' ? 'Google 지도 검증 완료' : '실제 검색 확인 완료';
+                statusText.innerText = `✅ '${info.name || '장소'}' (${sourceLabel}) — 아래 지도에서 위치가 맞는지 바로 확인해 주세요!`;
+                showToast(`'${info.name || '장소'}' 지도와 정보를 불러왔습니다!`);
             } catch (e) {
                 statusText.innerText = `⚠️ ${e?.message || '검색 정보를 가져오지 못했습니다.'}`;
-                showToast('장소 정보를 불러오지 못했습니다.');
+                showToast('정확한 장소 정보를 불러오지 못했습니다.');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '⚡ 불러오기';
@@ -2113,12 +2920,23 @@
             }
         }
 
-        function showToast(msg) {
+        let toastHideTimer = null;
+        function showToast(msg, durationMs) {
             const toast = document.getElementById('toast');
-            document.getElementById('toastMessage').innerText = msg;
+            const msgEl = document.getElementById('toastMessage');
+            if (!toast || !msgEl) return;
+            msgEl.innerText = msg;
             toast.classList.remove('opacity-0');
-            setTimeout(() => toast.classList.add('opacity-0'), 2500);
+            if (toastHideTimer) clearTimeout(toastHideTimer);
+            const waitMs = typeof durationMs === 'number'
+                ? durationMs
+                : (String(msg || '').includes('⚠️') ? 5500 : 2800);
+            toastHideTimer = setTimeout(() => {
+                toast.classList.add('opacity-0');
+                toastHideTimer = null;
+            }, waitMs);
         }
+
     </script>
 </body>
 </html>
