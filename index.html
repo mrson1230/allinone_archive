@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>올인원 단골노트 - 나만의 기분 & 공간 아카이브</title>
     <meta name="description" content="올인원 단골노트 - 기분 맞춤형 공간 아카이브" />
     <meta property="og:title" content="올인원 단골노트" />
@@ -54,6 +54,10 @@
             color: #FFFFFF;
         }
 
+        .theme-accent-text {
+            color: var(--accent-text);
+        }
+
         .theme-accent-soft {
             background-color: var(--accent-soft);
             color: var(--accent-text);
@@ -61,6 +65,15 @@
 
         .theme-accent-border {
             border-color: var(--accent);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -127,12 +140,12 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col lg:flex-row selection:bg-orange-200 selection:text-orange-900">
+<body class="min-h-screen flex flex-col lg:flex-row overflow-x-clip selection:bg-orange-200 selection:text-orange-900">
 
     <!-- ========================================== -->
     <!-- PC & 태블릿 전용 좌측 고정 사이드바 내비게이션 -->
     <!-- ========================================== -->
-    <aside class="hidden lg:flex lg:w-72 xl:w-80 shrink-0 flex-col justify-between p-6 border-r border-slate-500/10 sticky top-0 h-screen" style="background-color: var(--bg-card);">
+    <aside class="hidden lg:flex lg:w-64 xl:w-72 2xl:w-80 shrink-0 flex-col justify-between p-5 xl:p-6 border-r border-slate-500/10 sticky top-0 h-screen" style="background-color: var(--bg-card);">
         <div class="space-y-6">
             <!-- 브랜드 로고 & 기분 뱃지 -->
             <div>
@@ -177,7 +190,7 @@
             <!-- 실시간 기록 요약 대시보드 카드 -->
             <div class="p-4 rounded-2xl bg-slate-500/5 border border-slate-500/10 space-y-3">
                 <div class="text-xs font-extrabold theme-text-sub">📊 나의 아카이브 현황</div>
-                <div class="grid grid-cols-2 gap-2.5 text-center">
+                <div class="grid grid-cols-2 gap-2.5 text-center tabular-nums">
                     <div class="p-2.5 rounded-xl bg-amber-500/10">
                         <div id="pcStatVisited" class="text-lg font-black text-amber-600">0</div>
                         <div class="text-[11px] font-bold theme-text-sub">단골·방문완료</div>
@@ -202,32 +215,32 @@
     <!-- ========================================== -->
     <!-- 메인 콘텐츠 래퍼 (모바일 풀폭 / PC 확장 그리드) -->
     <!-- ========================================== -->
-    <div class="flex-1 min-w-0 flex flex-col min-h-screen relative pb-28 lg:pb-12">
+    <div class="flex-1 min-w-0 flex flex-col min-h-screen relative pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pb-12">
 
         <!-- 상단 모바일 전용 앱 헤더 -->
-        <header class="lg:hidden sticky top-0 z-30 backdrop-blur-md px-5 pt-4 pb-3 border-b border-black/5" style="background-color: color-mix(in srgb, var(--bg-main) 88%, transparent);">
-            <div class="max-w-2xl mx-auto flex items-center justify-between gap-2">
-                <div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-lg">📔</span>
-                        <h1 class="text-lg font-extrabold tracking-tight theme-text-main">올인원 단골노트</h1>
+        <header class="lg:hidden sticky top-0 z-30 backdrop-blur-md px-4 sm:px-6 pt-3 pb-2.5 border-b border-black/5" style="background-color: color-mix(in srgb, var(--bg-main) 88%, transparent);">
+            <div class="max-w-3xl mx-auto flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="text-base sm:text-lg shrink-0">📔</span>
+                        <h1 class="text-base sm:text-lg font-extrabold tracking-tight theme-text-main truncate">올인원 단골노트</h1>
                     </div>
-                    <p id="currentMoodSubtitle" class="text-[11px] font-medium theme-text-sub mt-0.5">☀️ 포근한 웜코랄 무드로 기록 중</p>
+                    <p id="currentMoodSubtitle" class="text-[11px] font-medium theme-text-sub mt-0.5 truncate">☀️ 포근한 웜코랄 무드로 기록 중</p>
                 </div>
 
                 <!-- 빠른 기분 전환 & 저장 안내 & 디자인 스튜디오 진입 버튼 -->
-                <div class="flex items-center gap-1.5">
-                    <button type="button" onclick="openStorageGuideModal()" title="브라우저 저장 및 백업 안내" aria-label="브라우저 저장 및 백업 안내" class="px-2.5 py-2 rounded-2xl text-xs font-bold theme-card border flex items-center gap-1 active:scale-95 transition">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button type="button" onclick="openStorageGuideModal()" title="브라우저 저장 및 백업 안내" aria-label="브라우저 저장 및 백업 안내" class="min-h-[38px] px-2.5 py-1.5 rounded-2xl text-xs font-bold theme-card border flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition">
                         <span>💾</span>
                         <span class="text-[11px]">안내</span>
                     </button>
-                    <button onclick="quickSwitchMood()" title="기분 컬러 즉시 변경" class="px-2.5 py-2 rounded-2xl text-xs font-bold theme-accent-soft flex items-center gap-1 active:scale-95 transition">
+                    <button onclick="quickSwitchMood()" title="기분 컬러 즉시 변경" aria-label="기분 컬러 즉시 변경" class="min-h-[38px] px-2.5 py-1.5 rounded-2xl text-xs font-bold theme-accent-soft flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition">
                         <span>🎨</span>
                         <span class="hidden sm:inline">기분전환</span>
                     </button>
-                    <button onclick="switchBottomTab('studio')" id="headerStudioBtn" class="px-3 py-2 rounded-2xl text-xs font-bold theme-card border flex items-center gap-1 active:scale-95 transition">
+                    <button onclick="switchBottomTab('studio')" id="headerStudioBtn" class="min-h-[38px] px-2.5 sm:px-3 py-1.5 rounded-2xl text-xs font-bold theme-card border flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition">
                         <span>⚙️</span>
-                        <span>테마·설정</span>
+                        <span>테마</span>
                     </button>
                 </div>
             </div>
@@ -236,58 +249,70 @@
         <!-- ========================================== -->
         <!-- 뷰 1: 메인 아카이브 피드 화면 -->
         <!-- ========================================== -->
-        <main id="view-home" class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 lg:pt-8 space-y-5">
+        <main id="view-home" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3.5 sm:pt-4 lg:pt-8 space-y-4 sm:space-y-5">
             
             <!-- PC 상단 환영 타이틀 & 요약 바 -->
-            <div class="hidden lg:flex items-center justify-between gap-4 pb-2 border-b border-slate-500/10">
-                <div>
+            <div class="hidden lg:flex items-center justify-between gap-4 pb-3 border-b border-slate-500/10">
+                <div class="min-w-0">
                     <h2 class="text-2xl font-black tracking-tight theme-text-main">나만의 공간 & 경험 아카이브</h2>
                     <p id="pcMoodSubtitle" class="text-sm font-medium theme-text-sub mt-0.5">☀️ 포근한 웜코랄 무드로 기록 중</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="openCategoryModal()" class="px-4 py-2.5 rounded-2xl text-xs font-extrabold theme-accent-soft hover:opacity-90 transition">
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="openCategoryModal()" class="px-4 py-2.5 rounded-2xl text-xs font-extrabold theme-accent-soft hover:opacity-90 whitespace-nowrap transition">
                         + 새 카테고리 만들기
                     </button>
-                    <button onclick="openPlaceModal()" class="px-4 py-2.5 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-sm hover:opacity-90 transition">
+                    <button onclick="openPlaceModal()" class="px-4 py-2.5 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-sm hover:opacity-90 whitespace-nowrap transition">
                         + 장소 기록하기
                     </button>
                 </div>
             </div>
 
+            <!-- 모바일·태블릿 전용 요약 현황 스트립 -->
+            <section class="lg:hidden grid grid-cols-2 gap-2.5 tabular-nums">
+                <button type="button" onclick="setStatusFilter(statusFilter === 'visited' ? 'all' : 'visited')" class="theme-card border px-3 py-2.5 flex items-center justify-between gap-2 text-left active:scale-[0.99] transition">
+                    <span class="text-[11px] font-bold theme-text-sub truncate">⭐ 단골·방문완료</span>
+                    <span id="mobileStatVisited" class="text-sm font-black text-amber-600 shrink-0">0</span>
+                </button>
+                <button type="button" onclick="setStatusFilter(statusFilter === 'wishlist' ? 'all' : 'wishlist')" class="theme-card border px-3 py-2.5 flex items-center justify-between gap-2 text-left active:scale-[0.99] transition">
+                    <span class="text-[11px] font-bold theme-text-sub truncate">📌 가볼 곳(위시)</span>
+                    <span id="mobileStatWishlist" class="text-sm font-black text-emerald-600 shrink-0">0</span>
+                </button>
+            </section>
+
             <!-- 1. 나의 공간 카테고리 영역 (반응형 그리드) -->
             <section>
-                <div class="flex items-center justify-between mb-2.5 px-1">
-                    <span class="text-xs sm:text-sm font-bold theme-text-sub">나의 공간 카테고리</span>
-                    <div class="flex items-center gap-1.5">
-                        <button id="btnToggleCatDelete" onclick="toggleCategoryDeleteMode()" class="text-xs font-bold px-2.5 py-1.5 rounded-xl bg-slate-500/10 theme-text-sub hover:text-rose-600 transition">
+                <div class="flex items-center justify-between gap-2 mb-2.5 px-0.5">
+                    <span class="text-xs sm:text-sm font-bold theme-text-sub truncate">나의 공간 카테고리</span>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button id="btnToggleCatDelete" onclick="toggleCategoryDeleteMode()" class="min-h-[34px] text-xs font-bold px-2.5 py-1.5 rounded-xl bg-slate-500/10 theme-text-sub hover:text-rose-600 whitespace-nowrap transition">
                             🗑️ 삭제
                         </button>
-                        <button onclick="openCategoryModal()" class="text-xs font-bold theme-accent-soft px-3 py-1.5 rounded-xl hover:opacity-90 transition">
+                        <button onclick="openCategoryModal()" class="min-h-[34px] text-xs font-bold theme-accent-soft px-3 py-1.5 rounded-xl hover:opacity-90 whitespace-nowrap transition">
                             + 카테고리 추가
                         </button>
                     </div>
                 </div>
-                <div id="categoryDeleteNotice" class="hidden mb-2.5 px-3.5 py-2 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-between text-xs font-bold text-rose-600">
+                <div id="categoryDeleteNotice" class="hidden mb-2.5 px-3.5 py-2 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-between gap-2 text-xs font-bold text-rose-600">
                     <span>삭제할 카테고리를 선택하세요 (최소 1개 유지)</span>
-                    <button onclick="toggleCategoryDeleteMode()" class="underline font-extrabold">완료</button>
+                    <button onclick="toggleCategoryDeleteMode()" class="underline font-extrabold shrink-0">완료</button>
                 </div>
-                <div id="categoryTabs" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-2">
+                <div id="categoryTabs" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
                     <!-- JS로 동적 렌더링 -->
                 </div>
             </section>
 
             <!-- 2. 검색바 + 정렬 + 상태 필터 + 화면 보기 모드 전환 -->
             <section class="space-y-2.5">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 lg:gap-3">
                     <!-- 검색창 & 정렬 선택 -->
-                    <div class="flex items-center gap-2 flex-1 max-w-2xl">
+                    <div class="flex items-center gap-2 flex-1 lg:max-w-2xl min-w-0">
                         <div class="relative flex-1 min-w-0">
                             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm opacity-60">🔍</span>
-                            <input type="text" id="searchInput" oninput="renderPlaces()" placeholder="장소명, 메뉴, #태그, 메모 검색..." class="theme-card w-full pl-9 pr-8 py-2.5 border text-sm focus:outline-none focus:ring-2 focus:ring-orange-400/50 transition">
-                            <button type="button" id="clearSearchBtn" onclick="clearSearchFilter()" aria-label="검색어 지우기" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-500/15 theme-text-sub hover:bg-slate-500/25 text-[10px] font-black flex items-center justify-center">✕</button>
+                            <input type="text" id="searchInput" oninput="renderPlaces()" placeholder="장소, 메뉴, #태그, 메모 검색..." class="theme-card w-full min-h-[44px] pl-9 pr-9 py-2.5 border text-sm focus:outline-none focus:ring-2 focus:ring-orange-400/50 transition">
+                            <button type="button" id="clearSearchBtn" onclick="clearSearchFilter()" aria-label="검색어 지우기" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-500/15 theme-text-sub hover:bg-slate-500/25 text-[10px] font-black flex items-center justify-center">✕</button>
                         </div>
                         <div class="relative shrink-0">
-                            <select id="sortSelect" onchange="setSortMode(this.value)" aria-label="장소 카드 정렬" class="theme-card pl-3 pr-7 py-2.5 border text-xs font-extrabold theme-text-main appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-400/50 transition">
+                            <select id="sortSelect" onchange="setSortMode(this.value)" aria-label="장소 카드 정렬" class="theme-card min-h-[44px] pl-3 pr-7 py-2.5 border text-xs font-extrabold theme-text-main appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-400/50 transition">
                                 <option value="newest">🕒 최신 등록순</option>
                                 <option value="name">🔤 가나다순</option>
                                 <option value="status">⭐ 방문 상태별</option>
@@ -297,15 +322,15 @@
                     </div>
 
                     <!-- 필터 칩 & 보기 방식 전환 버튼 -->
-                    <div class="flex items-center justify-between md:justify-end gap-2">
-                        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                            <button onclick="setStatusFilter('all')" id="filter-all" class="px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">전체</button>
-                            <button onclick="setStatusFilter('visited')" id="filter-visited" class="px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">⭐ 단골·완료</button>
-                            <button onclick="setStatusFilter('wishlist')" id="filter-wishlist" class="px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">📌 가볼 곳</button>
+                    <div class="flex items-center justify-between lg:justify-end gap-2">
+                        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                            <button onclick="setStatusFilter('all')" id="filter-all" class="min-h-[40px] px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0">전체</button>
+                            <button onclick="setStatusFilter('visited')" id="filter-visited" class="min-h-[40px] px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0">⭐ 단골·완료</button>
+                            <button onclick="setStatusFilter('wishlist')" id="filter-wishlist" class="min-h-[40px] px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0">📌 가볼 곳</button>
                         </div>
 
                         <!-- 빠른 레이아웃 보기 전환 -->
-                        <button onclick="cycleLayout()" id="quickLayoutBtn" title="화면 배치 변경" class="px-3 py-2 rounded-xl text-xs font-bold theme-card border flex items-center gap-1.5 shrink-0 active:scale-95 transition">
+                        <button onclick="cycleLayout()" id="quickLayoutBtn" title="화면 배치 변경" class="min-h-[40px] px-3 py-2 rounded-xl text-xs font-bold theme-card border flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-95 transition">
                             <span id="layoutIcon">🗂️</span>
                             <span id="layoutLabel">카드형</span>
                         </button>
@@ -335,24 +360,24 @@
         <!-- ========================================== -->
         <!-- 뷰 2: 디자인 & 기분 컬러 스튜디오 (관리자 설정) -->
         <!-- ========================================== -->
-        <main id="view-studio" class="hidden flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 lg:pt-8 space-y-5 animate-fade-in">
+        <main id="view-studio" class="hidden flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-3.5 sm:pt-4 lg:pt-8 space-y-4 sm:space-y-5 animate-fade-in">
             <!-- 스튜디오 상단 헤더 -->
-            <div class="theme-card p-5 border flex items-center justify-between">
-                <div>
+            <div class="theme-card p-4 sm:p-5 border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="min-w-0">
                     <span class="text-[11px] font-extrabold uppercase tracking-wider theme-accent-soft px-2.5 py-0.5 rounded-full">Design Studio</span>
                     <h2 class="text-lg sm:text-xl font-extrabold theme-text-main mt-1.5">기분 컬러 & 아카이브 설정</h2>
                     <p class="text-xs theme-text-sub mt-0.5">오늘의 기분에 맞춰 앱 컬러와 화면 배치, 데이터 백업을 관리합니다.</p>
                 </div>
-                <button onclick="switchBottomTab('home')" class="px-4 py-2.5 rounded-2xl text-xs font-bold theme-accent-bg shadow-sm shrink-0">
+                <button onclick="switchBottomTab('home')" class="min-h-[42px] px-4 py-2.5 rounded-2xl text-xs font-bold theme-accent-bg shadow-sm whitespace-nowrap shrink-0 self-start sm:self-auto">
                     완료 · 피드로
                 </button>
             </div>
 
             <!-- PC에서 2단 그리드로 보기 좋게 배치 -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
                 <!-- 1. 오늘의 기분 컬러 프리셋 12종 -->
-                <section class="theme-card p-5 border space-y-3.5 lg:col-span-2">
-                    <div class="flex items-center justify-between">
+                <section class="theme-card p-4 sm:p-5 border space-y-3.5 lg:col-span-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
                         <h3 class="text-sm font-extrabold theme-text-main flex items-center gap-1.5">
                             <span>🎨</span> 1. 오늘의 기분 컬러 (12가지 무드)
                         </h3>
@@ -365,7 +390,7 @@
                 </section>
 
                 <!-- 2. 화면 배치 & 카드 스타일 설정 -->
-                <section class="theme-card p-5 border space-y-4">
+                <section class="theme-card p-4 sm:p-5 border space-y-4">
                     <h3 class="text-sm font-extrabold theme-text-main flex items-center gap-1.5">
                         <span>📐</span> 2. 화면 배치 & 카드 스타일
                     </h3>
@@ -374,19 +399,19 @@
                     <div>
                         <label class="text-xs font-bold theme-text-sub block mb-2">장소 목록 레이아웃</label>
                         <div class="grid grid-cols-3 gap-2">
-                            <button onclick="setLayoutMode('card')" id="btn-layout-card" class="p-3 rounded-2xl border text-center transition">
+                            <button onclick="setLayoutMode('card')" id="btn-layout-card" class="min-h-[76px] p-2.5 sm:p-3 rounded-2xl border text-center transition">
                                 <div class="text-lg mb-1">🗂️</div>
-                                <div class="text-xs font-extrabold">여유 카드형</div>
+                                <div class="text-[11px] sm:text-xs font-extrabold whitespace-nowrap">여유 카드형</div>
                                 <div class="text-[10px] opacity-75">상세 메모 한눈에</div>
                             </button>
-                            <button onclick="setLayoutMode('compact')" id="btn-layout-compact" class="p-3 rounded-2xl border text-center transition">
+                            <button onclick="setLayoutMode('compact')" id="btn-layout-compact" class="min-h-[76px] p-2.5 sm:p-3 rounded-2xl border text-center transition">
                                 <div class="text-lg mb-1">📋</div>
-                                <div class="text-xs font-extrabold">슬림 리스트</div>
+                                <div class="text-[11px] sm:text-xs font-extrabold whitespace-nowrap">슬림 리스트</div>
                                 <div class="text-[10px] opacity-75">한눈에 많이 보기</div>
                             </button>
-                            <button onclick="setLayoutMode('grid')" id="btn-layout-grid" class="p-3 rounded-2xl border text-center transition">
+                            <button onclick="setLayoutMode('grid')" id="btn-layout-grid" class="min-h-[76px] p-2.5 sm:p-3 rounded-2xl border text-center transition">
                                 <div class="text-lg mb-1">🪟</div>
-                                <div class="text-xs font-extrabold">2단 갤러리</div>
+                                <div class="text-[11px] sm:text-xs font-extrabold whitespace-nowrap">2단 갤러리</div>
                                 <div class="text-[10px] opacity-75">모던 아카이브 뷰</div>
                             </button>
                         </div>
@@ -394,25 +419,25 @@
 
                     <!-- 모서리 둥글기 조절 -->
                     <div>
-                        <div class="flex justify-between items-center mb-1.5">
+                        <div class="flex flex-wrap justify-between items-center gap-1.5 mb-1.5">
                             <label class="text-xs font-bold theme-text-sub">카드 & 버튼 둥글기 감성</label>
                             <span id="radiusLabel" class="text-xs font-extrabold theme-accent-soft px-2 py-0.5 rounded-md">몽글몽글 (24px)</span>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
-                            <button onclick="setCardRadius('12px', '단정한 각짐 (12px)')" class="py-2.5 px-3 rounded-xl border text-xs font-bold theme-text-main hover:opacity-80">단정함</button>
-                            <button onclick="setCardRadius('24px', '몽글몽글 (24px)')" class="py-2.5 px-3 rounded-xl border text-xs font-bold theme-text-main hover:opacity-80">몽글몽글</button>
-                            <button onclick="setCardRadius('32px', '둥근 조약돌 (32px)')" class="py-2.5 px-3 rounded-xl border text-xs font-bold theme-text-main hover:opacity-80">조약돌</button>
+                            <button onclick="setCardRadius('12px', '단정한 각짐 (12px)')" class="min-h-[42px] py-2.5 px-3 rounded-xl border text-xs font-bold theme-text-main hover:opacity-80 whitespace-nowrap">단정함</button>
+                            <button onclick="setCardRadius('24px', '몽글몽글 (24px)')" class="min-h-[42px] py-2.5 px-3 rounded-xl border text-xs font-bold theme-text-main hover:opacity-80 whitespace-nowrap">몽글몽글</button>
+                            <button onclick="setCardRadius('32px', '둥근 조약돌 (32px)')" class="min-h-[42px] py-2.5 px-3 rounded-xl border text-xs font-bold theme-text-main hover:opacity-80 whitespace-nowrap">조약돌</button>
                         </div>
                     </div>
                 </section>
 
                 <!-- 3. 나만의 카테고리 관리 -->
-                <section class="theme-card p-5 border space-y-3">
-                    <div class="flex items-center justify-between">
+                <section class="theme-card p-4 sm:p-5 border space-y-3">
+                    <div class="flex items-center justify-between gap-2">
                         <h3 class="text-sm font-extrabold theme-text-main flex items-center gap-1.5">
                             <span>🏷️</span> 3. 커스텀 카테고리 관리
                         </h3>
-                        <button onclick="openCategoryModal()" class="text-xs font-bold theme-accent-bg px-3 py-1.5 rounded-xl">+ 새 카테고리</button>
+                        <button onclick="openCategoryModal()" class="min-h-[36px] text-xs font-bold theme-accent-bg px-3 py-1.5 rounded-xl whitespace-nowrap shrink-0">+ 새 카테고리</button>
                     </div>
                     <p class="text-[11px] theme-text-sub">식당, 카페, 펜션, 놀이터 등 카테고리별 맞춤 입력 항목을 관리합니다.</p>
                     <div id="adminCategoryList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -421,21 +446,21 @@
                 </section>
 
                 <!-- 4. 데이터 영구 저장 & 백업 관리 -->
-                <section class="theme-card p-5 border space-y-3.5 lg:col-span-2">
+                <section class="theme-card p-4 sm:p-5 border space-y-3.5 lg:col-span-2">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <h3 class="text-sm font-extrabold theme-text-main flex items-center gap-1.5">
                             <span>💾</span> 4. 데이터 영구 저장 & 백업 관리
                         </h3>
                         <div class="flex items-center gap-1.5">
                             <div class="storage-tooltip-wrap inline-flex">
-                                <button type="button" onclick="openStorageGuideModal()" class="text-[11px] font-bold theme-accent-soft px-2.5 py-1 rounded-full flex items-center gap-1 hover:opacity-90 transition">
+                                <button type="button" onclick="openStorageGuideModal()" class="text-[11px] font-bold theme-accent-soft px-2.5 py-1 rounded-full flex items-center gap-1 hover:opacity-90 transition whitespace-nowrap">
                                     <span>ⓘ 기기 간 이동 안내</span>
                                 </button>
                                 <div class="storage-tooltip-bubble absolute right-0 bottom-full mb-2 z-50 w-64 p-3 rounded-2xl bg-slate-900 text-white text-[11px] leading-relaxed shadow-xl">
                                     데이터는 현재 브라우저의 localStorage에 저장됩니다. 다른 기기에서는 자동 연동되지 않으니 아래 백업/복원 파일을 이용해 주세요.
                                 </div>
                             </div>
-                            <span class="text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full">브라우저 저장 ON</span>
+                            <span class="text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full whitespace-nowrap">브라우저 저장 ON</span>
                         </div>
                     </div>
 
@@ -451,14 +476,14 @@
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-                        <button onclick="exportDataBackup()" class="py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1">
+                        <button onclick="exportDataBackup()" class="min-h-[44px] py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1.5 whitespace-nowrap">
                             <span>📤</span> 데이터 백업 (.json)
                         </button>
-                        <label class="py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1 cursor-pointer">
+                        <label class="min-h-[44px] py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap">
                             <span>📥</span> 백업 파일 복원
                             <input type="file" accept=".json" onchange="importDataBackup(event)" class="hidden">
                         </label>
-                        <button onclick="openClearSampleModal()" class="py-2.5 px-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-600 text-xs font-bold hover:bg-rose-500/20 transition flex items-center justify-center gap-1">
+                        <button onclick="openClearSampleModal()" class="min-h-[44px] py-2.5 px-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-600 text-xs font-bold hover:bg-rose-500/20 transition flex items-center justify-center gap-1.5 whitespace-nowrap">
                             <span>🧹</span> 장소 기록 전체 비우기
                         </button>
                     </div>
@@ -469,21 +494,21 @@
         <!-- ========================================== -->
         <!-- 모바일 전용 하단 플로팅 탭 바 & 중앙 기록 버튼 -->
         <!-- ========================================== -->
-        <nav class="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-[440px]">
-            <div class="theme-card border px-4 py-2.5 rounded-3xl shadow-xl flex items-center justify-around backdrop-blur-md">
-                <button onclick="switchBottomTab('home')" id="nav-home" class="flex flex-col items-center gap-0.5 px-4 py-1 rounded-2xl transition theme-accent-text font-extrabold">
-                    <span class="text-lg">🏠</span>
-                    <span class="text-[11px]">단골 피드</span>
+        <nav class="lg:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-[440px]">
+            <div class="theme-card border px-4 py-2 rounded-3xl shadow-xl flex items-center justify-around backdrop-blur-md">
+                <button onclick="switchBottomTab('home')" id="nav-home" class="min-h-[44px] flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 rounded-2xl transition-all duration-200 theme-accent-bg font-extrabold shadow-sm active:scale-95 whitespace-nowrap">
+                    <span class="text-base leading-none">🏠</span>
+                    <span class="text-[11px] leading-none">단골 피드</span>
                 </button>
 
                 <!-- 중앙 플러스 기록 버튼 -->
-                <button onclick="openPlaceModal()" class="theme-accent-bg w-14 h-14 -mt-7 rounded-2xl shadow-lg flex items-center justify-center text-2xl font-bold active:scale-90 transition border-4" style="border-color: var(--bg-main);">
+                <button onclick="openPlaceModal()" aria-label="새 장소 기록하기" class="theme-accent-bg w-14 h-14 -mt-6 rounded-2xl shadow-lg flex items-center justify-center text-2xl font-bold active:scale-90 transition border-4 shrink-0" style="border-color: var(--bg-main);">
                     +
                 </button>
 
-                <button onclick="switchBottomTab('studio')" id="nav-studio" class="flex flex-col items-center gap-0.5 px-4 py-1 rounded-2xl transition theme-text-sub font-semibold">
-                    <span class="text-lg">🎨</span>
-                    <span class="text-[11px]">테마·설정</span>
+                <button onclick="switchBottomTab('studio')" id="nav-studio" class="min-h-[44px] flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 rounded-2xl transition-all duration-200 theme-text-sub hover:bg-slate-500/10 font-semibold active:scale-95 whitespace-nowrap">
+                    <span class="text-base leading-none">🎨</span>
+                    <span class="text-[11px] leading-none">테마·설정</span>
                 </button>
             </div>
         </nav>
@@ -493,10 +518,11 @@
     <!-- 바텀 시트 / 센터 모달 1: 새 카테고리 추가 -->
     <!-- ========================================== -->
     <div id="categoryModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="theme-card w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 space-y-4 shadow-2xl animate-slide-up max-h-[88dvh] overflow-y-auto no-scrollbar">
+        <div class="theme-card w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-6 space-y-4 shadow-2xl animate-slide-up max-h-[90dvh] overflow-y-auto no-scrollbar">
+            <div class="sm:hidden w-10 h-1 bg-slate-400/40 rounded-full mx-auto -mt-1 mb-1"></div>
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-black theme-text-main">나만의 카테고리 만들기</h3>
-                <button onclick="closeCategoryModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">
+                <button onclick="closeCategoryModal()" class="w-9 h-9 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">
                     ✕
                 </button>
             </div>
@@ -520,8 +546,8 @@
             </div>
 
             <div class="flex gap-2 pt-2">
-                <button onclick="closeCategoryModal()" class="flex-1 py-3 rounded-2xl text-xs font-bold bg-slate-500/10 theme-text-sub">취소</button>
-                <button onclick="saveNewCategory()" class="w-2/3 py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md">카테고리 생성</button>
+                <button onclick="closeCategoryModal()" class="flex-1 min-h-[44px] py-3 rounded-2xl text-xs font-bold bg-slate-500/10 theme-text-sub">취소</button>
+                <button onclick="saveNewCategory()" class="w-2/3 min-h-[44px] py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md">카테고리 생성</button>
             </div>
         </div>
     </div>
@@ -530,10 +556,11 @@
     <!-- 바텀 시트 / 센터 모달 2: 새 장소 기록 / 기존 장소 수정 -->
     <!-- ========================================== -->
     <div id="placeModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="theme-card w-full max-w-xl rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up max-h-[90dvh] flex flex-col">
+        <div class="theme-card w-full max-w-xl rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-6 shadow-2xl animate-slide-up max-h-[92dvh] flex flex-col">
+            <div class="sm:hidden w-10 h-1 bg-slate-400/40 rounded-full mx-auto -mt-1 mb-2 shrink-0"></div>
             <div class="flex items-center justify-between pb-3 border-b border-slate-500/10 shrink-0">
-                <h3 id="placeModalTitle" class="text-lg font-black theme-text-main">새 공간 & 경험 기록</h3>
-                <button onclick="closePlaceModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">
+                <h3 id="placeModalTitle" class="text-base sm:text-lg font-black theme-text-main">새 공간 & 경험 기록</h3>
+                <button onclick="closePlaceModal()" class="w-9 h-9 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">
                     ✕
                 </button>
             </div>
@@ -598,7 +625,7 @@
                                 🗺️ 위치확인
                             </button>
                         </div>
-                        <input type="text" id="placeAddress" placeholder="예: 세종특별자치시 보듬3로 91" class="theme-card w-full px-3 py-2 border rounded-xl text-xs focus:outline-none">
+                        <input type="text" id="placeAddress" oninput="window.__draftPlaceCoords = null" placeholder="예: 세종특별자치시 보듬3로 91" class="theme-card w-full px-3 py-2 border rounded-xl text-xs focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-bold theme-text-main mb-1">영업 / 이용시간</label>
@@ -677,8 +704,8 @@
             </div>
 
             <div class="pt-3 border-t border-slate-500/10 flex gap-2 shrink-0">
-                <button onclick="closePlaceModal()" class="flex-1 py-3 rounded-2xl text-xs font-bold bg-slate-500/10 theme-text-sub">취소</button>
-                <button id="placeModalSubmitBtn" onclick="saveNewPlace()" class="w-2/3 py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md">저장하기</button>
+                <button onclick="closePlaceModal()" class="flex-1 min-h-[44px] py-3 rounded-2xl text-xs font-bold bg-slate-500/10 theme-text-sub">취소</button>
+                <button id="placeModalSubmitBtn" onclick="saveNewPlace()" class="w-2/3 min-h-[44px] py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md">저장하기</button>
             </div>
         </div>
     </div>
@@ -687,12 +714,13 @@
     <!-- 바텀 시트 / 센터 모달 3: 기존 장소에 링크 연결 / 수정 -->
     <!-- ========================================== -->
     <div id="linkEditModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="theme-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 shadow-2xl animate-slide-up">
+        <div class="theme-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-6 space-y-4 shadow-2xl animate-slide-up">
+            <div class="sm:hidden w-10 h-1 bg-slate-400/40 rounded-full mx-auto -mt-1 mb-1"></div>
             <div class="flex items-center justify-between">
                 <h3 class="text-base font-black theme-text-main flex items-center gap-1.5">
                     <span>🔗</span> 장소 지도/예약 링크 연결
                 </h3>
-                <button onclick="closeLinkEditModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">✕</button>
+                <button onclick="closeLinkEditModal()" class="w-9 h-9 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
             </div>
             <p id="linkEditTargetName" class="text-xs font-bold theme-accent-soft px-3 py-1.5 rounded-xl inline-block"></p>
             <div>
@@ -701,8 +729,8 @@
                 <p class="text-[11px] theme-text-sub mt-1.5">연결해 두면 카드에서 원터치로 바로 이동하고 최신 영업 정보를 동기화할 수 있어요.</p>
             </div>
             <div class="flex gap-2 pt-1">
-                <button onclick="closeLinkEditModal()" class="flex-1 py-3 rounded-2xl text-xs font-bold bg-slate-500/10 theme-text-sub">취소</button>
-                <button onclick="saveEditedLink()" class="w-2/3 py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md">링크 저장 & 동기화</button>
+                <button onclick="closeLinkEditModal()" class="flex-1 min-h-[44px] py-3 rounded-2xl text-xs font-bold bg-slate-500/10 theme-text-sub">취소</button>
+                <button onclick="saveEditedLink()" class="w-2/3 min-h-[44px] py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md">링크 저장 & 동기화</button>
             </div>
         </div>
     </div>
@@ -711,10 +739,11 @@
     <!-- 바텀 시트 / 센터 모달 4: 장소 전체 상세 보기 (슬림/갤러리형 클릭 시) -->
     <!-- ========================================== -->
     <div id="placeDetailModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="theme-card w-full max-w-xl rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-slide-up max-h-[88dvh] flex flex-col">
+        <div class="theme-card w-full max-w-xl rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-5 shadow-2xl animate-slide-up max-h-[90dvh] flex flex-col">
+            <div class="sm:hidden w-10 h-1 bg-slate-400/40 rounded-full mx-auto mb-2 shrink-0"></div>
             <div class="flex items-center justify-between pb-3 border-b border-slate-500/10 shrink-0">
                 <span class="text-xs font-extrabold theme-accent-soft px-2.5 py-1 rounded-lg">상세 아카이브 카드</span>
-                <button onclick="closePlaceDetailModal()" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold">✕</button>
+                <button onclick="closePlaceDetailModal()" class="w-9 h-9 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
             </div>
             <div id="placeDetailContent" class="overflow-y-auto py-3 no-scrollbar flex-1">
                 <!-- 상세 카드 렌더링 -->
@@ -787,7 +816,8 @@
     <!-- 모달 7: 브라우저 저장소(localStorage) & 백업/복원 안내 -->
     <!-- ========================================== -->
     <div id="storageGuideModal" onclick="if (event.target === this) closeStorageGuideModal()" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="theme-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 shadow-2xl animate-slide-up">
+        <div class="theme-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-6 space-y-4 shadow-2xl animate-slide-up max-h-[90dvh] overflow-y-auto no-scrollbar">
+            <div class="sm:hidden w-10 h-1 bg-slate-400/40 rounded-full mx-auto -mt-1 mb-1"></div>
             <div class="flex items-start justify-between gap-3">
                 <div class="flex items-center gap-2.5">
                     <div class="w-10 h-10 rounded-2xl theme-accent-soft flex items-center justify-center text-xl shrink-0">💾</div>
@@ -796,7 +826,7 @@
                         <p class="text-[11px] theme-text-sub mt-0.5">브라우저 localStorage 저장 방식</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeStorageGuideModal()" aria-label="안내 닫기" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
+                <button type="button" onclick="closeStorageGuideModal()" aria-label="안내 닫기" class="w-9 h-9 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
             </div>
 
             <div class="p-3.5 rounded-2xl bg-slate-500/5 border border-slate-500/10 space-y-2.5 text-xs leading-relaxed">
@@ -820,15 +850,15 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2">
-                <button type="button" onclick="exportDataBackup(); closeStorageGuideModal();" class="py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1">
+                <button type="button" onclick="exportDataBackup(); closeStorageGuideModal();" class="min-h-[42px] py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1 whitespace-nowrap">
                     <span>📤</span> 지금 백업받기
                 </button>
-                <button type="button" onclick="goToBackupSection()" class="py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1">
+                <button type="button" onclick="goToBackupSection()" class="min-h-[42px] py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1 whitespace-nowrap">
                     <span>📥</span> 복원하러 가기
                 </button>
             </div>
 
-            <button type="button" onclick="closeStorageGuideModal()" class="w-full py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md active:scale-98 transition">
+            <button type="button" onclick="closeStorageGuideModal()" class="w-full min-h-[44px] py-3 rounded-2xl text-xs font-extrabold theme-accent-bg shadow-md active:scale-98 transition">
                 확인했어요
             </button>
         </div>
@@ -838,16 +868,17 @@
     <!-- 모달 8: 장소 카카오톡 / 문자 공유 모달 -->
     <!-- ========================================== -->
     <div id="placeShareModal" onclick="if (event.target === this) closePlaceShareModal()" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="theme-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 shadow-2xl animate-slide-up">
+        <div class="theme-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-6 space-y-4 shadow-2xl animate-slide-up max-h-[90dvh] overflow-y-auto no-scrollbar">
+            <div class="sm:hidden w-10 h-1 bg-slate-400/40 rounded-full mx-auto -mt-1 mb-1"></div>
             <div class="flex items-start justify-between gap-3">
-                <div class="flex items-center gap-2.5">
+                <div class="flex items-center gap-2.5 min-w-0">
                     <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0" style="background-color: #FEE500; color: #191919;">💬</div>
-                    <div>
+                    <div class="min-w-0">
                         <h3 class="text-base font-black theme-text-main">장소 정보 공유하기</h3>
-                        <p id="sharePlaceSubtitle" class="text-[11px] theme-text-sub mt-0.5 truncate max-w-[230px]"></p>
+                        <p id="sharePlaceSubtitle" class="text-[11px] theme-text-sub mt-0.5 truncate"></p>
                     </div>
                 </div>
-                <button type="button" onclick="closePlaceShareModal()" aria-label="공유 창 닫기" class="w-8 h-8 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
+                <button type="button" onclick="closePlaceShareModal()" aria-label="공유 창 닫기" class="w-9 h-9 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
             </div>
 
             <div>
@@ -856,31 +887,60 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2">
-                <button type="button" onclick="copyShareLinkOnly('naver')" class="py-2 px-3 rounded-xl bg-emerald-500/15 text-emerald-700 text-[11px] font-extrabold hover:bg-emerald-500/25 active:scale-95 transition">
-                    🟢 네이버 지도 링크 복사
+                <button type="button" onclick="copyShareLinkOnly('naver')" class="min-h-[40px] py-2 px-2.5 rounded-xl bg-emerald-500/15 text-emerald-700 text-[11px] font-extrabold hover:bg-emerald-500/25 active:scale-95 transition whitespace-nowrap">
+                    🟢 네이버 지도 복사
                 </button>
-                <button type="button" onclick="copyShareLinkOnly('kakao')" class="py-2 px-3 rounded-xl bg-amber-400/20 text-amber-800 text-[11px] font-extrabold hover:bg-amber-400/30 active:scale-95 transition">
-                    🟡 카카오맵 링크 복사
+                <button type="button" onclick="copyShareLinkOnly('kakao')" class="min-h-[40px] py-2 px-2.5 rounded-xl bg-amber-400/20 text-amber-800 text-[11px] font-extrabold hover:bg-amber-400/30 active:scale-95 transition whitespace-nowrap">
+                    🟡 카카오맵 복사
                 </button>
             </div>
 
             <div class="space-y-2 pt-1">
-                <button type="button" onclick="copyFullShareText()" class="w-full py-3 rounded-2xl text-xs font-extrabold shadow-md active:scale-98 transition flex items-center justify-center gap-1.5" style="background-color: #FEE500; color: #191919;">
+                <button type="button" onclick="copyFullShareText()" class="w-full min-h-[44px] py-3 rounded-2xl text-xs font-extrabold shadow-md active:scale-98 transition flex items-center justify-center gap-1.5" style="background-color: #FEE500; color: #191919;">
                     <span>📋</span>
                     <span>전체 복사 (카카오톡에 바로 붙여넣기)</span>
                 </button>
 
                 <div class="grid grid-cols-2 gap-2">
-                    <a id="shareSmsAnchor" href="sms:" class="py-2.5 px-3 rounded-2xl border border-slate-500/20 text-xs font-extrabold theme-text-main hover:bg-slate-500/5 active:scale-95 transition flex items-center justify-center gap-1.5">
+                    <a id="shareSmsAnchor" href="sms:" class="min-h-[42px] py-2.5 px-3 rounded-2xl border border-slate-500/20 text-xs font-extrabold theme-text-main hover:bg-slate-500/5 active:scale-95 transition flex items-center justify-center gap-1.5 whitespace-nowrap">
                         <span>✉️</span>
                         <span>문자로 보내기</span>
                     </a>
-                    <button type="button" id="nativeShareBtn" onclick="triggerNativePlaceShare()" class="py-2.5 px-3 rounded-2xl theme-accent-bg text-xs font-extrabold shadow-sm hover:opacity-95 active:scale-95 transition flex items-center justify-center gap-1.5">
+                    <button type="button" id="nativeShareBtn" onclick="triggerNativePlaceShare()" class="min-h-[42px] py-2.5 px-3 rounded-2xl theme-accent-bg text-xs font-extrabold shadow-sm hover:opacity-95 active:scale-95 transition flex items-center justify-center gap-1.5 whitespace-nowrap">
                         <span>📤</span>
                         <span>앱으로 공유</span>
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 모달 9: 장소 상세 카드 지도 미리보기 (iframe) -->
+    <!-- ========================================== -->
+    <div id="placeMapViewerModal" onclick="if (event.target === this) closePlaceMapViewer()" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="theme-card w-full max-w-xl rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-6 space-y-3.5 shadow-2xl animate-slide-up max-h-[92dvh] flex flex-col">
+            <div class="sm:hidden w-10 h-1 bg-slate-400/40 rounded-full mx-auto -mt-0.5 mb-0.5 shrink-0"></div>
+            <div class="flex items-start justify-between gap-3 shrink-0">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-10 h-10 rounded-2xl bg-indigo-500/12 text-indigo-600 flex items-center justify-center text-xl shrink-0">🗺️</div>
+                    <div class="min-w-0">
+                        <h3 id="mapViewerPlaceTitle" class="text-base font-black theme-text-main truncate">지도에서 위치 보기</h3>
+                        <p id="mapViewerPlaceAddress" class="text-[11px] theme-text-sub mt-0.5 truncate"></p>
+                    </div>
+                </div>
+                <button type="button" onclick="closePlaceMapViewer()" aria-label="지도 미리보기 닫기" class="w-9 h-9 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
+            </div>
+
+            <div class="rounded-2xl overflow-hidden border border-slate-500/15 bg-slate-100 shrink-0">
+                <iframe id="mapViewerFrame" title="장소 위치 지도 미리보기" class="w-full h-[46dvh] min-h-[250px] max-h-[420px] border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+
+            <div id="mapViewerLinksRow" class="flex flex-wrap items-center gap-1.5 shrink-0"></div>
+
+            <button type="button" onclick="closePlaceMapViewer()" class="w-full min-h-[44px] py-2.5 rounded-2xl text-xs font-extrabold bg-slate-500/10 theme-text-main hover:bg-slate-500/15 active:scale-98 transition shrink-0">
+                닫기
+            </button>
         </div>
     </div>
 
@@ -1324,15 +1384,15 @@
             if (tab === 'home') {
                 homeView.classList.remove('hidden');
                 studioView.classList.add('hidden');
-                if (navHome) navHome.className = 'flex flex-col items-center gap-0.5 px-4 py-1 rounded-2xl transition theme-accent-text font-extrabold';
-                if (navStudio) navStudio.className = 'flex flex-col items-center gap-0.5 px-4 py-1 rounded-2xl transition theme-text-sub font-semibold';
+                if (navHome) navHome.className = 'flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-2xl transition-all duration-200 theme-accent-bg font-extrabold shadow-sm active:scale-95';
+                if (navStudio) navStudio.className = 'flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-2xl transition-all duration-200 theme-text-sub hover:bg-slate-500/10 font-semibold active:scale-95';
                 if (sideHome) sideHome.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-extrabold transition theme-accent-bg shadow-sm';
                 if (sideStudio) sideStudio.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition theme-text-sub hover:bg-slate-500/5';
             } else {
                 homeView.classList.add('hidden');
                 studioView.classList.remove('hidden');
-                if (navStudio) navStudio.className = 'flex flex-col items-center gap-0.5 px-4 py-1 rounded-2xl transition theme-accent-text font-extrabold';
-                if (navHome) navHome.className = 'flex flex-col items-center gap-0.5 px-4 py-1 rounded-2xl transition theme-text-sub font-semibold';
+                if (navStudio) navStudio.className = 'flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-2xl transition-all duration-200 theme-accent-bg font-extrabold shadow-sm active:scale-95';
+                if (navHome) navHome.className = 'flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-2xl transition-all duration-200 theme-text-sub hover:bg-slate-500/10 font-semibold active:scale-95';
                 if (sideStudio) sideStudio.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-extrabold transition theme-accent-bg shadow-sm';
                 if (sideHome) sideHome.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition theme-text-sub hover:bg-slate-500/5';
                 renderAdminCategoryList();
@@ -1362,7 +1422,7 @@
                 const isSelected = cat.id === selectedCategory;
                 if (isCategoryDeleteMode) {
                     return `
-                        <button onclick="deleteCategory('${escapeHtml(cat.id)}')" class="w-full py-2.5 px-2 rounded-2xl text-xs font-extrabold transition flex items-center justify-center gap-1 border border-rose-500/40 bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 active:scale-95">
+                        <button onclick="deleteCategory('${escapeHtml(cat.id)}')" class="w-full min-h-[44px] py-2.5 px-2 rounded-2xl text-xs font-extrabold transition flex items-center justify-center gap-1 border border-rose-500/40 bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 active:scale-95">
                             <span class="text-sm shrink-0">${escapeHtml(cat.icon)}</span>
                             <span class="truncate">${escapeHtml(cat.name)}</span>
                             <span class="text-[11px] font-black shrink-0">✕</span>
@@ -1370,7 +1430,7 @@
                     `;
                 }
                 return `
-                    <button onclick="selectCategory('${escapeHtml(cat.id)}')" class="w-full py-2.5 px-2 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1 border ${isSelected ? 'theme-accent-bg border-transparent shadow-sm' : 'theme-card theme-text-sub hover:opacity-90'}">
+                    <button onclick="selectCategory('${escapeHtml(cat.id)}')" class="w-full min-h-[44px] py-2.5 px-2 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1 border ${isSelected ? 'theme-accent-bg border-transparent shadow-sm' : 'theme-card theme-text-sub hover:opacity-90'}">
                         <span class="text-sm shrink-0">${escapeHtml(cat.icon)}</span>
                         <span class="truncate">${escapeHtml(cat.name)}</span>
                     </button>
@@ -1418,9 +1478,9 @@
             ['all', 'visited', 'wishlist'].forEach(s => {
                 const btn = document.getElementById(`filter-${s}`);
                 if (s === status) {
-                    btn.className = 'px-3.5 py-2 rounded-xl text-xs font-extrabold theme-accent-soft transition whitespace-nowrap';
+                    btn.className = 'min-h-[40px] px-3 sm:px-3.5 py-2 rounded-xl text-xs font-extrabold theme-accent-soft transition whitespace-nowrap shrink-0';
                 } else {
-                    btn.className = 'px-3.5 py-2 rounded-xl text-xs font-bold theme-text-sub hover:opacity-80 transition whitespace-nowrap';
+                    btn.className = 'min-h-[40px] px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold theme-text-sub hover:opacity-80 transition whitespace-nowrap shrink-0';
                 }
             });
             renderPlaces();
@@ -1454,14 +1514,18 @@
             return places.length - index;
         }
 
-        // PC 사이드바 통계 업데이트
+        // PC 사이드바 & 모바일 요약 통계 업데이트
         function updateSidebarStats() {
             const visitedCount = places.filter(p => p.status === 'visited').length;
             const wishlistCount = places.filter(p => p.status === 'wishlist').length;
             const elV = document.getElementById('pcStatVisited');
             const elW = document.getElementById('pcStatWishlist');
+            const mobV = document.getElementById('mobileStatVisited');
+            const mobW = document.getElementById('mobileStatWishlist');
             if (elV) elV.innerText = visitedCount;
             if (elW) elW.innerText = wishlistCount;
+            if (mobV) mobV.innerText = visitedCount;
+            if (mobW) mobW.innerText = wishlistCount;
         }
 
         function extractHashtags(text) {
@@ -1798,24 +1862,24 @@
                 <article class="theme-card p-4 sm:p-5 border flex flex-col justify-between">
                     <div>
                         <!-- 상단 뱃지 & 액션 -->
-                        <div class="flex items-center justify-between gap-2 mb-2.5">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-extrabold theme-accent-soft">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-extrabold theme-accent-soft whitespace-nowrap">
                                 <span>${escapeHtml(category.icon)}</span>
                                 ${escapeHtml(category.name)}
                             </span>
-                            <div class="flex items-center gap-1">
-                                <button onclick="togglePlaceStatus('${escapeHtml(place.id)}')" class="px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition ${isVisited ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}">
+                            <div class="flex items-center gap-1 ml-auto">
+                                <button onclick="togglePlaceStatus('${escapeHtml(place.id)}')" class="min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition whitespace-nowrap ${isVisited ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}">
                                     ${isVisited ? '⭐ 단골/방문완료' : '📌 가볼 곳(위시)'}
                                 </button>
                                 <!-- 장소 정보 및 사진/영상 수정 버튼 -->
-                                <button onclick="openEditPlaceModal('${escapeHtml(place.id)}')" title="장소 정보 수정 및 사진/영상 추가" class="px-2 py-1 rounded-xl bg-slate-500/10 theme-text-main hover:bg-slate-500/20 text-[11px] font-bold flex items-center gap-0.5 transition active:scale-90">
+                                <button onclick="openEditPlaceModal('${escapeHtml(place.id)}')" title="장소 정보 수정 및 사진/영상 추가" class="min-h-[34px] px-2 py-1 rounded-xl bg-slate-500/10 theme-text-main hover:bg-slate-500/20 text-[11px] font-bold flex items-center gap-0.5 whitespace-nowrap transition active:scale-90">
                                     <span>✏️</span><span>수정</span>
                                 </button>
                                 <!-- 링크 기반 최신 정보 자동 동기화 버튼 -->
-                                <button onclick="syncPlaceFromLink('${escapeHtml(place.id)}')" title="링크에서 최신 정보 업데이트" class="w-7 h-7 rounded-xl bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 flex items-center justify-center transition active:scale-90">
+                                <button onclick="syncPlaceFromLink('${escapeHtml(place.id)}')" title="링크에서 최신 정보 업데이트" class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 flex items-center justify-center shrink-0 transition active:scale-90">
                                     <span id="${syncIconId}" class="inline-block text-xs">🔄</span>
                                 </button>
-                                <button onclick="deletePlace('${escapeHtml(place.id)}')" class="theme-text-muted hover:text-rose-500 p-1 text-xs">
+                                <button onclick="deletePlace('${escapeHtml(place.id)}')" title="삭제" aria-label="장소 삭제" class="theme-text-muted hover:text-rose-500 w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs">
                                     🗑️
                                 </button>
                             </div>
@@ -1901,28 +1965,32 @@
                         ${buildAiSummaryBadgeHTML(place)}
 
                         <!-- 원터치 내비게이션(길찾기) 실행 바 -->
-                        <div class="pt-2.5 border-t border-slate-500/10 flex items-center justify-between gap-1.5">
+                        <div class="pt-2.5 border-t border-slate-500/10 flex flex-wrap items-center justify-between gap-2">
                             <span class="text-[11px] font-extrabold theme-text-sub shrink-0 flex items-center gap-1">
                                 <span>🧭</span> 바로 길찾기
                             </span>
                             <div class="flex items-center gap-1.5">
-                                <a href="https://map.naver.com/v5/search/${navQuery}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-700 text-[11px] font-extrabold hover:bg-emerald-500/25 active:scale-95 transition whitespace-nowrap">
+                                <a href="https://map.naver.com/v5/search/${navQuery}" target="_blank" rel="noopener noreferrer" class="min-h-[34px] inline-flex items-center px-2.5 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-700 text-[11px] font-extrabold hover:bg-emerald-500/25 active:scale-95 transition whitespace-nowrap">
                                     네이버
                                 </a>
-                                <a href="https://map.kakao.com/link/search/${navQuery}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-xl bg-amber-400/20 text-amber-800 text-[11px] font-extrabold hover:bg-amber-400/30 active:scale-95 transition whitespace-nowrap">
+                                <a href="https://map.kakao.com/link/search/${navQuery}" target="_blank" rel="noopener noreferrer" class="min-h-[34px] inline-flex items-center px-2.5 py-1.5 rounded-xl bg-amber-400/20 text-amber-800 text-[11px] font-extrabold hover:bg-amber-400/30 active:scale-95 transition whitespace-nowrap">
                                     카카오
                                 </a>
-                                <a href="https://www.tmap.co.kr/tmap2/mobile/route.jsp?name=${navQuery}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-xl bg-sky-500/15 text-sky-700 text-[11px] font-extrabold hover:bg-sky-500/25 active:scale-95 transition whitespace-nowrap">
+                                <a href="https://www.tmap.co.kr/tmap2/mobile/route.jsp?name=${navQuery}" target="_blank" rel="noopener noreferrer" class="min-h-[34px] inline-flex items-center px-2.5 py-1.5 rounded-xl bg-sky-500/15 text-sky-700 text-[11px] font-extrabold hover:bg-sky-500/25 active:scale-95 transition whitespace-nowrap">
                                     티맵
                                 </a>
                             </div>
                         </div>
 
-                        <!-- 카카오톡 / 문자 공유 버튼 -->
-                        <div class="pt-2">
-                            <button type="button" onclick="openPlaceShareModal('${escapeHtml(place.id)}')" class="w-full py-2 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-xs hover:opacity-95 active:scale-[0.99] transition" style="background-color: #FEE500; color: #191919;">
+                        <!-- 지도에서 보기 & 카카오톡 / 문자 공유 버튼 -->
+                        <div class="pt-2 grid grid-cols-2 gap-2">
+                            <button type="button" onclick="openPlaceMapViewer('${escapeHtml(place.id)}')" class="w-full min-h-[42px] py-2 px-2.5 sm:px-3 rounded-xl bg-indigo-500/12 text-indigo-700 text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1.5 hover:bg-indigo-500/20 active:scale-[0.99] transition whitespace-nowrap">
+                                <span>🗺️</span>
+                                <span>지도에서 보기</span>
+                            </button>
+                            <button type="button" onclick="openPlaceShareModal('${escapeHtml(place.id)}')" class="w-full min-h-[42px] py-2 px-2.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-xs hover:opacity-95 active:scale-[0.99] transition whitespace-nowrap" style="background-color: #FEE500; color: #191919;">
                                 <span>💬</span>
-                                <span>카카오톡/문자로 공유</span>
+                                <span>카카오톡/문자 공유</span>
                             </button>
                         </div>
                     </div>
@@ -2232,6 +2300,64 @@
         }
 
         // ==========================================
+        // 5-2. 장소 상세 카드 지도 미리보기 (iframe 모달)
+        // ==========================================
+        function openPlaceMapViewer(placeId) {
+            const place = places.find(p => p.id === placeId);
+            if (!place) return;
+
+            const textQuery = [place.address, place.name].filter(Boolean).join(' ').trim() || place.name || '';
+            if (!textQuery && !(place.x && place.y)) {
+                showToast('표시할 위치 정보가 없습니다. 상호명이나 주소를 입력해 주세요.');
+                return;
+            }
+
+            const titleEl = document.getElementById('mapViewerPlaceTitle');
+            const addressEl = document.getElementById('mapViewerPlaceAddress');
+            const frameEl = document.getElementById('mapViewerFrame');
+            const linksRow = document.getElementById('mapViewerLinksRow');
+            const modalEl = document.getElementById('placeMapViewerModal');
+            if (!frameEl || !modalEl) return;
+
+            if (titleEl) titleEl.innerText = place.name || '지도에서 위치 보기';
+            if (addressEl) {
+                addressEl.innerText = place.address ? `📍 ${place.address}` : '상호명 기준으로 위치를 표시합니다';
+            }
+
+            const coordQuery = (place.x && place.y) ? `${place.y},${place.x}` : '';
+            const iframeQuery = encodeURIComponent(coordQuery || textQuery);
+            frameEl.src = `https://maps.google.com/maps?q=${iframeQuery}&hl=ko&z=16&output=embed`;
+
+            if (linksRow) {
+                const encoded = encodeURIComponent(textQuery);
+                const kakaoDirectUrl = (place.x && place.y && place.name)
+                    ? `https://map.kakao.com/link/map/${encodeURIComponent(place.name)},${encodeURIComponent(place.y)},${encodeURIComponent(place.x)}`
+                    : `https://map.kakao.com/link/search/${encoded}`;
+
+                const links = [
+                    `<a href="${escapeHtml(kakaoDirectUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold bg-[#FEE500]/65 text-[#191919] hover:bg-[#FEE500]/90 transition">🟡 카카오맵 열기 ↗</a>`,
+                    `<a href="https://map.naver.com/v5/search/${encoded}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold bg-[#03C75A]/15 text-[#028A3F] hover:bg-[#03C75A]/25 transition">🟢 네이버 지도 ↗</a>`,
+                    `<a href="https://www.tmap.co.kr/tmap2/mobile/route.jsp?name=${encoded}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold bg-sky-500/15 text-sky-700 hover:bg-sky-500/25 transition">🧭 티맵 ↗</a>`
+                ];
+                if (isSafeHttpUrl(place.link)) {
+                    links.push(`<a href="${escapeHtml(place.link)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold bg-indigo-500/12 text-indigo-700 hover:bg-indigo-500/20 transition">🔗 연결 링크 ↗</a>`);
+                }
+                linksRow.innerHTML = links.join('');
+            }
+
+            modalEl.classList.remove('hidden');
+        }
+
+        function closePlaceMapViewer() {
+            const modalEl = document.getElementById('placeMapViewerModal');
+            const frameEl = document.getElementById('mapViewerFrame');
+            const linksRow = document.getElementById('mapViewerLinksRow');
+            if (modalEl) modalEl.classList.add('hidden');
+            if (frameEl) frameEl.src = 'about:blank';
+            if (linksRow) linksRow.innerHTML = '';
+        }
+
+        // ==========================================
         // 6. 커스텀 카테고리 & 장소 등록 모달 제어
         // ==========================================
         function openCategoryModal() {
@@ -2337,6 +2463,7 @@
 
             const nextQuery = [cand.address, cand.name].filter(Boolean).join(' ').trim() || cand.name;
             const coordQuery = cand.y && cand.x ? `${cand.y},${cand.x}` : '';
+            window.__draftPlaceCoords = (cand.x && cand.y) ? { x: String(cand.x), y: String(cand.y) } : null;
             renderEmbeddedMapPreview(nextQuery, list, cand.uri || '', cand.name || nextQuery, idx, coordQuery);
 
             const statusEl = document.getElementById('autoFillStatus');
@@ -2424,6 +2551,7 @@
             });
             renderMemoHashtagPreview();
             tempDraftMedia = [];
+            window.__draftPlaceCoords = null;
             renderDraftMediaPreview();
             hideEmbeddedMapPreview();
             const statusBox = document.getElementById('autoFillStatusBox');
@@ -2466,9 +2594,11 @@
             const statusBox = document.getElementById('autoFillStatusBox');
             if (statusBox) statusBox.classList.add('hidden');
 
+            window.__draftPlaceCoords = (place.x && place.y) ? { x: String(place.x), y: String(place.y) } : null;
             const initialMapQuery = [place.address, place.name].filter(Boolean).join(' ').trim();
+            const initialCoordQuery = (place.x && place.y) ? `${place.y},${place.x}` : '';
             if (initialMapQuery) {
-                renderEmbeddedMapPreview(initialMapQuery, [], place.link || '', place.name || initialMapQuery);
+                renderEmbeddedMapPreview(initialMapQuery, [], place.link || '', place.name || initialMapQuery, 0, initialCoordQuery);
             } else {
                 hideEmbeddedMapPreview();
             }
@@ -2592,6 +2722,7 @@
 
                 const mapQuery = [info.address, info.name].filter(Boolean).join(' ').trim() || rawInput;
                 const coordQuery = info.y && info.x ? `${info.y},${info.x}` : '';
+                window.__draftPlaceCoords = (info.x && info.y) ? { x: String(info.x), y: String(info.y) } : null;
                 renderEmbeddedMapPreview(mapQuery, info.mapCandidates || [], info.mapUrl || '', info.name || mapQuery, 0, coordQuery);
 
                 const sourceLabel = info.sourceType === 'kakao_local' ? '카카오 로컬 검증 완료' : '실제 검색 확인 완료';
@@ -2628,11 +2759,16 @@
                 const info = await fetchRealPlaceInfoFromWeb(queryTarget);
                 if (info.address) place.address = info.address;
                 if (info.hours) place.hours = info.hours;
+                if (info.x && info.y) {
+                    place.x = String(info.x);
+                    place.y = String(info.y);
+                }
                 const now = new Date();
                 const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                 place.lastSynced = `방금 동기화됨 (${timeStr})`;
                 saveAppState();
                 renderPlaces();
+                refreshDetailModalIfOpen(place.id);
                 showToast(`🔄 '${place.name}' 최신 정보가 업데이트되었습니다!`);
             } catch (e) {
                 showToast(e?.message || '⚠️ 최신 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
@@ -3171,16 +3307,38 @@
 
             document.addEventListener('keydown', (e) => {
                 const modal = document.getElementById('mediaLightboxModal');
-                if (!modal || modal.classList.contains('hidden')) return;
-                if (e.key === 'ArrowLeft') {
-                    e.preventDefault();
-                    navigateLightbox(-1);
-                } else if (e.key === 'ArrowRight') {
-                    e.preventDefault();
-                    navigateLightbox(1);
-                } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    closeMediaLightbox();
+                if (modal && !modal.classList.contains('hidden')) {
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        navigateLightbox(-1);
+                    } else if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        navigateLightbox(1);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        closeMediaLightbox();
+                    }
+                    return;
+                }
+
+                if (e.key === 'Escape') {
+                    const mapModal = document.getElementById('placeMapViewerModal');
+                    if (mapModal && !mapModal.classList.contains('hidden')) {
+                        e.preventDefault();
+                        closePlaceMapViewer();
+                        return;
+                    }
+                    const shareModal = document.getElementById('placeShareModal');
+                    if (shareModal && !shareModal.classList.contains('hidden')) {
+                        e.preventDefault();
+                        closePlaceShareModal();
+                        return;
+                    }
+                    const detailModal = document.getElementById('placeDetailModal');
+                    if (detailModal && !detailModal.classList.contains('hidden')) {
+                        e.preventDefault();
+                        closePlaceDetailModal();
+                    }
                 }
             });
         })();
@@ -3249,6 +3407,13 @@
                     target.doneItems = splitItems('placeDoneItems');
                     target.todoItems = splitItems('placeTodoItems');
                     target.memo = memoVal;
+                    if (window.__draftPlaceCoords?.x && window.__draftPlaceCoords?.y) {
+                        target.x = window.__draftPlaceCoords.x;
+                        target.y = window.__draftPlaceCoords.y;
+                    } else {
+                        delete target.x;
+                        delete target.y;
+                    }
 
                     if (!memoVal) {
                         delete target.aiSummary;
@@ -3276,6 +3441,9 @@
                 address: addressVal,
                 hours: document.getElementById('placeHours').value.trim(),
                 link: linkVal,
+                ...(window.__draftPlaceCoords?.x && window.__draftPlaceCoords?.y
+                    ? { x: window.__draftPlaceCoords.x, y: window.__draftPlaceCoords.y }
+                    : {}),
                 lastSynced: rawInput ? '실시간 검색 동기화됨' : '',
                 media: finalMedia,
                 customValues,
