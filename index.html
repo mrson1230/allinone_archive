@@ -14,6 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <!-- Leaflet 무료 인터랙티브 지도 CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <style>
         :root {
             --bg-main: #FFFBF5;
@@ -137,6 +140,10 @@
         }
         .voice-rec-ring {
             animation: voicePulseRing 1.25s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            color: #1E293B;
         }
     </style>
 </head>
@@ -576,7 +583,7 @@
                         <span class="text-[10px] font-bold text-[#191919] bg-[#FEE500]/60 px-1.5 py-0.5 rounded-md">카카오 로컬 API 연동</span>
                     </div>
                     <div class="flex gap-1.5">
-                        <input type="text" id="placeLink" placeholder="가게 이름 + 지점명 또는 지도 URL (예: 호랑이 칼국수 세종점)" class="theme-card flex-1 min-w-0 px-3 py-2 border rounded-xl text-xs focus:outline-none">
+                        <input type="text" id="placeLink" onkeydown="if(event.key==='Enter'){event.preventDefault();autoFillFromLink();}" placeholder="가게 이름 + 지점명 또는 지도 URL (예: 호랑이 칼국수 세종점)" class="theme-card flex-1 min-w-0 px-3 py-2 border rounded-xl text-xs focus:outline-none">
                         <button type="button" onclick="autoFillFromLink()" id="btnAutoFill" class="px-3 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold whitespace-nowrap shrink-0 active:scale-95 transition">
                             ⚡ 불러오기
                         </button>
@@ -590,10 +597,14 @@
                             <span id="placeMapPreviewLabel" class="text-[11px] font-extrabold text-indigo-700 truncate">📍 지도 위치 확인</span>
                             <button type="button" onclick="hideEmbeddedMapPreview()" class="text-[11px] font-bold theme-text-muted hover:text-slate-700 shrink-0">닫기 ✕</button>
                         </div>
-                        <div class="rounded-xl overflow-hidden border border-indigo-500/20 bg-slate-100">
+                        <div id="placeLeafletContainer" class="hidden w-full h-44 rounded-xl overflow-hidden border border-indigo-500/20 bg-slate-100 relative z-10">
+                            <div id="placeLeafletCanvas" class="w-full h-full"></div>
+                        </div>
+                        <div id="placeMapIframeContainer" class="hidden rounded-xl overflow-hidden border border-indigo-500/20 bg-slate-100">
                             <iframe id="placeMapPreviewFrame" title="장소 위치 지도 미리보기" class="w-full h-44 border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                         </div>
                         <div id="placeMapLinksRow" class="flex flex-wrap items-center gap-1.5"></div>
+                        <div id="kakaoSearchCandidates" class="hidden space-y-1.5 pt-1"></div>
                     </div>
                 </div>
 
@@ -932,7 +943,10 @@
                 <button type="button" onclick="closePlaceMapViewer()" aria-label="지도 미리보기 닫기" class="w-9 h-9 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
             </div>
 
-            <div class="rounded-2xl overflow-hidden border border-slate-500/15 bg-slate-100 shrink-0">
+            <div id="mapViewerLeafletContainer" class="hidden w-full h-[46dvh] min-h-[250px] max-h-[420px] rounded-2xl overflow-hidden border border-slate-500/15 bg-slate-100 relative z-10 shrink-0">
+                <div id="mapViewerLeafletCanvas" class="w-full h-full"></div>
+            </div>
+            <div id="mapViewerIframeContainer" class="hidden rounded-2xl overflow-hidden border border-slate-500/15 bg-slate-100 shrink-0">
                 <iframe id="mapViewerFrame" title="장소 위치 지도 미리보기" class="w-full h-[46dvh] min-h-[250px] max-h-[420px] border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
 
@@ -2300,33 +2314,97 @@
         }
 
         // ==========================================
-        // 5-2. 장소 상세 카드 지도 미리보기 (iframe 모달)
+        // 5-2. 장소 상세 카드 지도 미리보기 (Leaflet 인터랙티브 + iframe 폴백)
         // ==========================================
+        function parseValidLatLng(x, y) {
+            const lng = parseFloat(x);
+            const lat = parseFloat(y);
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+            if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+            return { lat, lng };
+        }
+
+        function renderLeafletPin(mapKey, markerKey, canvasId, coords, popupTitle, popupAddress) {
+            if (typeof L === 'undefined') return false;
+            const canvasEl = document.getElementById(canvasId);
+            if (!canvasEl || !coords) return false;
+
+            const safeTitle = escapeHtml(popupTitle || '선택된 장소');
+            const safeAddress = escapeHtml(popupAddress || '');
+            const popupHtml = `<b>${safeTitle}</b>${safeAddress ? `<br><span style="font-size:11px;color:#475569;">${safeAddress}</span>` : ''}`;
+
+            setTimeout(() => {
+                if (!window[mapKey]) {
+                    window[mapKey] = L.map(canvasId, {
+                        zoomControl: true,
+                        attributionControl: false
+                    }).setView([coords.lat, coords.lng], 16);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19
+                    }).addTo(window[mapKey]);
+
+                    window[markerKey] = L.marker([coords.lat, coords.lng]).addTo(window[mapKey]);
+                } else {
+                    window[mapKey].setView([coords.lat, coords.lng], 16);
+                    if (window[markerKey]) {
+                        window[markerKey].setLatLng([coords.lat, coords.lng]);
+                    } else {
+                        window[markerKey] = L.marker([coords.lat, coords.lng]).addTo(window[mapKey]);
+                    }
+                }
+                window[markerKey].bindPopup(popupHtml).openPopup();
+                window[mapKey].invalidateSize();
+            }, 60);
+            return true;
+        }
+
         function openPlaceMapViewer(placeId) {
             const place = places.find(p => p.id === placeId);
             if (!place) return;
 
             const textQuery = [place.address, place.name].filter(Boolean).join(' ').trim() || place.name || '';
-            if (!textQuery && !(place.x && place.y)) {
+            const coords = parseValidLatLng(place.x, place.y);
+            if (!textQuery && !coords) {
                 showToast('표시할 위치 정보가 없습니다. 상호명이나 주소를 입력해 주세요.');
                 return;
             }
 
             const titleEl = document.getElementById('mapViewerPlaceTitle');
             const addressEl = document.getElementById('mapViewerPlaceAddress');
+            const leafletContainer = document.getElementById('mapViewerLeafletContainer');
+            const iframeContainer = document.getElementById('mapViewerIframeContainer');
             const frameEl = document.getElementById('mapViewerFrame');
             const linksRow = document.getElementById('mapViewerLinksRow');
             const modalEl = document.getElementById('placeMapViewerModal');
-            if (!frameEl || !modalEl) return;
+            if (!modalEl) return;
 
             if (titleEl) titleEl.innerText = place.name || '지도에서 위치 보기';
             if (addressEl) {
                 addressEl.innerText = place.address ? `📍 ${place.address}` : '상호명 기준으로 위치를 표시합니다';
             }
 
-            const coordQuery = (place.x && place.y) ? `${place.y},${place.x}` : '';
-            const iframeQuery = encodeURIComponent(coordQuery || textQuery);
-            frameEl.src = `https://maps.google.com/maps?q=${iframeQuery}&hl=ko&z=16&output=embed`;
+            if (coords && leafletContainer && typeof L !== 'undefined') {
+                if (iframeContainer) iframeContainer.classList.add('hidden');
+                if (frameEl) frameEl.src = 'about:blank';
+                leafletContainer.classList.remove('hidden');
+                renderLeafletPin(
+                    'viewerLeafletMap',
+                    'viewerLeafletMarker',
+                    'mapViewerLeafletCanvas',
+                    coords,
+                    place.name || textQuery,
+                    place.address || ''
+                );
+            } else {
+                if (leafletContainer) leafletContainer.classList.add('hidden');
+                if (iframeContainer) iframeContainer.classList.remove('hidden');
+                if (frameEl) {
+                    const coordQuery = coords ? `${coords.lat},${coords.lng}` : '';
+                    const iframeQuery = encodeURIComponent(coordQuery || textQuery);
+                    frameEl.src = `https://maps.google.com/maps?q=${iframeQuery}&hl=ko&z=16&output=embed`;
+                }
+            }
 
             if (linksRow) {
                 const encoded = encodeURIComponent(textQuery);
@@ -2350,9 +2428,13 @@
 
         function closePlaceMapViewer() {
             const modalEl = document.getElementById('placeMapViewerModal');
+            const leafletContainer = document.getElementById('mapViewerLeafletContainer');
+            const iframeContainer = document.getElementById('mapViewerIframeContainer');
             const frameEl = document.getElementById('mapViewerFrame');
             const linksRow = document.getElementById('mapViewerLinksRow');
             if (modalEl) modalEl.classList.add('hidden');
+            if (leafletContainer) leafletContainer.classList.add('hidden');
+            if (iframeContainer) iframeContainer.classList.add('hidden');
             if (frameEl) frameEl.src = 'about:blank';
             if (linksRow) linksRow.innerHTML = '';
         }
@@ -2428,12 +2510,21 @@
 
         function hideEmbeddedMapPreview() {
             const box = document.getElementById('placeMapPreviewBox');
+            const leafletContainer = document.getElementById('placeLeafletContainer');
+            const iframeContainer = document.getElementById('placeMapIframeContainer');
             const frame = document.getElementById('placeMapPreviewFrame');
             const linksRow = document.getElementById('placeMapLinksRow');
+            const candidatesBox = document.getElementById('kakaoSearchCandidates');
             window.__lastMapCandidates = [];
             if (box) box.classList.add('hidden');
+            if (leafletContainer) leafletContainer.classList.add('hidden');
+            if (iframeContainer) iframeContainer.classList.add('hidden');
             if (frame) frame.src = 'about:blank';
             if (linksRow) linksRow.innerHTML = '';
+            if (candidatesBox) {
+                candidatesBox.classList.add('hidden');
+                candidatesBox.innerHTML = '';
+            }
         }
 
         function selectKakaoCandidate(idx) {
@@ -2451,6 +2542,12 @@
                 document.getElementById('placeLink').value = cand.uri;
             }
 
+            const firstCustomInput = document.querySelector('.custom-field-input');
+            if (firstCustomInput && cand.categoryName && !firstCustomInput.value.trim()) {
+                const shortCat = cand.categoryName.split('>').pop().trim();
+                if (shortCat) firstCustomInput.value = shortCat;
+            }
+
             const memoParts = [
                 cand.categoryName ? `분류: ${cand.categoryName}` : '',
                 cand.phone ? `☎ ${cand.phone}` : ''
@@ -2462,76 +2559,118 @@
             }
 
             const nextQuery = [cand.address, cand.name].filter(Boolean).join(' ').trim() || cand.name;
-            const coordQuery = cand.y && cand.x ? `${cand.y},${cand.x}` : '';
-            window.__draftPlaceCoords = (cand.x && cand.y) ? { x: String(cand.x), y: String(cand.y) } : null;
-            renderEmbeddedMapPreview(nextQuery, list, cand.uri || '', cand.name || nextQuery, idx, coordQuery);
+            const coords = parseValidLatLng(cand.x, cand.y);
+            window.__draftPlaceCoords = coords ? { x: String(cand.x), y: String(cand.y) } : null;
+            renderEmbeddedMapPreview(
+                nextQuery,
+                list,
+                cand.uri || '',
+                cand.name || nextQuery,
+                idx,
+                coords,
+                cand.address || ''
+            );
 
             const statusEl = document.getElementById('autoFillStatus');
             if (statusEl) {
                 statusEl.className = 'text-[11px] font-semibold text-emerald-600';
-                statusEl.innerText = `✨ '${cand.name}' 지점으로 변경되었습니다.`;
+                statusEl.innerText = `✨ '${cand.name}' 지점의 주소 및 위치 지도가 반영되었습니다.`;
             }
-            showToast(`📍 '${cand.name}' 정보로 적용되었습니다.`);
+            showToast(`📍 '${cand.name}' 정보와 지도가 적용되었습니다.`);
         }
 
-        function renderEmbeddedMapPreview(mapQuery, mapCandidates = [], primaryMapUrl = '', displayTitle = '', selectedIdx = 0, coordQuery = '') {
+        function renderEmbeddedMapPreview(mapQuery, mapCandidates = [], primaryMapUrl = '', displayTitle = '', selectedIdx = 0, coordsInput = null, displayAddress = '') {
             const box = document.getElementById('placeMapPreviewBox');
             const label = document.getElementById('placeMapPreviewLabel');
+            const leafletContainer = document.getElementById('placeLeafletContainer');
+            const iframeContainer = document.getElementById('placeMapIframeContainer');
             const frame = document.getElementById('placeMapPreviewFrame');
             const linksRow = document.getElementById('placeMapLinksRow');
-            if (!box || !frame || !linksRow || !mapQuery) return;
+            const candidatesBox = document.getElementById('kakaoSearchCandidates');
+            if (!box || !linksRow || !mapQuery) return;
 
             window.__lastMapCandidates = Array.isArray(mapCandidates) ? mapCandidates : [];
             const encoded = encodeURIComponent(mapQuery);
-            const iframeQuery = encodeURIComponent(coordQuery || mapQuery);
-            frame.src = `https://maps.google.com/maps?q=${iframeQuery}&hl=ko&z=16&output=embed`;
+            const selectedCand = window.__lastMapCandidates[selectedIdx];
+            const coords = coordsInput && typeof coordsInput === 'object'
+                ? parseValidLatLng(coordsInput.lng ?? coordsInput.x, coordsInput.lat ?? coordsInput.y)
+                : parseValidLatLng(selectedCand?.x, selectedCand?.y);
+
             if (label) {
                 label.innerText = `📍 ${displayTitle || mapQuery} 지도 확인`;
             }
 
-            const chips = [];
-            if (Array.isArray(mapCandidates) && mapCandidates.length > 0) {
-                mapCandidates.forEach((cand, idx) => {
-                    const isSelected = idx === selectedIdx;
-                    const title = escapeHtml(cand?.title || cand?.name || `후보 #${idx + 1}`);
-                    if (cand?.name && cand?.address) {
-                        chips.push(`
-                            <div class="inline-flex items-center rounded-lg overflow-hidden border ${isSelected ? 'border-amber-400 bg-[#FEE500]/65' : 'border-slate-200 bg-slate-100/80'}">
-                                <button type="button" onclick="selectKakaoCandidate(${idx})" class="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-extrabold text-[#191919] hover:bg-[#FEE500]/80 transition text-left">
-                                    <span>${isSelected ? '✅' : '📍'}</span>
-                                    <span class="truncate max-w-[170px]">${title}</span>
-                                </button>
-                                ${isSafeHttpUrl(cand?.uri) ? `<a href="${escapeHtml(cand.uri)}" target="_blank" rel="noopener noreferrer" title="카카오맵에서 보기" class="px-1.5 py-1 text-[10px] font-bold text-[#191919]/75 hover:text-[#191919] border-l border-black/10">↗</a>` : ''}
-                            </div>
-                        `);
-                    } else if (isSafeHttpUrl(cand?.uri)) {
-                        chips.push(`
-                            <a href="${escapeHtml(cand.uri)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-[#FEE500]/55 text-[#191919] hover:bg-[#FEE500]/80 transition">
-                                <span>📍</span>
-                                <span class="truncate max-w-[160px]">${title}</span>
-                            </a>
-                        `);
-                    }
-                });
+            box.classList.remove('hidden');
+
+            if (coords && leafletContainer && typeof L !== 'undefined') {
+                if (iframeContainer) iframeContainer.classList.add('hidden');
+                if (frame) frame.src = 'about:blank';
+                leafletContainer.classList.remove('hidden');
+                renderLeafletPin(
+                    'inlineLeafletMap',
+                    'inlineLeafletMarker',
+                    'placeLeafletCanvas',
+                    coords,
+                    displayTitle || mapQuery,
+                    displayAddress || selectedCand?.address || ''
+                );
+            } else {
+                if (leafletContainer) leafletContainer.classList.add('hidden');
+                if (iframeContainer) iframeContainer.classList.remove('hidden');
+                if (frame) {
+                    const coordQuery = coords ? `${coords.lat},${coords.lng}` : '';
+                    const iframeQuery = encodeURIComponent(coordQuery || mapQuery);
+                    frame.src = `https://maps.google.com/maps?q=${iframeQuery}&hl=ko&z=16&output=embed`;
+                }
             }
-            if (chips.length === 0 && isSafeHttpUrl(primaryMapUrl)) {
-                chips.push(`
-                    <a href="${escapeHtml(primaryMapUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-[#FEE500]/55 text-[#191919] hover:bg-[#FEE500]/80 transition">
-                        <span>📍</span> 카카오맵 열기
-                    </a>
-                `);
-            }
-            chips.push(`
-                <a href="https://map.naver.com/v5/search/${encoded}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-extrabold bg-[#03C75A]/15 text-[#028A3F] hover:bg-[#03C75A]/25 transition">
-                    네이버 지도
+
+            const links = [];
+            const activeKakaoUrl = (isSafeHttpUrl(selectedCand?.uri) && selectedCand.uri)
+                || (isSafeHttpUrl(primaryMapUrl) && primaryMapUrl)
+                || `https://map.kakao.com/link/search/${encoded}`;
+
+            links.push(`
+                <a href="${escapeHtml(activeKakaoUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-[#FEE500]/60 text-[#191919] hover:bg-[#FEE500]/85 transition">
+                    🟡 카카오맵 ↗
                 </a>
-                <a href="https://map.kakao.com/link/search/${encoded}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-extrabold bg-[#FEE500]/50 text-[#191919] hover:bg-[#FEE500]/80 transition">
-                    카카오맵 검색
+                <a href="https://map.naver.com/v5/search/${encoded}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-[#03C75A]/15 text-[#028A3F] hover:bg-[#03C75A]/25 transition">
+                    🟢 네이버 지도 ↗
                 </a>
             `);
+            linksRow.innerHTML = links.join('');
 
-            linksRow.innerHTML = chips.join('');
-            box.classList.remove('hidden');
+            if (candidatesBox) {
+                const validCands = window.__lastMapCandidates.filter(c => c && (c.name || c.title));
+                if (validCands.length > 1) {
+                    candidatesBox.classList.remove('hidden');
+                    candidatesBox.innerHTML = `
+                        <div class="text-[10px] font-extrabold theme-text-sub pt-1">다른 지점을 찾으시나요? (터치하여 변경)</div>
+                        <div class="space-y-1 max-h-36 overflow-y-auto pr-0.5">
+                            ${window.__lastMapCandidates.map((r, idx) => {
+                                if (!r || (!r.name && !r.title)) return '';
+                                const isSelected = idx === selectedIdx;
+                                const candName = escapeHtml(r.name || r.title);
+                                const candAddr = escapeHtml(r.address || '주소 정보 없음');
+                                return `
+                                    <div class="flex items-stretch gap-1">
+                                        <button type="button" onclick="selectKakaoCandidate(${idx})" class="flex-1 min-w-0 text-left px-2.5 py-1.5 rounded-xl border text-[11px] transition flex items-center justify-between gap-2 ${isSelected ? 'border-indigo-500 bg-indigo-500/10' : 'theme-card hover:border-indigo-400'}">
+                                            <div class="min-w-0">
+                                                <div class="font-extrabold theme-text-main truncate">${isSelected ? '✅ ' : ''}${candName}</div>
+                                                <div class="text-[10px] theme-text-sub truncate">${candAddr}</div>
+                                            </div>
+                                            <span class="text-[10px] font-extrabold shrink-0 ${isSelected ? 'text-indigo-600' : 'theme-text-sub'}">${isSelected ? '선택됨' : '선택'}</span>
+                                        </button>
+                                        ${isSafeHttpUrl(r.uri) ? `<a href="${escapeHtml(r.uri)}" target="_blank" rel="noopener noreferrer" title="카카오맵에서 열기" aria-label="카카오맵에서 열기" class="px-2 rounded-xl border border-slate-500/15 bg-[#FEE500]/55 text-[#191919] text-[10px] font-extrabold flex items-center justify-center hover:bg-[#FEE500]/80 shrink-0">↗</a>` : ''}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                } else {
+                    candidatesBox.classList.add('hidden');
+                    candidatesBox.innerHTML = '';
+                }
+            }
         }
 
         // 장소 추가 모달
@@ -2594,11 +2733,11 @@
             const statusBox = document.getElementById('autoFillStatusBox');
             if (statusBox) statusBox.classList.add('hidden');
 
-            window.__draftPlaceCoords = (place.x && place.y) ? { x: String(place.x), y: String(place.y) } : null;
+            const initialCoords = parseValidLatLng(place.x, place.y);
+            window.__draftPlaceCoords = initialCoords ? { x: String(place.x), y: String(place.y) } : null;
             const initialMapQuery = [place.address, place.name].filter(Boolean).join(' ').trim();
-            const initialCoordQuery = (place.x && place.y) ? `${place.y},${place.x}` : '';
             if (initialMapQuery) {
-                renderEmbeddedMapPreview(initialMapQuery, [], place.link || '', place.name || initialMapQuery, 0, initialCoordQuery);
+                renderEmbeddedMapPreview(initialMapQuery, [], place.link || '', place.name || initialMapQuery, 0, initialCoords, place.address || '');
             } else {
                 hideEmbeddedMapPreview();
             }
@@ -2684,6 +2823,7 @@
 
             btn.disabled = true;
             btn.innerText = '검색중...';
+            hideEmbeddedMapPreview();
             statusBox.classList.remove('hidden');
             statusEl.className = 'text-[11px] font-semibold text-indigo-600';
             statusEl.innerText = '🗺️ 카카오 로컬에서 정확한 상호명과 도로명 주소를 조회하는 중...';
@@ -2716,19 +2856,26 @@
                     });
                 }
 
+                const firstCustomInput = document.querySelector('.custom-field-input');
+                const topCategoryName = info.mapCandidates?.[0]?.categoryName;
+                if (firstCustomInput && topCategoryName && !firstCustomInput.value.trim()) {
+                    const shortCat = topCategoryName.split('>').pop().trim();
+                    if (shortCat) firstCustomInput.value = shortCat;
+                }
+
                 if (!isSafeHttpUrl(rawInput) && isSafeHttpUrl(info.mapUrl)) {
                     document.getElementById('placeLink').value = info.mapUrl;
                 }
 
                 const mapQuery = [info.address, info.name].filter(Boolean).join(' ').trim() || rawInput;
-                const coordQuery = info.y && info.x ? `${info.y},${info.x}` : '';
-                window.__draftPlaceCoords = (info.x && info.y) ? { x: String(info.x), y: String(info.y) } : null;
-                renderEmbeddedMapPreview(mapQuery, info.mapCandidates || [], info.mapUrl || '', info.name || mapQuery, 0, coordQuery);
+                const coords = parseValidLatLng(info.x, info.y);
+                window.__draftPlaceCoords = coords ? { x: String(info.x), y: String(info.y) } : null;
+                renderEmbeddedMapPreview(mapQuery, info.mapCandidates || [], info.mapUrl || '', info.name || mapQuery, 0, coords, info.address || '');
 
                 const sourceLabel = info.sourceType === 'kakao_local' ? '카카오 로컬 검증 완료' : '실제 검색 확인 완료';
                 statusEl.className = 'text-[11px] font-semibold text-emerald-600';
                 statusEl.innerText = `✨ '${info.name || rawInput}' (${sourceLabel}) — 여러 지점이 있으면 아래 후보를 눌러 선택하세요!`;
-                showToast('⚡ 카카오 로컬에서 장소 정보를 자동으로 채웠습니다!');
+                showToast('⚡ 카카오 로컬에서 장소 정보와 지도를 불러왔습니다!');
             } catch (error) {
                 statusEl.className = 'text-[11px] font-semibold text-amber-600';
                 statusEl.innerText = `⚠️ ${error?.message || '검색 결과를 바로 찾지 못했습니다. 지점명까지 적거나 아래 칸에 직접 입력해 주세요.'}`;
@@ -3471,8 +3618,11 @@
             const rawLink = document.getElementById('placeLink').value.trim();
             const query = [address, name].filter(Boolean).join(' ').trim();
             if (!query) return showToast('상호명이나 주소를 먼저 입력해주세요!');
-            const googleSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-            renderEmbeddedMapPreview(query, [], isSafeHttpUrl(rawLink) ? rawLink : googleSearchUrl, name || query);
+            const draftCoords = window.__draftPlaceCoords
+                ? parseValidLatLng(window.__draftPlaceCoords.x, window.__draftPlaceCoords.y)
+                : null;
+            const kakaoSearchUrl = `https://map.kakao.com/link/search/${encodeURIComponent(query)}`;
+            renderEmbeddedMapPreview(query, [], isSafeHttpUrl(rawLink) ? rawLink : kakaoSearchUrl, name || query, 0, draftCoords, address);
             document.getElementById('placeMapPreviewBox')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
