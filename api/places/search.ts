@@ -1,5 +1,3 @@
-import { GoogleGenAI, ThinkingLevel } from '@google/genai';
-
 interface CategoryInput {
   id: string;
   name: string;
@@ -11,9 +9,28 @@ interface UserLocation {
   lng: number;
 }
 
-interface MapCandidate {
-  title: string;
-  uri: string;
+interface KakaoPlaceDocument {
+  id?: string;
+  place_name?: string;
+  category_name?: string;
+  category_group_code?: string;
+  category_group_name?: string;
+  phone?: string;
+  address_name?: string;
+  road_address_name?: string;
+  x?: string;
+  y?: string;
+  place_url?: string;
+}
+
+interface KakaoAddressDocument {
+  address_name?: string;
+  road_address?: {
+    address_name?: string;
+    building_name?: string;
+  } | null;
+  x?: string;
+  y?: string;
 }
 
 interface ServerlessRequest {
@@ -27,7 +44,6 @@ interface ServerlessResponse {
 }
 
 const SEARCH_CACHE_TTL_MS = 10 * 60 * 1000;
-const TOTAL_SEARCH_DEADLINE_MS = 12000;
 const searchCache = new Map<string, { placeInfo: unknown; expiresAt: number }>();
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
@@ -123,68 +139,90 @@ async function resolveUrlHint(rawQuery: string): Promise<{ finalUrl?: string; ti
   }
 }
 
-function extractGroundingMaps(response: unknown): MapCandidate[] {
-  const candidates = (response as { candidates?: Array<{ groundingMetadata?: { groundingChunks?: Array<{ maps?: { uri?: string; title?: string } }> } }> })?.candidates;
-  const chunks = candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-  const seen = new Set<string>();
-  const results: MapCandidate[] = [];
-  for (const chunk of chunks) {
-    const uri = chunk?.maps?.uri;
-    if (!uri || seen.has(uri)) continue;
-    seen.add(uri);
-    results.push({
-      title: String(chunk?.maps?.title || '').trim(),
-      uri,
-    });
-  }
-  return results;
+function cleanPlaceQueryFromTitle(title: string): string {
+  return title
+    .replace(/\s*[-|:]\s*(네이버\s*지도|네이버\s*플레이스|네이버|카카오맵|카카오|Google\s*지도|Google\s*Maps).*$/i, '')
+    .trim();
 }
 
-async function generateGroundedPlaceInfo(
-  ai: GoogleGenAI,
+function mapKakaoCategoryToAppCategory(
+  groupCode: string,
+  categoryName: string,
+  safeCategories: CategoryInput[]
+): string {
+  const availableIds = new Set(safeCategories.map((c) => c.id));
+  const code = (groupCode || '').toUpperCase();
+  const text = (categoryName || '').toLowerCase();
+
+  const findByKeywords = (keywords: string[]) =>
+    safeCategories.find((c) => keywords.some((kw) => c.name.toLowerCase().includes(kw)))?.id;
+
+  if (code === 'FD6' || text.includes('음식점') || text.includes('식당')) {
+    if (availableIds.has('food')) return 'food';
+    return findByKeywords(['식당', '맛집', '음식', '밥']) || '';
+  }
+  if (code === 'CE7' || text.includes('카페') || text.includes('디저트') || text.includes('커피')) {
+    if (availableIds.has('cafe')) return 'cafe';
+    return findByKeywords(['카페', '커피', '디저트']) || '';
+  }
+  if (code === 'AD5' || text.includes('숙박') || text.includes('펜션') || text.includes('호텔') || text.includes('모텔') || text.includes('캠핑')) {
+    if (availableIds.has('stay')) return 'stay';
+    return findByKeywords(['펜션', '숙소', '호텔', '숙박', '캠핑']) || '';
+  }
+  if (
+    code === 'AT4' ||
+    code === 'CT1' ||
+    text.includes('관광') ||
+    text.includes('명소') ||
+    text.includes('공원') ||
+    text.includes('문화') ||
+    text.includes('레저') ||
+    text.includes('여가')
+  ) {
+    if (availableIds.has('play')) return 'play';
+    return findByKeywords(['놀이터', '여가', '여행', '명소', '산', '바다']) || '';
+  }
+
+  return '';
+}
+
+function normalizeKakaoPlaceUrl(rawUrl: string | undefined, placeName: string, x?: string, y?: string): string {
+  const trimmed = String(rawUrl || '').trim();
+  if (/^https?:\/\/place\.map\.kakao\.com\//i.test(trimmed)) {
+    return trimmed.replace(/^http:\/\//i, 'https://');
+  }
+  if (x && y && placeName) {
+    return `https://map.kakao.com/link/map/${encodeURIComponent(placeName)},${encodeURIComponent(y)},${encodeURIComponent(x)}`;
+  }
+  return `https://map.kakao.com/link/search/${encodeURIComponent(placeName)}`;
+}
+
+async function searchPlacesWithKakaoLocal(
+  kakaoRestApiKey: string,
   rawQuery: string,
   safeCategories: CategoryInput[],
   userLocation?: UserLocation
 ) {
-  const startedAt = Date.now();
-  const isUrlInput = /^https?:\/\//i.test(rawQuery.trim());
-  const urlHint = isUrlInput ? await resolveUrlHint(rawQuery) : {};
+  const trimmedInput = rawQuery.trim();
+  const isUrlInput = /^https?:\/\//i.test(trimmedInput);
+  let searchKeyword = trimmedInput;
 
-  const searchSubject = [
-    urlHint.title ? `페이지 제목: "${urlHint.title}"` : '',
-    urlHint.description ? `설명: "${urlHint.description}"` : '',
-    urlHint.finalUrl && urlHint.finalUrl !== rawQuery.trim() ? `최종 URL: ${urlHint.finalUrl}` : '',
-  ]
-    .filter(Boolean)
-    .join('\n');
+  if (isUrlInput) {
+    const urlHint = await resolveUrlHint(trimmedInput);
+    const cleanedTitle = urlHint.title ? cleanPlaceQueryFromTitle(urlHint.title) : '';
+    if (!cleanedTitle) {
+      const err = new Error('입력한 링크에서 가게 이름을 자동으로 읽지 못했습니다. 가게 이름과 지점명을 직접 입력해 주세요.') as Error & { status?: number };
+      err.status = 422;
+      throw err;
+    }
+    searchKeyword = cleanedTitle;
+  }
 
-  const categoryListDesc = safeCategories
-    .map((c) => `${c.id} (${c.name}: ${(c.fields || []).join(', ')})`)
-    .join(' / ');
-
-  const mapsPrompt = `사용자가 찾는 실제 장소: "${rawQuery.trim()}"
-${searchSubject ? `[링크에서 추출한 단서]\n${searchSubject}\n` : ''}
-Google 지도(Maps)에서 위 장소의 실제 공식 정보를 조회해서 아래 항목을 한국어로 정확히 정리해줘.
-모르거나 확인되지 않은 주소·지점은 절대 추측하지 마.
-- 공식 상호명:
-- 정확한 도로명 주소 (지점이 여러 개라면 입력된 지역/단서에 맞는 정확한 지점 주소):
-- 영업시간 및 휴무일:
-- 대표 추천 메뉴 또는 즐길 거리 2~3개:
-- 주차 여부 및 방문 꿀팁 1줄:
-- 가장 알맞은 카테고리 ID (${categoryListDesc}):`;
-
-  const searchPrompt = `사용자 입력: "${rawQuery.trim()}"
-${searchSubject ? `[링크에서 추출한 단서]\n${searchSubject}\n` : ''}
-Google 웹 검색을 통해 위 실제 장소의 공식 상호명, 정확한 도로명 주소, 영업시간, 추천 메뉴/즐길 거리, 방문 팁을 확인해 정리해줘. 확인되지 않은 주소는 절대 추측하지 마.`;
-
-  let groundedText = '';
-  let mapCandidates: MapCandidate[] = [];
-  let sourceType: 'google_maps' | 'google_search' = 'google_maps';
-
-  const mapsConfig: Record<string, unknown> = {
-    tools: [{ googleMaps: {} }],
-    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-  };
+  const params = new URLSearchParams({
+    query: searchKeyword,
+    size: '5',
+    sort: 'accuracy',
+  });
   if (
     userLocation &&
     typeof userLocation.lat === 'number' &&
@@ -196,130 +234,135 @@ Google 웹 검색을 통해 위 실제 장소의 공식 상호명, 정확한 도
     userLocation.lng >= -180 &&
     userLocation.lng <= 180
   ) {
-    mapsConfig.toolConfig = {
-      retrievalConfig: {
-        latLng: {
-          latitude: userLocation.lat,
-          longitude: userLocation.lng,
-        },
+    params.set('y', String(userLocation.lat));
+    params.set('x', String(userLocation.lng));
+  }
+
+  const keywordResp = await withTimeout(
+    fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `KakaoAK ${kakaoRestApiKey}`,
       },
+    }),
+    6500
+  );
+
+  if (!keywordResp.ok) {
+    const err = new Error(`카카오 로컬 API 요청 실패 (${keywordResp.status})`) as Error & { status?: number };
+    err.status = keywordResp.status;
+    throw err;
+  }
+
+  const keywordData = (await keywordResp.json()) as { documents?: KakaoPlaceDocument[] };
+  const docs = Array.isArray(keywordData.documents) ? keywordData.documents : [];
+
+  if (docs.length > 0) {
+    const top = docs[0];
+    const topName = (top.place_name || searchKeyword).trim();
+    const topAddress = (top.road_address_name || top.address_name || '').trim();
+    const topPhone = (top.phone || '').trim();
+    const topCategoryName = (top.category_name || top.category_group_name || '').trim();
+    const topCategoryId = mapKakaoCategoryToAppCategory(top.category_group_code || '', topCategoryName, safeCategories);
+    const topMapUrl = normalizeKakaoPlaceUrl(top.place_url, topName, top.x, top.y);
+
+    const memoParts = [
+      topCategoryName ? `분류: ${topCategoryName}` : '',
+      topPhone ? `☎ ${topPhone}` : '',
+    ].filter(Boolean);
+
+    const mapCandidates = docs.slice(0, 4).map((doc) => {
+      const cName = (doc.place_name || '').trim();
+      const cAddr = (doc.road_address_name || doc.address_name || '').trim();
+      const cCatName = (doc.category_name || doc.category_group_name || '').trim();
+      const cCatId = mapKakaoCategoryToAppCategory(doc.category_group_code || '', cCatName, safeCategories);
+      return {
+        title: cAddr ? `${cName} (${cAddr})` : cName,
+        name: cName,
+        address: cAddr,
+        phone: (doc.phone || '').trim(),
+        categoryName: cCatName,
+        categoryId: cCatId,
+        uri: normalizeKakaoPlaceUrl(doc.place_url, cName, doc.x, doc.y),
+        x: doc.x || '',
+        y: doc.y || '',
+      };
+    });
+
+    return {
+      categoryId: topCategoryId,
+      name: topName,
+      address: topAddress,
+      hours: '',
+      todoItems: '',
+      memo: memoParts.join(' · '),
+      customFields: {},
+      mapUrl: topMapUrl,
+      mapCandidates,
+      x: top.x || '',
+      y: top.y || '',
+      sourceType: 'kakao_local',
     };
   }
 
-  let mapsError: unknown = null;
-  try {
-    const remainingMs = TOTAL_SEARCH_DEADLINE_MS - (Date.now() - startedAt);
-    const mapsResp = await withTimeout(
-      ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
-        contents: mapsPrompt,
-        config: mapsConfig,
-      }),
-      Math.min(7500, Math.max(3000, remainingMs - 2500))
-    );
-    groundedText = mapsResp.text ?? '';
-    mapCandidates = extractGroundingMaps(mapsResp);
-  } catch (err) {
-    mapsError = err;
-  }
+  const addrParams = new URLSearchParams({ query: searchKeyword, size: '3' });
+  const addrResp = await withTimeout(
+    fetch(`https://dapi.kakao.com/v2/local/search/address.json?${addrParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `KakaoAK ${kakaoRestApiKey}`,
+      },
+    }),
+    5000
+  );
 
-  // Fallback to Google Search grounding (e.g. if URL link wasn't matched directly by Maps grounding)
-  if (!groundedText.trim() || (isUrlInput && mapCandidates.length === 0)) {
-    const remainingMs = TOTAL_SEARCH_DEADLINE_MS - (Date.now() - startedAt);
-    if (remainingMs >= 2500) {
-      try {
-        const searchResp = await withTimeout(
-          ai.models.generateContent({
-            model: 'gemini-4-hydrogen',
-            contents: searchPrompt,
-            config: {
-              tools: [{ googleSearch: {} }],
-              thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-            },
-          }),
-          Math.min(6000, remainingMs - 1500)
-        );
-        const searchText = searchResp.text ?? '';
-        if (searchText.trim()) {
-          groundedText = groundedText.trim()
-            ? `${groundedText}\n\n[웹 검색 보완]\n${searchText}`
-            : searchText;
-          sourceType = mapCandidates.length > 0 ? 'google_maps' : 'google_search';
-        }
-      } catch (searchErr) {
-        if (!groundedText.trim()) {
-          throw mapsError || searchErr;
-        }
-      }
+  if (addrResp.ok) {
+    const addrData = (await addrResp.json()) as { documents?: KakaoAddressDocument[] };
+    const addrDocs = Array.isArray(addrData.documents) ? addrData.documents : [];
+    if (addrDocs.length > 0) {
+      const topAddr = addrDocs[0];
+      const roadAddr = (topAddr.road_address?.address_name || topAddr.address_name || searchKeyword).trim();
+      const bldgName = (topAddr.road_address?.building_name || '').trim();
+      const displayName = bldgName || searchKeyword;
+      const mapUrl =
+        topAddr.x && topAddr.y
+          ? `https://map.kakao.com/link/map/${encodeURIComponent(displayName)},${encodeURIComponent(topAddr.y)},${encodeURIComponent(topAddr.x)}`
+          : `https://map.kakao.com/link/search/${encodeURIComponent(roadAddr)}`;
+
+      return {
+        categoryId: '',
+        name: displayName,
+        address: roadAddr,
+        hours: '',
+        todoItems: '',
+        memo: '',
+        customFields: {},
+        mapUrl,
+        mapCandidates: addrDocs.slice(0, 3).map((d) => {
+          const rAddr = (d.road_address?.address_name || d.address_name || '').trim();
+          const bName = (d.road_address?.building_name || rAddr).trim();
+          return {
+            title: rAddr,
+            name: bName,
+            address: rAddr,
+            uri:
+              d.x && d.y
+                ? `https://map.kakao.com/link/map/${encodeURIComponent(bName)},${encodeURIComponent(d.y)},${encodeURIComponent(d.x)}`
+                : `https://map.kakao.com/link/search/${encodeURIComponent(rAddr)}`,
+            x: d.x || '',
+            y: d.y || '',
+          };
+        }),
+        x: topAddr.x || '',
+        y: topAddr.y || '',
+        sourceType: 'kakao_local',
+      };
     }
   }
 
-  if (!groundedText.trim()) {
-    throw mapsError || new Error('실제 지도 검색 결과를 찾지 못했습니다.');
-  }
-
-  const remainingForStructuring = TOTAL_SEARCH_DEADLINE_MS - (Date.now() - startedAt);
-  const structuringPrompt = `아래 [지도/검색 결과]에 있는 사실만 JSON으로 정확히 추출해.
-규칙:
-1. 결과에 없는 주소·상호·영업시간을 절대 지어내지 말고, 확인되지 않으면 빈 문자열("")로 둬.
-2. categoryId는 다음 중 가장 적절한 id 하나만 선택: [${categoryListDesc}]
-3. todoItems는 쉼표로 구분된 문자열 1개.
-4. customFields는 선택한 카테고리의 전용 기록 항목 키(원문 그대로)만 채운 객체.
-
-[사용자 입력]
-${rawQuery.trim()}
-
-[지도/검색 결과]
-${groundedText}
-
-[확인된 지도 링크]
-${mapCandidates.map((m, i) => `${i + 1}. ${m.title}: ${m.uri}`).join('\n') || '없음'}
-
-반환 JSON 키:
-{
-  "categoryId": "",
-  "name": "",
-  "address": "",
-  "hours": "",
-  "todoItems": "",
-  "memo": "",
-  "customFields": {}
-}`;
-
-  const structResp = await withTimeout(
-    ai.models.generateContent({
-      model: 'gemini-3.1-flash-lite',
-      contents: structuringPrompt,
-      config: {
-        responseMimeType: 'application/json',
-      },
-    }),
-    Math.max(2500, Math.min(4000, remainingForStructuring))
-  );
-
-  const rawJsonText = structResp.text ?? '';
-  const jsonMatch = rawJsonText.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('검색 결과를 구조화하지 못했습니다.');
-  }
-
-  const placeInfo = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
-  if (Array.isArray(placeInfo.todoItems)) {
-    placeInfo.todoItems = placeInfo.todoItems.join(', ');
-  }
-
-  const cleanName = typeof placeInfo.name === 'string' ? placeInfo.name.trim() : '';
-  const cleanAddr = typeof placeInfo.address === 'string' ? placeInfo.address.trim() : '';
-  const fallbackGoogleMapsUrl =
-    cleanName || cleanAddr
-      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([cleanAddr, cleanName].filter(Boolean).join(' '))}`
-      : '';
-
-  placeInfo.mapUrl = mapCandidates[0]?.uri || fallbackGoogleMapsUrl;
-  placeInfo.mapCandidates = mapCandidates.slice(0, 4);
-  placeInfo.sourceType = sourceType;
-
-  return placeInfo;
+  const notFoundErr = new Error('카카오 로컬에서 일치하는 장소를 찾지 못했습니다. 가게 이름과 지역명(예: OO동/OO역)을 함께 입력해 주세요.') as Error & { status?: number };
+  notFoundErr.status = 422;
+  throw notFoundErr;
 }
 
 export default async function handler(req: ServerlessRequest, res: ServerlessResponse) {
@@ -344,14 +387,14 @@ export default async function handler(req: ServerlessRequest, res: ServerlessRes
 
     const { query, categories, userLocation } = parsedBody;
     if (!query || typeof query !== 'string' || !query.trim()) {
-      res.status(400).json({ error: '검색할 장소 링크 또는 가게 이름을 입력해 주세요.' });
+      res.status(400).json({ error: '검색할 장소 이름 또는 지도 링크를 입력해 주세요.' });
       return;
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
+    const kakaoRestApiKey = process.env.KAKAO_REST_API_KEY?.trim();
+    if (!kakaoRestApiKey) {
       res.status(500).json({
-        error: '서버에 GEMINI_API_KEY가 설정되어 있지 않습니다. 배포 환경변수(GEMINI_API_KEY)를 설정해 주세요.',
+        error: '서버에 KAKAO_REST_API_KEY가 설정되어 있지 않습니다. 배포 환경변수(KAKAO_REST_API_KEY)를 설정해 주세요.',
       });
       return;
     }
@@ -362,23 +405,14 @@ export default async function handler(req: ServerlessRequest, res: ServerlessRes
       userLocation && Number.isFinite(userLocation.lat) && Number.isFinite(userLocation.lng)
         ? `${userLocation.lat.toFixed(2)},${userLocation.lng.toFixed(2)}`
         : 'noloc';
-    const cacheKey = `${query.trim().toLowerCase()}::${categoryKey}::${locKey}`;
+    const cacheKey = `kakao::${query.trim().toLowerCase()}::${categoryKey}::${locKey}`;
     const cached = searchCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
       res.status(200).json({ placeInfo: cached.placeInfo });
       return;
     }
 
-    const ai = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
-      },
-    });
-
-    const placeInfo = await generateGroundedPlaceInfo(ai, query, safeCategories, userLocation);
+    const placeInfo = await searchPlacesWithKakaoLocal(kakaoRestApiKey, query, safeCategories, userLocation);
     searchCache.set(cacheKey, {
       placeInfo,
       expiresAt: Date.now() + SEARCH_CACHE_TTL_MS,
@@ -388,28 +422,34 @@ export default async function handler(req: ServerlessRequest, res: ServerlessRes
     const errObj = error as { status?: number; message?: string };
     const status = errObj?.status;
 
-    if (status === 403 || status === 400) {
+    if (status === 401 || status === 403 || status === 400) {
       res.status(status).json({
-        error: 'API 키가 유효하지 않거나 권한이 없습니다. GEMINI_API_KEY 설정을 확인해 주세요.',
+        error: '카카오 REST API 키(KAKAO_REST_API_KEY)가 유효하지 않거나 카카오 로컬 API 활성화가 필요합니다. 환경변수 및 카카오 개발자 콘솔을 확인해 주세요.',
+      });
+      return;
+    }
+    if (status === 422) {
+      res.status(422).json({
+        error: errObj?.message || '일치하는 장소를 찾지 못했습니다.',
       });
       return;
     }
     if (status === 429) {
       res.status(429).json({
-        error: '현재 API 요청 한도(할당량)를 초과했습니다. 잠시 후 다시 시도하거나 결제가 연결된 API 키를 설정해 주세요.',
+        error: '카카오 로컬 API 요청 한도(할당량)를 초과했습니다. 잠시 후 다시 시도해 주세요.',
       });
       return;
     }
     if (status === 503 || status === 504) {
       res.status(status).json({
-        error: '지도 검색 응답이 지연되고 있습니다. 지역명(예: OO동/OO역)을 함께 입력해 다시 시도해 주세요.',
+        error: '카카오 로컬 지도 검색 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.',
       });
       return;
     }
 
-    console.error('Serverless Gemini place search error:', error);
+    console.error('Serverless Kakao Local place search error:', error);
     res.status(500).json({
-      error: errObj?.message || '정확한 장소 정보를 불러오지 못했습니다. 지역명을 함께 입력하거나 지도를 확인해 주세요.',
+      error: errObj?.message || '카카오 로컬 API에서 장소 정보를 불러오지 못했습니다. 지역명을 함께 입력하거나 직접 입력해 주세요.',
     });
   }
 }
