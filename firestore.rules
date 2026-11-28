@@ -25,6 +25,24 @@ service cloud.firestore {
         && request.auth.token.email_verified == true;
     }
 
+    function isValidAiSummary(summary) {
+      return summary is map
+        && summary.keys().hasAll(['headline', 'badges', 'memoSnapshot', 'updatedAt'])
+        && summary.keys().hasOnly(['headline', 'badges', 'memoSnapshot', 'updatedAt'])
+        && summary.headline is string
+        && summary.headline.size() <= 200
+        && summary.memoSnapshot is string
+        && summary.memoSnapshot.size() <= 2000
+        && summary.updatedAt is string
+        && summary.updatedAt.size() <= 50
+        && summary.badges is list
+        && summary.badges.size() <= 8
+        && (summary.badges.size() == 0 || (
+          summary.badges[0] is map
+          && summary.badges[0].keys().hasOnly(['label', 'value'])
+        ));
+    }
+
     // 3. Entity Validation Blueprints
     function isValidUserProfile(data, userId) {
       return data.keys().hasAll([
@@ -33,7 +51,8 @@ service cloud.firestore {
         ])
         && data.keys().hasOnly([
           'uid', 'email', 'displayName', 'currentMoodId',
-          'currentLayout', 'seededDefaults', 'createdAt', 'updatedAt'
+          'currentLayout', 'seededDefaults', 'currentRadius', 'currentSort',
+          'createdAt', 'updatedAt'
         ])
         && data.uid == request.auth.uid
         && data.uid == userId
@@ -49,6 +68,8 @@ service cloud.firestore {
         && data.currentMoodId.matches('^[a-zA-Z0-9_\\-]+$')
         && data.currentLayout in ['card', 'compact', 'grid']
         && data.seededDefaults is bool
+        && (!('currentRadius' in data) || (data.currentRadius is string && data.currentRadius in ['12px', '24px', '32px']))
+        && (!('currentSort' in data) || (data.currentSort is string && data.currentSort in ['newest', 'name', 'status']))
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
     }
@@ -89,8 +110,8 @@ service cloud.firestore {
         && data.keys().hasOnly([
           'uid', 'id', 'categoryId', 'status', 'name', 'address', 'hours',
           'link', 'lastSynced', 'videoUrl', 'customValues',
-          'doneItems', 'todoItems', 'memo', 'estimatedCost', 'actualCost',
-          'spentDate', 'sortTimestamp', 'createdAt', 'updatedAt'
+          'doneItems', 'todoItems', 'memo', 'x', 'y', 'aiSummary',
+          'estimatedCost', 'actualCost', 'spentDate', 'sortTimestamp', 'createdAt', 'updatedAt'
         ])
         && data.uid == request.auth.uid
         && data.uid == userId
@@ -121,6 +142,9 @@ service cloud.firestore {
         && (data.todoItems.size() == 0 || data.todoItems[0] is string)
         && data.memo is string
         && data.memo.size() <= 2000
+        && (!('x' in data) || (data.x is string && data.x.size() <= 40 && (data.x == '' || data.x.matches('^-?[0-9]+(\\.[0-9]+)?$'))))
+        && (!('y' in data) || (data.y is string && data.y.size() <= 40 && (data.y == '' || data.y.matches('^-?[0-9]+(\\.[0-9]+)?$'))))
+        && (!('aiSummary' in data) || isValidAiSummary(data.aiSummary))
         && (!('estimatedCost' in data) || (data.estimatedCost is number && data.estimatedCost >= 0 && data.estimatedCost <= 1000000000))
         && (!('actualCost' in data) || (data.actualCost is number && data.actualCost >= 0 && data.actualCost <= 1000000000))
         && (!('spentDate' in data) || (data.spentDate is string && data.spentDate.size() <= 10 && (data.spentDate == '' || data.spentDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))))
@@ -169,9 +193,9 @@ service cloud.firestore {
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
         && (
-          // Action: Update theme, layout, or initial seed flag
+          // Action: Update theme, layout, radius, sort, or initial seed flag
           incoming().diff(existing()).affectedKeys().hasOnly([
-            'displayName', 'currentMoodId', 'currentLayout', 'seededDefaults', 'updatedAt'
+            'displayName', 'currentMoodId', 'currentLayout', 'currentRadius', 'currentSort', 'seededDefaults', 'updatedAt'
           ])
         );
       allow delete: if false;
@@ -243,13 +267,17 @@ service cloud.firestore {
             ])
             // Action: Sync place link & live info
             || incoming().diff(existing()).affectedKeys().hasOnly([
-              'link', 'address', 'hours', 'memo', 'lastSynced', 'updatedAt'
+              'link', 'address', 'hours', 'memo', 'x', 'y', 'lastSynced', 'updatedAt'
             ])
-            // Action: Full edit place details (including expenses)
+            // Action: Update AI memo summary badge
+            || incoming().diff(existing()).affectedKeys().hasOnly([
+              'aiSummary', 'updatedAt'
+            ])
+            // Action: Full edit place details (including coordinates, AI summary, and expenses)
             || incoming().diff(existing()).affectedKeys().hasOnly([
               'categoryId', 'status', 'name', 'address', 'hours', 'link',
               'lastSynced', 'videoUrl', 'customValues', 'doneItems', 'todoItems',
-              'memo', 'estimatedCost', 'actualCost', 'spentDate', 'sortTimestamp', 'updatedAt'
+              'memo', 'x', 'y', 'aiSummary', 'estimatedCost', 'actualCost', 'spentDate', 'sortTimestamp', 'updatedAt'
             ])
           );
         allow delete: if isVerifiedOwner(userId)

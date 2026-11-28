@@ -163,17 +163,41 @@
                 <div class="mt-2 flex flex-wrap items-center gap-1.5">
                     <span id="sidebarMoodBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold theme-accent-soft">☀️ 포근한 웜코랄 무드</span>
                     <div class="storage-tooltip-wrap inline-flex">
-                        <button type="button" onclick="openStorageGuideModal()" aria-label="브라우저 저장 및 기기 간 백업 안내" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-500/10 theme-text-sub hover:bg-slate-500/20 transition cursor-pointer">
-                            <span>💾 자동 저장</span>
+                        <button id="pcStorageBadgeBtn" type="button" onclick="openStorageGuideModal()" aria-label="저장 및 동기화 안내" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-500/10 theme-text-sub hover:bg-slate-500/20 transition cursor-pointer">
+                            <span id="pcStorageBadgeLabel">💾 자동 저장</span>
                             <span class="w-3.5 h-3.5 rounded-full bg-slate-500/20 text-[9px] font-black flex items-center justify-center">?</span>
                         </button>
                         <div class="storage-tooltip-bubble absolute left-0 top-full mt-2 z-50 w-64 p-3 rounded-2xl bg-slate-900 text-white text-[11px] leading-relaxed shadow-xl">
-                            <p class="font-extrabold text-amber-300 mb-1">💡 기기(브라우저) 단독 저장 안내</p>
-                            <p class="text-slate-200">데이터는 현재 브라우저(localStorage)에만 저장됩니다. 다른 기기에서 이용하려면 수동 백업(.json) 후 새 기기에서 복원해 주세요.</p>
+                            <p id="pcStorageTooltipTitle" class="font-extrabold text-amber-300 mb-1">💡 기기(브라우저) 단독 저장 안내</p>
+                            <p id="pcStorageTooltipBody" class="text-slate-200">구글 로그인을 하면 PC와 모바일에서 내 단골 노트를 실시간으로 함께 볼 수 있어요.</p>
                             <p class="text-[10px] text-slate-400 mt-1">클릭하면 자세한 안내 창을 열 수 있어요.</p>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Google 로그인 & PC/모바일 실시간 동기화 카드 -->
+            <div id="pcCloudSyncCard" class="p-3.5 rounded-2xl bg-slate-500/5 border border-slate-500/15 space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                    <span id="pcSyncStatusPill" class="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-600">
+                        <span>💾</span>
+                        <span>현재 기기만 저장 중</span>
+                    </span>
+                    <button type="button" onclick="openStorageGuideModal()" class="text-[10px] font-bold theme-text-sub hover:underline">자세히</button>
+                </div>
+                <p id="pcSyncAccountText" class="text-[11px] theme-text-sub leading-snug">구글 로그인하면 PC·모바일에서 실시간으로 이어집니다.</p>
+                <button id="pcGoogleLoginBtn" type="button" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-3 rounded-xl bg-white text-slate-800 border border-slate-300/80 text-xs font-extrabold shadow-xs hover:bg-slate-50 active:scale-98 transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"/>
+                        <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"/>
+                    </svg>
+                    <span>Google 로그인 · 동기화</span>
+                </button>
+                <button id="pcGoogleLogoutBtn" type="button" onclick="handleGoogleSignOut()" class="hidden w-full py-2 px-3 rounded-xl border border-slate-500/20 text-[11px] font-bold theme-text-sub hover:bg-slate-500/10 transition">
+                    로그아웃 (로컬 전환)
+                </button>
             </div>
 
             <!-- PC 사이드바 내비게이션 메뉴 -->
@@ -237,9 +261,9 @@
 
                 <!-- 빠른 기분 전환 & 저장 안내 & 디자인 스튜디오 진입 버튼 -->
                 <div class="flex items-center gap-1.5 shrink-0">
-                    <button type="button" onclick="openStorageGuideModal()" title="브라우저 저장 및 백업 안내" aria-label="브라우저 저장 및 백업 안내" class="min-h-[38px] px-2.5 py-1.5 rounded-2xl text-xs font-bold theme-card border flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition">
-                        <span>💾</span>
-                        <span class="text-[11px]">안내</span>
+                    <button id="mobileSyncBtn" type="button" onclick="handleMobileSyncButtonClick()" title="Google 로그인 및 클라우드 동기화" aria-label="Google 로그인 및 클라우드 동기화" class="min-h-[38px] px-2.5 py-1.5 rounded-2xl text-xs font-bold theme-card border flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition">
+                        <span id="mobileSyncIcon">☁️</span>
+                        <span id="mobileSyncText" class="text-[11px]">로그인</span>
                     </button>
                     <button onclick="quickSwitchMood()" title="기분 컬러 즉시 변경" aria-label="기분 컬러 즉시 변경" class="min-h-[38px] px-2.5 py-1.5 rounded-2xl text-xs font-bold theme-accent-soft flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition">
                         <span>🎨</span>
@@ -452,33 +476,65 @@
                     </div>
                 </section>
 
-                <!-- 4. 데이터 영구 저장 & 백업 관리 -->
+                <!-- 4. 데이터 영구 저장 & 클라우드 실시간 동기화 -->
                 <section class="theme-card p-4 sm:p-5 border space-y-3.5 lg:col-span-2">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <h3 class="text-sm font-extrabold theme-text-main flex items-center gap-1.5">
-                            <span>💾</span> 4. 데이터 영구 저장 & 백업 관리
+                            <span>☁️</span> 4. 클라우드 실시간 동기화 & 백업 관리
                         </h3>
                         <div class="flex items-center gap-1.5">
                             <div class="storage-tooltip-wrap inline-flex">
                                 <button type="button" onclick="openStorageGuideModal()" class="text-[11px] font-bold theme-accent-soft px-2.5 py-1 rounded-full flex items-center gap-1 hover:opacity-90 transition whitespace-nowrap">
-                                    <span>ⓘ 기기 간 이동 안내</span>
+                                    <span>ⓘ 동기화 안내</span>
                                 </button>
                                 <div class="storage-tooltip-bubble absolute right-0 bottom-full mb-2 z-50 w-64 p-3 rounded-2xl bg-slate-900 text-white text-[11px] leading-relaxed shadow-xl">
-                                    데이터는 현재 브라우저의 localStorage에 저장됩니다. 다른 기기에서는 자동 연동되지 않으니 아래 백업/복원 파일을 이용해 주세요.
+                                    Google 계정으로 로그인하면 PC와 모바일에서 동일한 기록을 실시간으로 이어볼 수 있습니다. 오프라인이나 비로그인 시에는 현재 브라우저(localStorage)에 저장됩니다.
                                 </div>
                             </div>
-                            <span class="text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full whitespace-nowrap">브라우저 저장 ON</span>
+                            <span id="studioStorageBadge" class="text-[11px] font-bold text-amber-600 bg-amber-500/10 px-2.5 py-1 rounded-full whitespace-nowrap">💾 브라우저 저장 ON</span>
                         </div>
                     </div>
 
-                    <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5">
-                        <span class="text-base leading-none mt-0.5 shrink-0">💡</span>
-                        <div class="text-[11px] theme-text-main leading-relaxed space-y-1">
-                            <p class="font-extrabold">다른 PC나 모바일에서도 기록을 이어서 보시겠어요?</p>
-                            <p class="theme-text-sub">
-                                모든 데이터는 <strong>현재 브라우저의 localStorage(로컬 저장소)</strong>에만 보관되므로 다른 기기나 다른 브라우저에서는 자동으로 보이지 않습니다.
-                                다른 기기에서 이용하려면 아래 <strong>[데이터 백업 (.json)]</strong>으로 파일을 다운로드한 뒤, 새 기기에서 <strong>[백업 파일 복원]</strong>을 눌러 불러와 주세요.
-                            </p>
+                    <div id="studioCloudSyncBanner" class="p-4 rounded-2xl bg-slate-500/5 border border-slate-500/15 space-y-3">
+                        <div id="studioSyncSignedOut" class="space-y-3">
+                            <div class="flex items-start gap-2.5">
+                                <span class="text-lg leading-none mt-0.5 shrink-0">🔄</span>
+                                <div class="text-xs theme-text-main leading-relaxed space-y-1">
+                                    <p class="font-extrabold">PC와 모바일에서 내 단골 노트를 동시에 보시겠어요?</p>
+                                    <p class="text-[11px] theme-text-sub">
+                                        지금은 이 브라우저에만 저장 중입니다. <strong>Google 로그인</strong>을 연결하면 현재 기기에 저장된 장소·사진·카테고리·테마가 클라우드로 올라가고, 다른 PC나 휴대폰에서도 같은 계정으로 로그인해 실시간으로 수정·확인할 수 있어요.
+                                    </p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="handleGoogleSignIn()" class="w-full sm:w-auto min-h-[44px] py-2.5 px-5 rounded-xl bg-white text-slate-800 border border-slate-300 text-xs font-extrabold shadow-xs hover:bg-slate-50 active:scale-98 transition inline-flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
+                                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"/>
+                                    <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"/>
+                                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"/>
+                                </svg>
+                                <span>Google 로그인 & 실시간 동기화 시작</span>
+                            </button>
+                        </div>
+
+                        <div id="studioSyncSignedIn" class="hidden space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="min-w-0">
+                                    <div class="text-xs font-extrabold text-emerald-600 flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        <span>PC·모바일 실시간 동기화 연결됨</span>
+                                    </div>
+                                    <p id="studioSyncEmail" class="text-[11px] theme-text-sub truncate mt-0.5"></p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button type="button" onclick="pushLocalToCloud()" class="min-h-[38px] py-1.5 px-3 rounded-xl border border-slate-500/20 text-[11px] font-bold theme-text-main hover:bg-slate-500/10 transition">
+                                        ☁️ 현재 기기 기록 클라우드로 덮어쓰기
+                                    </button>
+                                    <button type="button" onclick="handleGoogleSignOut()" class="min-h-[38px] py-1.5 px-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-600 text-[11px] font-bold hover:bg-rose-500/20 transition">
+                                        로그아웃
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -824,48 +880,56 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- 모달 7: 브라우저 저장소(localStorage) & 백업/복원 안내 -->
+    <!-- 모달 7: 클라우드 동기화 & 브라우저 저장소 안내 -->
     <!-- ========================================== -->
     <div id="storageGuideModal" onclick="if (event.target === this) closeStorageGuideModal()" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="theme-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-6 space-y-4 shadow-2xl animate-slide-up max-h-[90dvh] overflow-y-auto no-scrollbar">
             <div class="sm:hidden w-10 h-1 bg-slate-400/40 rounded-full mx-auto -mt-1 mb-1"></div>
             <div class="flex items-start justify-between gap-3">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-10 h-10 rounded-2xl theme-accent-soft flex items-center justify-center text-xl shrink-0">💾</div>
+                    <div id="storageGuideIcon" class="w-10 h-10 rounded-2xl theme-accent-soft flex items-center justify-center text-xl shrink-0">☁️</div>
                     <div>
-                        <h3 class="text-base font-black theme-text-main">데이터 저장 및 기기 이동 안내</h3>
-                        <p class="text-[11px] theme-text-sub mt-0.5">브라우저 localStorage 저장 방식</p>
+                        <h3 id="storageGuideTitle" class="text-base font-black theme-text-main">PC·모바일 실시간 동기화 안내</h3>
+                        <p id="storageGuideSubtitle" class="text-[11px] theme-text-sub mt-0.5">Google 계정 클라우드 + 로컬 저장 지원</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeStorageGuideModal()" aria-label="안내 닫기" class="w-9 h-9 rounded-full bg-slate-500/10 theme-text-sub flex items-center justify-center text-xs font-bold shrink-0">✕</button>
             </div>
 
-            <div class="p-3.5 rounded-2xl bg-slate-500/5 border border-slate-500/10 space-y-2.5 text-xs leading-relaxed">
+            <div id="guideSyncSignedOutBox" class="p-3.5 rounded-2xl bg-slate-500/5 border border-slate-500/15 space-y-3 text-xs leading-relaxed">
                 <p class="theme-text-main font-semibold">
-                    이 앱의 기록·카테고리·테마 설정은 서버 동기화 없이 <span class="theme-accent-text font-extrabold">현재 브라우저의 localStorage</span>에만 안전하게 저장됩니다.
+                    지금은 <span class="theme-accent-text font-extrabold">현재 브라우저</span>에만 저장 중입니다. <strong>Google 로그인</strong>을 하시면 PC와 모바일에서 내 단골 노트를 실시간으로 똑같이 보고 편집할 수 있어요.
                 </p>
-                <ul class="space-y-1.5 text-[11px] theme-text-sub">
-                    <li class="flex items-start gap-1.5">
-                        <span class="shrink-0">1️⃣</span>
-                        <span><strong>다른 PC나 모바일</strong>에서 이어서 이용하려면 현재 기기에서 <strong>수동으로 백업 파일(.json)을 다운로드</strong>해 주세요.</span>
-                    </li>
-                    <li class="flex items-start gap-1.5">
-                        <span class="shrink-0">2️⃣</span>
-                        <span>새 기기에서 앱을 연 뒤 <strong>[테마·설정 → 백업 파일 복원]</strong>으로 해당 파일을 불러오면 기록이 그대로 복원됩니다.</span>
-                    </li>
-                    <li class="flex items-start gap-1.5">
-                        <span class="shrink-0">⚠️</span>
-                        <span>브라우저 캐시/사이트 데이터를 삭제하면 저장된 기록도 함께 지워지므로 정기적인 파일 백업을 권장합니다.</span>
-                    </li>
-                </ul>
+                <button type="button" onclick="closeStorageGuideModal(); handleGoogleSignIn();" class="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-white text-slate-800 border border-slate-300 text-xs font-extrabold shadow-xs hover:bg-slate-50 active:scale-98 transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"/>
+                        <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"/>
+                    </svg>
+                    <span>Google로 로그인 · PC/모바일 동기화</span>
+                </button>
+                <p class="text-[11px] theme-text-sub">로그인 없이도 현재 기기에서 계속 사용할 수 있으며, 아래 파일 백업(.json)으로 직접 옮길 수도 있습니다.</p>
+            </div>
+
+            <div id="guideSyncSignedInBox" class="hidden p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-2.5 text-xs leading-relaxed">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="font-extrabold text-emerald-700 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>실시간 클라우드 동기화 활성</span>
+                    </span>
+                    <button type="button" onclick="handleGoogleSignOut()" class="text-[11px] font-bold text-rose-600 hover:underline">로그아웃</button>
+                </div>
+                <p id="guideSyncEmail" class="text-[11px] font-bold theme-text-main break-all"></p>
+                <p class="text-[11px] theme-text-sub">다른 PC나 휴대폰에서도 같은 Google 계정으로 로그인하면 장소·메모·지도 좌표·사진이 실시간으로 자동 동기화됩니다.</p>
             </div>
 
             <div class="grid grid-cols-2 gap-2">
                 <button type="button" onclick="exportDataBackup(); closeStorageGuideModal();" class="min-h-[42px] py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1 whitespace-nowrap">
-                    <span>📤</span> 지금 백업받기
+                    <span>📤</span> 파일 백업 (.json)
                 </button>
                 <button type="button" onclick="goToBackupSection()" class="min-h-[42px] py-2.5 px-3 rounded-xl border border-slate-500/20 text-xs font-bold theme-text-main hover:bg-slate-500/5 transition flex items-center justify-center gap-1 whitespace-nowrap">
-                    <span>📥</span> 복원하러 가기
+                    <span>⚙️</span> 설정·복원 가기
                 </button>
             </div>
 
@@ -1280,25 +1344,245 @@
         let activeDetailPlaceId = null;
         const aiSummarizingIds = new Set();
         const aiSummaryErrors = new Map();
+        let isApplyingCloudState = false;
+        let cloudAuthState = {
+            ready: false,
+            signedIn: false,
+            email: null,
+            displayName: null,
+            syncing: false,
+            errorMessage: null
+        };
+        let storageGuidePromptHandled = false;
+
+        function getRadiusLabel(radius) {
+            return radius === '12px' ? '단정한 각짐 (12px)' : radius === '32px' ? '둥근 조약돌 (32px)' : '몽글몽글 (24px)';
+        }
+
+        function updateCloudSyncUI() {
+            const { signedIn, email, displayName, syncing } = cloudAuthState;
+            const accountLabel = displayName && email
+                ? `${displayName} (${email})`
+                : (email || displayName || 'Google 계정');
+
+            const pcStatusPill = document.getElementById('pcSyncStatusPill');
+            const pcAccountText = document.getElementById('pcSyncAccountText');
+            const pcLoginBtn = document.getElementById('pcGoogleLoginBtn');
+            const pcLogoutBtn = document.getElementById('pcGoogleLogoutBtn');
+            const pcBadgeLabel = document.getElementById('pcStorageBadgeLabel');
+            const pcTipTitle = document.getElementById('pcStorageTooltipTitle');
+            const pcTipBody = document.getElementById('pcStorageTooltipBody');
+
+            if (pcStatusPill) {
+                pcStatusPill.className = signedIn
+                    ? 'inline-flex items-center gap-1 text-[11px] font-extrabold text-emerald-600'
+                    : 'inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-600';
+                pcStatusPill.innerHTML = signedIn
+                    ? '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>실시간 동기화 ON</span>'
+                    : '<span>💾</span><span>현재 기기만 저장 중</span>';
+            }
+            if (pcAccountText) {
+                pcAccountText.innerText = syncing
+                    ? '🔄 클라우드와 동기화 중입니다...'
+                    : (signedIn ? accountLabel : '구글 로그인하면 PC·모바일에서 실시간으로 이어집니다.');
+            }
+            if (pcLoginBtn) pcLoginBtn.classList.toggle('hidden', signedIn);
+            if (pcLogoutBtn) pcLogoutBtn.classList.toggle('hidden', !signedIn);
+            if (pcBadgeLabel) pcBadgeLabel.innerText = signedIn ? '☁️ 클라우드 동기화' : '💾 자동 저장';
+            if (pcTipTitle) pcTipTitle.innerText = signedIn ? '☁️ Google 클라우드 동기화 ON' : '💡 기기(브라우저) 단독 저장 안내';
+            if (pcTipBody) {
+                pcTipBody.innerText = signedIn
+                    ? `${accountLabel} 계정으로 PC와 모바일이 실시간 연결되어 있습니다.`
+                    : '구글 로그인을 하면 PC와 모바일에서 내 단골 노트를 실시간으로 함께 볼 수 있어요.';
+            }
+
+            const mobileSyncBtn = document.getElementById('mobileSyncBtn');
+            const mobileSyncIcon = document.getElementById('mobileSyncIcon');
+            const mobileSyncText = document.getElementById('mobileSyncText');
+            if (mobileSyncBtn && mobileSyncIcon && mobileSyncText) {
+                if (signedIn) {
+                    mobileSyncBtn.className = 'min-h-[38px] px-2.5 py-1.5 rounded-2xl text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition';
+                    mobileSyncIcon.innerText = '☁️';
+                    mobileSyncText.innerText = syncing ? '동기화중' : '동기화';
+                } else {
+                    mobileSyncBtn.className = 'min-h-[38px] px-2.5 py-1.5 rounded-2xl text-xs font-bold theme-card border flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition';
+                    mobileSyncIcon.innerText = '☁️';
+                    mobileSyncText.innerText = syncing ? '연결중' : '로그인';
+                }
+            }
+
+            const studioBadge = document.getElementById('studioStorageBadge');
+            const studioOut = document.getElementById('studioSyncSignedOut');
+            const studioIn = document.getElementById('studioSyncSignedIn');
+            const studioEmail = document.getElementById('studioSyncEmail');
+            if (studioBadge) {
+                studioBadge.className = signedIn
+                    ? 'text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full whitespace-nowrap'
+                    : 'text-[11px] font-bold text-amber-600 bg-amber-500/10 px-2.5 py-1 rounded-full whitespace-nowrap';
+                studioBadge.innerText = signedIn ? '☁️ 클라우드 실시간 동기화 ON' : '💾 브라우저 저장 ON';
+            }
+            if (studioOut) studioOut.classList.toggle('hidden', signedIn);
+            if (studioIn) studioIn.classList.toggle('hidden', !signedIn);
+            if (studioEmail) studioEmail.innerText = signedIn ? `연결된 계정: ${accountLabel}` : '';
+
+            const guideOut = document.getElementById('guideSyncSignedOutBox');
+            const guideIn = document.getElementById('guideSyncSignedInBox');
+            const guideEmail = document.getElementById('guideSyncEmail');
+            if (guideOut) guideOut.classList.toggle('hidden', signedIn);
+            if (guideIn) guideIn.classList.toggle('hidden', !signedIn);
+            if (guideEmail) guideEmail.innerText = signedIn ? `연결된 계정: ${accountLabel}` : '';
+        }
+
+        function handleMobileSyncButtonClick() {
+            if (cloudAuthState.signedIn) {
+                openStorageGuideModal();
+            } else {
+                handleGoogleSignIn();
+            }
+        }
+
+        function handleGoogleSignIn() {
+            if (!window.cloudSync) {
+                return showToast('🔄 클라우드 동기화 모듈을 준비 중입니다. 잠시 후 다시 눌러주세요.');
+            }
+            window.cloudSync.signInWithGoogle();
+        }
+
+        function handleGoogleSignOut() {
+            if (!window.cloudSync) return;
+            window.cloudSync.signOutUser();
+        }
+
+        async function pushLocalToCloud() {
+            if (!window.cloudSync?.isSignedIn()) {
+                return showToast('먼저 Google 로그인을 해주세요.');
+            }
+            try {
+                showToast('☁️ 현재 기기의 기록을 클라우드에 동기화하는 중...');
+                await window.cloudSync.replaceAllCloudData(
+                    categories,
+                    places,
+                    currentMoodId,
+                    currentLayout,
+                    currentRadius,
+                    currentSort
+                );
+                showToast('☁️ 현재 기기의 기록이 클라우드에 반영되었습니다!');
+            } catch (err) {
+                console.error(err);
+                showToast('⚠️ 클라우드 덮어쓰기 중 오류가 발생했습니다.');
+            }
+        }
+
+        window.__dangolBridge = {
+            getLocalSnapshot() {
+                return {
+                    categories,
+                    places,
+                    currentMoodId,
+                    currentLayout,
+                    currentRadius,
+                    currentSort
+                };
+            },
+            applyCloudState(data) {
+                if (!data) return;
+                isApplyingCloudState = true;
+                try {
+                    if (Array.isArray(data.categories)) {
+                        const normalizedCats = data.categories.map(cat => ({
+                            id: cat.id,
+                            name: cat.name,
+                            icon: cat.icon,
+                            customFields: Array.isArray(cat.customFields)
+                                ? cat.customFields
+                                : (Array.isArray(cat.fields) ? cat.fields : [])
+                        }));
+                        categories = normalizedCats.length > 0
+                            ? normalizedCats
+                            : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+                        if (!categories.some(c => c.id === selectedCategory)) {
+                            selectedCategory = categories[0]?.id || 'all';
+                        }
+                    }
+                    if (Array.isArray(data.places)) {
+                        places = data.places;
+                    }
+                    if (data.currentMoodId) {
+                        applyMoodTheme(data.currentMoodId, false);
+                    }
+                    if (data.currentRadius) {
+                        setCardRadius(data.currentRadius, getRadiusLabel(data.currentRadius), false);
+                    }
+                    if (data.currentLayout) {
+                        setLayoutMode(data.currentLayout, false);
+                    }
+                    if (data.currentSort) {
+                        setSortMode(data.currentSort, false);
+                    }
+
+                    saveAppState();
+                    renderCategories();
+                    renderAdminCategoryList();
+                    renderPlaces();
+                    if (activeDetailPlaceId) {
+                        refreshDetailModalIfOpen(activeDetailPlaceId);
+                    }
+                } finally {
+                    isApplyingCloudState = false;
+                }
+            },
+            onAuthStatusChanged(status) {
+                cloudAuthState = {
+                    ready: Boolean(status?.ready),
+                    signedIn: Boolean(status?.signedIn),
+                    email: status?.email || null,
+                    displayName: status?.displayName || null,
+                    syncing: Boolean(status?.syncing),
+                    errorMessage: status?.errorMessage || null
+                };
+                updateCloudSyncUI();
+
+                if (cloudAuthState.ready && !storageGuidePromptHandled) {
+                    storageGuidePromptHandled = true;
+                    try {
+                        if (!cloudAuthState.signedIn && !localStorage.getItem(STORAGE_KEYS.STORAGE_GUIDE_SEEN)) {
+                            openStorageGuideModal();
+                        }
+                    } catch (e) {
+                        // ignore storage read error
+                    }
+                }
+            },
+            showToast(msg) {
+                showToast(msg);
+            }
+        };
 
         // 초기화
         window.onload = function() {
             renderMoodPresets();
             applyMoodTheme(currentMoodId, false);
-            setCardRadius(currentRadius, currentRadius === '12px' ? '단정한 각짐 (12px)' : currentRadius === '32px' ? '둥근 조약돌 (32px)' : '몽글몽글 (24px)', false);
+            setCardRadius(currentRadius, getRadiusLabel(currentRadius), false);
             setLayoutMode(currentLayout, false);
             setSortMode(currentSort, false);
             renderCategories();
             renderPlaces();
             renderAdminCategoryList();
+            updateCloudSyncUI();
 
-            try {
-                if (!localStorage.getItem(STORAGE_KEYS.STORAGE_GUIDE_SEEN)) {
-                    openStorageGuideModal();
+            setTimeout(() => {
+                if (!storageGuidePromptHandled && !cloudAuthState.signedIn) {
+                    storageGuidePromptHandled = true;
+                    try {
+                        if (!localStorage.getItem(STORAGE_KEYS.STORAGE_GUIDE_SEEN)) {
+                            openStorageGuideModal();
+                        }
+                    } catch (e) {
+                        // ignore storage read error
+                    }
                 }
-            } catch (e) {
-                // ignore storage read error
-            }
+            }, 900);
         };
 
         // ==========================================
@@ -1343,6 +1627,9 @@
             renderCategories();
             renderPlaces();
             saveAppState();
+            if (!isApplyingCloudState && notify && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.savePreferences(currentMoodId, currentLayout, currentRadius, currentSort).catch(console.error);
+            }
             if (notify) showToast(`${mood.emoji} '${mood.name}' 기분 테마로 변경되었습니다!`);
         }
 
@@ -1357,6 +1644,9 @@
             document.documentElement.style.setProperty('--radius-card', radiusValue);
             document.getElementById('radiusLabel').innerText = labelText;
             saveAppState();
+            if (!isApplyingCloudState && notify && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.savePreferences(currentMoodId, currentLayout, currentRadius, currentSort).catch(console.error);
+            }
             if (notify) showToast(`모서리 감성이 '${labelText}'으로 적용되었습니다.`);
         }
 
@@ -1378,6 +1668,9 @@
 
             renderPlaces();
             saveAppState();
+            if (!isApplyingCloudState && notify && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.savePreferences(currentMoodId, currentLayout, currentRadius, currentSort).catch(console.error);
+            }
             if (notify) showToast(`${meta.icon} '${meta.label}' 화면 배치로 전환되었습니다.`);
         }
 
@@ -1475,6 +1768,9 @@
                 isCategoryDeleteMode = false;
             }
             saveAppState();
+            if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.deleteCategory(catId).catch(console.error);
+            }
             renderCategories();
             renderAdminCategoryList();
             renderPlaces();
@@ -1505,6 +1801,9 @@
             const sortSelect = document.getElementById('sortSelect');
             if (sortSelect) sortSelect.value = currentSort;
             saveAppState();
+            if (!isApplyingCloudState && notify && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.savePreferences(currentMoodId, currentLayout, currentRadius, currentSort).catch(console.error);
+            }
             renderPlaces();
             if (notify) {
                 const labels = {
@@ -1517,6 +1816,9 @@
         }
 
         function getPlaceCreatedOrder(place, index) {
+            if (place && typeof place.sortTimestamp === 'number' && place.sortTimestamp > 0) {
+                return place.sortTimestamp;
+            }
             if (place && place.createdAt) {
                 const parsed = new Date(place.createdAt).getTime();
                 if (Number.isFinite(parsed)) return parsed;
@@ -2121,6 +2423,9 @@
                         updatedAt: new Date().toISOString()
                     };
                     saveAppState();
+                    if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                        window.cloudSync.updatePlaceAiSummary(latestPlace).catch(console.error);
+                    }
                 }
 
                 if (!silent) {
@@ -2154,6 +2459,9 @@
             if (!place) return;
             place.status = place.status === 'visited' ? 'wishlist' : 'visited';
             saveAppState();
+            if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.updatePlaceQuickStatus(place).catch(console.error);
+            }
             renderPlaces();
             showToast(place.status === 'visited' ? '⭐ 단골/방문 완료로 전환되었습니다!' : '📌 가볼 곳(위시)으로 이동했습니다.');
         }
@@ -2165,6 +2473,9 @@
             place.doneItems.push(completed);
             place.status = 'visited';
             saveAppState();
+            if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.updatePlaceQuickStatus(place).catch(console.error);
+            }
             renderPlaces();
             showToast(`🎉 '${completed}' 버킷리스트 달성 완료!`);
         }
@@ -2172,6 +2483,9 @@
         function deletePlace(placeId) {
             places = places.filter(p => p.id !== placeId);
             saveAppState();
+            if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.deletePlaceAndMedia(placeId).catch(console.error);
+            }
             renderPlaces();
             showToast('기록이 삭제되었습니다.');
         }
@@ -2483,6 +2797,9 @@
             categories.push(newCat);
             selectedCategory = newCat.id;
             saveAppState();
+            if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.upsertCategory(newCat, categories.length - 1).catch(console.error);
+            }
             closeCategoryModal();
             renderCategories();
             renderAdminCategoryList();
@@ -2914,6 +3231,9 @@
                 const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                 place.lastSynced = `방금 동기화됨 (${timeStr})`;
                 saveAppState();
+                if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                    window.cloudSync.updatePlaceSyncedInfo(place).catch(console.error);
+                }
                 renderPlaces();
                 refreshDetailModalIfOpen(place.id);
                 showToast(`🔄 '${place.name}' 최신 정보가 업데이트되었습니다!`);
@@ -2948,6 +3268,9 @@
 
             place.link = url.startsWith('http') ? url : 'https://' + url;
             saveAppState();
+            if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.updatePlaceSyncedInfo(place).catch(console.error);
+            }
             closeLinkEditModal();
             syncPlaceFromLink(place.id);
         }
@@ -3569,8 +3892,14 @@
                         delete target.aiSummary;
                         shouldSummarize = true;
                     }
+                    if (typeof target.sortTimestamp !== 'number' || target.sortTimestamp <= 0) {
+                        target.sortTimestamp = Date.now();
+                    }
                 }
                 saveAppState();
+                if (!isApplyingCloudState && target && window.cloudSync?.isSignedIn()) {
+                    window.cloudSync.savePlaceWithMedia(target, true).catch(console.error);
+                }
                 closePlaceModal();
                 renderPlaces();
                 showToast(`✏️ '${name}' 수정 및 사진/영상이 반영되었습니다!`);
@@ -3580,8 +3909,9 @@
                 return;
             }
 
+            const nowTs = Date.now();
             const newPlace = {
-                id: 'p_' + Date.now(),
+                id: 'p_' + nowTs,
                 categoryId: document.getElementById('placeCategory').value,
                 status: document.getElementById('placeStatus').value,
                 name,
@@ -3596,12 +3926,16 @@
                 customValues,
                 doneItems: splitItems('placeDoneItems'),
                 todoItems: splitItems('placeTodoItems'),
-                memo: memoVal
+                memo: memoVal,
+                sortTimestamp: nowTs
             };
 
             places.unshift(newPlace);
 
             saveAppState();
+            if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.savePlaceWithMedia(newPlace, false).catch(console.error);
+            }
             closePlaceModal();
             switchBottomTab('home');
             renderPlaces();
@@ -3663,6 +3997,9 @@
         function confirmClearAllPlaces() {
             places = [];
             saveAppState();
+            if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                window.cloudSync.clearAllPlacesAndMedia().catch(console.error);
+            }
             closeClearSampleModal();
             renderPlaces();
             switchBottomTab('home');
@@ -3700,10 +4037,22 @@
                     if (data.settings) {
                         if (data.settings.currentMoodId) applyMoodTheme(data.settings.currentMoodId, false);
                         if (data.settings.currentLayout) setLayoutMode(data.settings.currentLayout, false);
-                        if (data.settings.currentRadius) setCardRadius(data.settings.currentRadius, data.settings.currentRadius, false);
+                        if (data.settings.currentRadius) setCardRadius(data.settings.currentRadius, getRadiusLabel(data.settings.currentRadius), false);
                         if (data.settings.currentSort) setSortMode(data.settings.currentSort, false);
                     }
                     saveAppState();
+                    if (!isApplyingCloudState && window.cloudSync?.isSignedIn()) {
+                        window.cloudSync.replaceAllCloudData(
+                            categories,
+                            places,
+                            currentMoodId,
+                            currentLayout,
+                            currentRadius,
+                            currentSort
+                        ).then(() => {
+                            showToast('☁️ 복원된 데이터가 클라우드에도 동기화되었습니다!');
+                        }).catch(console.error);
+                    }
                     renderCategories();
                     renderPlaces();
                     renderAdminCategoryList();
@@ -3724,5 +4073,6 @@
             window.toastTimer = setTimeout(() => toast.classList.add('hidden'), 2400);
         }
     </script>
+    <script type="module" src="/src/firebase-sync.ts"></script>
 </body>
 </html>

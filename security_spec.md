@@ -5,7 +5,7 @@
 2. Every subcollection document (`categories`, `places`, `media`) requires the parent `/users/{userId}` document to exist (`existsAfter`), and `media` documents require their referenced `placeId` to exist (`existsAfter`).
 3. `uid`, `id`, and `createdAt` are immutable after creation.
 4. `createdAt` and `updatedAt` must equal `request.time` (server timestamps).
-5. All strings, arrays (`fields`, `doneItems`, `todoItems`), maps (`customValues`), and expense fields (`estimatedCost`, `actualCost` bounded `[0, 1000000000]`, `spentDate` matching `YYYY-MM-DD` or `""`) are strictly bounded, and ghost fields are rejected via `hasAll` / `hasOnly` and `affectedKeys().hasOnly(...)`.
+5. All strings, arrays (`fields`, `doneItems`, `todoItems`, `aiSummary.badges`), maps (`customValues`, `aiSummary`), coordinates (`x`, `y` numeric strings `<= 40` chars), preference enums (`currentRadius`, `currentSort`), and expense fields (`estimatedCost`, `actualCost` bounded `[0, 1000000000]`, `spentDate` matching `YYYY-MM-DD` or `""`) are strictly bounded, and ghost fields are rejected via `hasAll` / `hasOnly` and `affectedKeys().hasOnly(...)`.
 6. User PII (`email`) is strictly isolated to `/users/{userId}` where `get` is owner-only and `list` is forbidden (`false`).
 
 ## 2. The "Dirty Dozen" Adversarial Payloads

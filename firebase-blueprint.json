@@ -37,6 +37,16 @@
           "type": "boolean",
           "description": "Whether initial starter/local records have been synced."
         },
+        "currentRadius": {
+          "type": "string",
+          "enum": ["12px", "24px", "32px"],
+          "description": "Selected card corner radius preset."
+        },
+        "currentSort": {
+          "type": "string",
+          "enum": ["newest", "name", "status"],
+          "description": "Selected feed sort order."
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",
@@ -172,6 +182,22 @@
         "memo": {
           "type": "string",
           "maxLength": 2000
+        },
+        "x": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^(|-?[0-9]+(\\.[0-9]+)?)$",
+          "description": "Longitude coordinate string."
+        },
+        "y": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^(|-?[0-9]+(\\.[0-9]+)?)$",
+          "description": "Latitude coordinate string."
+        },
+        "aiSummary": {
+          "type": "object",
+          "description": "AI-generated memo summary headline and badges."
         },
         "estimatedCost": {
           "type": "number",

@@ -9,6 +9,7 @@ import {
 import {
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   onSnapshot,
@@ -33,6 +34,19 @@ export interface LocalCategory {
   name: string;
   icon: string;
   fields?: string[];
+  customFields?: string[];
+}
+
+export interface LocalAiSummaryBadge {
+  label: string;
+  value: string;
+}
+
+export interface LocalAiSummary {
+  headline: string;
+  badges: LocalAiSummaryBadge[];
+  memoSnapshot: string;
+  updatedAt: string;
 }
 
 export interface LocalPlace {
@@ -50,6 +64,9 @@ export interface LocalPlace {
   doneItems?: string[];
   todoItems?: string[];
   memo?: string;
+  x?: string;
+  y?: string;
+  aiSummary?: LocalAiSummary;
   estimatedCost?: number;
   actualCost?: number;
   spentDate?: string;
@@ -62,12 +79,16 @@ interface AppBridge {
     places: LocalPlace[];
     currentMoodId: string;
     currentLayout: string;
+    currentRadius?: string;
+    currentSort?: string;
   };
   applyCloudState: (data: {
     categories?: LocalCategory[];
     places?: LocalPlace[];
     currentMoodId?: string;
     currentLayout?: string;
+    currentRadius?: string;
+    currentSort?: string;
   }) => void;
   onAuthStatusChanged: (status: {
     ready: boolean;
@@ -126,15 +147,49 @@ function sanitizeLayout(val: unknown): 'card' | 'compact' | 'grid' {
   return val === 'compact' || val === 'grid' ? val : 'card';
 }
 
+function sanitizeRadius(val: unknown): '12px' | '24px' | '32px' {
+  return val === '12px' || val === '32px' ? val : '24px';
+}
+
+function sanitizeSort(val: unknown): 'newest' | 'name' | 'status' {
+  return val === 'name' || val === 'status' ? val : 'newest';
+}
+
 function sanitizeMoodId(val: unknown): string {
-  const cleaned = String(val || 'energetic')
+  const cleaned = String(val || 'warm-coral')
     .replace(/[^a-zA-Z0-9_\-]/g, '_')
     .slice(0, 40);
-  return cleaned || 'energetic';
+  return cleaned || 'warm-coral';
 }
 
 function sanitizeStatus(val: unknown): 'visited' | 'wishlist' {
   return val === 'wishlist' ? 'wishlist' : 'visited';
+}
+
+function sanitizeCoord(val: unknown): string {
+  const s = typeof val === 'number' ? String(val) : typeof val === 'string' ? val.trim() : '';
+  if (!s) return '';
+  return /^-?[0-9]+(\.[0-9]+)?$/.test(s) && s.length <= 40 ? s : '';
+}
+
+function sanitizeAiSummary(val: unknown): LocalAiSummary | undefined {
+  if (!val || typeof val !== 'object' || Array.isArray(val)) return undefined;
+  const raw = val as Record<string, unknown>;
+  const headline = clampStr(raw.headline, 200).trim();
+  const memoSnapshot = clampStr(raw.memoSnapshot, 2000).trim();
+  const updatedAt = clampStr(raw.updatedAt, 50).trim() || new Date().toISOString();
+  const badges: LocalAiSummaryBadge[] = Array.isArray(raw.badges)
+    ? raw.badges
+        .filter((b): b is Record<string, unknown> => Boolean(b && typeof b === 'object' && !Array.isArray(b)))
+        .map((b) => ({
+          label: clampStr(b.label, 30).trim(),
+          value: clampStr(b.value, 60).trim(),
+        }))
+        .filter((b) => b.label && b.value)
+        .slice(0, 8)
+    : [];
+  if (!headline && badges.length === 0) return undefined;
+  return { headline, badges, memoSnapshot, updatedAt };
 }
 
 function sanitizeCost(val: unknown): number {
@@ -155,7 +210,12 @@ let unsubscribers: Unsubscribe[] = [];
 let cloudCategories: LocalCategory[] | null = null;
 let cloudPlacesRaw: Array<LocalPlace & { sortTimestamp: number }> | null = null;
 let cloudMediaByPlace = new Map<string, Array<{ id: string; type: 'image' | 'video' | 'video_url'; url: string; sortOrder: number }>>();
-let cloudPrefs: { currentMoodId?: string; currentLayout?: string } | null = null;
+let cloudPrefs: {
+  currentMoodId?: string;
+  currentLayout?: string;
+  currentRadius?: string;
+  currentSort?: string;
+} | null = null;
 
 const knownCategoryIds = new Set<string>();
 const knownPlaceIds = new Set<string>();
@@ -249,10 +309,14 @@ function pushMergedCloudStateToUI() {
     places?: LocalPlace[];
     currentMoodId?: string;
     currentLayout?: string;
+    currentRadius?: string;
+    currentSort?: string;
   } = {};
 
   if (cloudPrefs?.currentMoodId) payload.currentMoodId = cloudPrefs.currentMoodId;
   if (cloudPrefs?.currentLayout) payload.currentLayout = cloudPrefs.currentLayout;
+  if (cloudPrefs?.currentRadius) payload.currentRadius = cloudPrefs.currentRadius;
+  if (cloudPrefs?.currentSort) payload.currentSort = cloudPrefs.currentSort;
   if (cloudCategories !== null) payload.categories = cloudCategories;
 
   if (cloudPlacesRaw !== null) {
@@ -288,8 +352,10 @@ async function ensureUserProfileAndInitialSync(user: User) {
   const local = window.__dangolBridge?.getLocalSnapshot() || {
     categories: [],
     places: [],
-    currentMoodId: 'energetic',
+    currentMoodId: 'warm-coral',
     currentLayout: 'card',
+    currentRadius: '24px',
+    currentSort: 'newest',
   };
 
   if (!existingSnap.exists()) {
@@ -301,6 +367,8 @@ async function ensureUserProfileAndInitialSync(user: User) {
         displayName: clampStr(user.displayName, 100, '단골노트 사용자'),
         currentMoodId: sanitizeMoodId(local.currentMoodId),
         currentLayout: sanitizeLayout(local.currentLayout),
+        currentRadius: sanitizeRadius(local.currentRadius),
+        currentSort: sanitizeSort(local.currentSort),
         seededDefaults: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -350,12 +418,13 @@ async function uploadSnapshotToFirestore(
   categories.forEach((cat, idx) => {
     const catId = sanitizeId(cat.id, `cat_${idx}`);
     const catRef = doc(db, 'users', uid, 'categories', catId);
+    const catFields = Array.isArray(cat.fields) ? cat.fields : cat.customFields;
     batch.set(catRef, {
       uid,
       id: catId,
       name: clampStr(cat.name, 60, '카테고리') || '카테고리',
       icon: clampStr(cat.icon, 16, '📍') || '📍',
-      fields: clampStringList(cat.fields, 30, 60),
+      fields: clampStringList(catFields, 30, 60),
       sortOrder: idx,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -371,10 +440,14 @@ async function uploadSnapshotToFirestore(
     const placeId = sanitizeId(p.id, `p_${baseTs}_${pIdx}`);
     const placeRef = doc(db, 'users', uid, 'places', placeId);
     const sortTs = typeof p.sortTimestamp === 'number' ? p.sortTimestamp : baseTs - pIdx * 1000;
+    const cleanSummary = sanitizeAiSummary(p.aiSummary);
+    const cleanX = sanitizeCoord(p.x);
+    const cleanY = sanitizeCoord(p.y);
+
     batch.set(placeRef, {
       uid,
       id: placeId,
-      categoryId: sanitizeId(p.categoryId, 'cat_food'),
+      categoryId: sanitizeId(p.categoryId, 'food'),
       status: sanitizeStatus(p.status),
       name: clampStr(p.name, 150, '이름 없는 장소') || '이름 없는 장소',
       address: clampStr(p.address, 300),
@@ -386,6 +459,9 @@ async function uploadSnapshotToFirestore(
       doneItems: clampStringList(p.doneItems, 50, 120),
       todoItems: clampStringList(p.todoItems, 50, 120),
       memo: clampStr(p.memo, 2000),
+      ...(cleanX ? { x: cleanX } : {}),
+      ...(cleanY ? { y: cleanY } : {}),
+      ...(cleanSummary ? { aiSummary: cleanSummary } : {}),
       estimatedCost: sanitizeCost(p.estimatedCost),
       actualCost: sanitizeCost(p.actualCost),
       spentDate: sanitizeSpentDate(p.spentDate),
@@ -442,6 +518,8 @@ function attachRealtimeListeners(uid: string) {
       cloudPrefs = {
         currentMoodId: typeof data.currentMoodId === 'string' ? data.currentMoodId : undefined,
         currentLayout: typeof data.currentLayout === 'string' ? data.currentLayout : undefined,
+        currentRadius: typeof data.currentRadius === 'string' ? data.currentRadius : undefined,
+        currentSort: typeof data.currentSort === 'string' ? data.currentSort : undefined,
       };
       pushMergedCloudStateToUI();
       emitAuthStatus(false);
@@ -463,11 +541,13 @@ function attachRealtimeListeners(uid: string) {
       const rows = snapshot.docs.map((d) => {
         knownCategoryIds.add(d.id);
         const data = d.data();
+        const fieldsList = Array.isArray(data.fields) ? data.fields : [];
         return {
           id: data.id || d.id,
           name: data.name || '카테고리',
           icon: data.icon || '📍',
-          fields: Array.isArray(data.fields) ? data.fields : [],
+          fields: fieldsList,
+          customFields: fieldsList,
           sortOrder: typeof data.sortOrder === 'number' ? data.sortOrder : 0,
         };
       });
@@ -493,9 +573,12 @@ function attachRealtimeListeners(uid: string) {
       const rows = snapshot.docs.map((d) => {
         knownPlaceIds.add(d.id);
         const data = d.data();
+        const aiSummary = sanitizeAiSummary(data.aiSummary);
+        const x = sanitizeCoord(data.x);
+        const y = sanitizeCoord(data.y);
         return {
           id: data.id || d.id,
-          categoryId: data.categoryId || 'cat_food',
+          categoryId: data.categoryId || 'food',
           status: data.status === 'wishlist' ? 'wishlist' : 'visited',
           name: data.name || '',
           address: data.address || '',
@@ -507,6 +590,9 @@ function attachRealtimeListeners(uid: string) {
           doneItems: Array.isArray(data.doneItems) ? data.doneItems : [],
           todoItems: Array.isArray(data.todoItems) ? data.todoItems : [],
           memo: data.memo || '',
+          ...(x ? { x } : {}),
+          ...(y ? { y } : {}),
+          ...(aiSummary ? { aiSummary } : {}),
           estimatedCost: sanitizeCost(data.estimatedCost),
           actualCost: sanitizeCost(data.actualCost),
           spentDate: sanitizeSpentDate(data.spentDate),
@@ -667,7 +753,12 @@ const cloudSyncApi = {
     }
   },
 
-  async savePreferences(currentMoodId: string, currentLayout: string): Promise<void> {
+  async savePreferences(
+    currentMoodId: string,
+    currentLayout: string,
+    currentRadius?: string,
+    currentSort?: string
+  ): Promise<void> {
     if (!currentUser) return;
     const uid = currentUser.uid;
     const path = `users/${uid}`;
@@ -675,6 +766,8 @@ const cloudSyncApi = {
       await updateDoc(doc(db, 'users', uid), {
         currentMoodId: sanitizeMoodId(currentMoodId),
         currentLayout: sanitizeLayout(currentLayout),
+        ...(currentRadius ? { currentRadius: sanitizeRadius(currentRadius) } : {}),
+        ...(currentSort ? { currentSort: sanitizeSort(currentSort) } : {}),
         updatedAt: serverTimestamp(),
       });
     } catch (err) {
@@ -688,10 +781,11 @@ const cloudSyncApi = {
     const catId = sanitizeId(cat.id, 'cat');
     const path = `users/${uid}/categories/${catId}`;
     const catRef = doc(db, 'users', uid, 'categories', catId);
+    const catFields = Array.isArray(cat.fields) ? cat.fields : cat.customFields;
     const payload = {
       name: clampStr(cat.name, 60, '카테고리') || '카테고리',
       icon: clampStr(cat.icon, 16, '📍') || '📍',
-      fields: clampStringList(cat.fields, 30, 60),
+      fields: clampStringList(catFields, 30, 60),
       sortOrder: Math.max(0, Math.min(1000000, Math.floor(sortOrder))),
       updatedAt: serverTimestamp(),
     };
@@ -730,9 +824,13 @@ const cloudSyncApi = {
     const placeId = sanitizeId(place.id, 'p');
     const placeRef = doc(db, 'users', uid, 'places', placeId);
     const sortTs = typeof place.sortTimestamp === 'number' ? place.sortTimestamp : Date.now();
+    const isExisting = isEdit && knownPlaceIds.has(placeId);
+    const cleanSummary = sanitizeAiSummary(place.aiSummary);
+    const cleanX = sanitizeCoord(place.x);
+    const cleanY = sanitizeCoord(place.y);
 
-    const editableFields = {
-      categoryId: sanitizeId(place.categoryId, 'cat_food'),
+    const editableFields: Record<string, unknown> = {
+      categoryId: sanitizeId(place.categoryId, 'food'),
       status: sanitizeStatus(place.status),
       name: clampStr(place.name, 150, '이름 없는 장소') || '이름 없는 장소',
       address: clampStr(place.address, 300),
@@ -744,6 +842,8 @@ const cloudSyncApi = {
       doneItems: clampStringList(place.doneItems, 50, 120),
       todoItems: clampStringList(place.todoItems, 50, 120),
       memo: clampStr(place.memo, 2000),
+      x: cleanX,
+      y: cleanY,
       estimatedCost: sanitizeCost(place.estimatedCost),
       actualCost: sanitizeCost(place.actualCost),
       spentDate: sanitizeSpentDate(place.spentDate),
@@ -751,8 +851,14 @@ const cloudSyncApi = {
       updatedAt: serverTimestamp(),
     };
 
+    if (cleanSummary) {
+      editableFields.aiSummary = cleanSummary;
+    } else if (isExisting) {
+      editableFields.aiSummary = deleteField();
+    }
+
     const batch = writeBatch(db);
-    if (isEdit && knownPlaceIds.has(placeId)) {
+    if (isExisting) {
       batch.update(placeRef, editableFields);
     } else {
       batch.set(placeRef, {
@@ -882,7 +988,26 @@ const cloudSyncApi = {
         address: clampStr(place.address, 300),
         hours: clampStr(place.hours, 200),
         memo: clampStr(place.memo, 2000),
+        x: sanitizeCoord(place.x),
+        y: sanitizeCoord(place.y),
         lastSynced: clampStr(place.lastSynced, 100),
+        updatedAt: serverTimestamp(),
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, path);
+    }
+  },
+
+  async updatePlaceAiSummary(place: LocalPlace): Promise<void> {
+    if (!currentUser) return;
+    const uid = currentUser.uid;
+    const placeId = sanitizeId(place.id, 'p');
+    if (!knownPlaceIds.has(placeId)) return;
+    const path = `users/${uid}/places/${placeId}`;
+    const cleanSummary = sanitizeAiSummary(place.aiSummary);
+    try {
+      await updateDoc(doc(db, 'users', uid, 'places', placeId), {
+        aiSummary: cleanSummary ?? deleteField(),
         updatedAt: serverTimestamp(),
       });
     } catch (err) {
@@ -943,7 +1068,9 @@ const cloudSyncApi = {
     categories: LocalCategory[],
     places: LocalPlace[],
     currentMoodId: string,
-    currentLayout: string
+    currentLayout: string,
+    currentRadius?: string,
+    currentSort?: string
   ): Promise<void> {
     if (!currentUser) return;
     const uid = currentUser.uid;
@@ -982,7 +1109,7 @@ const cloudSyncApi = {
     }
     await flush(true);
 
-    await this.savePreferences(currentMoodId, currentLayout);
+    await this.savePreferences(currentMoodId, currentLayout, currentRadius, currentSort);
     if (categories.length > 0 || places.length > 0) {
       await uploadSnapshotToFirestore(uid, categories, places);
     }
